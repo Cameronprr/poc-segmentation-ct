@@ -15,7 +15,8 @@ Ce que fait le script :
      nombre de coupes ou hauteur différents) : possibles patients communs NON regroupés, à examiner ;
   4. propose un nouveau découpage : le lot de test ne contient QUE des patients à un seul examen
      (groupe d'un seul cas, origine fiable), tirés au sort avec une graine fixe : 5 cas = 5 patients
-     indépendants. Les groupes de plusieurs cas (même patient) vont tous en entraînement, entiers ;
+     indépendants. Le tirage est STRATIFIÉ par épaisseur de coupe : 1 patient à 0,45 mm, 4 à 0,625 mm.
+     Les groupes de plusieurs cas (même patient) vont tous en entraînement, entiers ;
   5. affiche la proposition, les cas qui changent de lot, et l'écrit en JSON dans --sortie (Drive).
   Le découpage figé (splits/mmwhs_split.json) est seulement LU, jamais modifié : c'est l'utilisateur
   qui recopiera la proposition dans le dépôt après validation.
@@ -33,8 +34,9 @@ Sortie (uniquement dans --sortie) :
   mmwhs_split_par_patient_PROPOSITION.json : même format que splits/mmwhs_split.json, plus les clés
   "groupes_patients" (groupes d'au moins 2 cas) et "methode" (comment la proposition a été faite).
 Codes de sortie : 0 = proposition écrite (lire les avertissements en fin de sortie) ;
-  1 = arrêt (fichier manquant ou ambigu, découpage incohérent, --sortie dans le dépôt, ou moins de
-  5 patients à un seul examen (origine fiable) disponibles pour le test) : rien n'a été écrit.
+  1 = arrêt (fichier manquant ou ambigu, découpage incohérent, --sortie dans le dépôt, épaisseur de
+  coupe imprévue ou mal lisible (3e axe ni S ni I), ou pas assez de patients à un seul examen (origine fiable) dans une strate pour
+  remplir son quota) : rien n'a été écrit.
 
 Vocabulaire :
   - en-tête (header) : le début du fichier NIfTI, qui décrit le volume (taille, espacement, position)
@@ -57,7 +59,14 @@ Vocabulaire :
   - graine : nombre qui fixe le tirage au sort. Même graine = même mélange à chaque exécution ;
   - patients indépendants : dans le test, chaque patient ne doit compter qu'une fois. Deux examens du
     même patient en test feraient compter ce patient double dans le verdict (et ne seraient pas deux
-    preuves indépendantes) : c'est pourquoi le test ne prend que des patients à un seul examen.
+    preuves indépendantes) : c'est pourquoi le test ne prend que des patients à un seul examen ;
+  - épaisseur de coupe : ici, l'ESPACEMENT ENTRE COUPES (3e valeur de l'espacement, pixdim[3]), c.-à-d.
+    la distance entre deux coupes successives. Ce n'est pas forcément l'épaisseur de reconstruction
+    du scanner (SliceThickness en DICOM), qui diffère si les coupes se chevauchent. Il
+    dépend du scanner et du protocole ;
+  - tirage stratifié : on tire au sort séparément dans chaque sous-groupe (« strate », ici chaque
+    épaisseur de coupe), avec un nombre de places fixé pour chacune. Le test contient ainsi les deux
+    types d'examens, au lieu de dépendre du hasard.
 """
 import argparse, glob, json, os, random, sys
 import nibabel as nib
@@ -65,7 +74,11 @@ import numpy as np
 
 TOLERANCE_ESPACEMENT = 1e-3   # mm : deux espacements plus proches que cela sont considérés égaux
 TOLERANCE_PAIRE_PROCHE = 1.0  # mm : écart maximal en x et y pour signaler une « paire proche »
-TAILLE_TEST = 5               # nombre de patients (= de cas) dans le lot de test, comme le découpage d'origine
+# Places en test par épaisseur de coupe (mm) : 1 patient à 0,45 mm et 4 à 0,625 mm (décision D20).
+# Le jeu contient deux familles d'examens : 0,45 mm (sform/qform 1/1, probablement un autre scanner)
+# et 0,625 mm. Sans stratification, le tirage avait mis en test 5 cas à 0,625 mm et aucun à 0,45 mm.
+QUOTAS_TEST = {0.45: 1, 0.625: 4}
+TAILLE_TEST = sum(QUOTAS_TEST.values())   # 5 patients (= 5 cas) en test, comme le découpage d'origine
 NOM_FICHIER = "mmwhs_split_par_patient_PROPOSITION.json"
 
 # --- Arguments --------------------------------------------------------------------------------
@@ -185,25 +198,53 @@ for x, y in paires_proches:
 # (un cas à origine non fiable pourrait être un patient commun non détecté : il reste en entraînement).
 # Les groupes de plusieurs cas (même patient, plusieurs phases) vont tous, entiers, en entraînement.
 candidats = sorted(g[0] for g in groupes if len(g) == 1 and entetes[g[0]]["fiable"])
-if len(candidats) < TAILLE_TEST:
-    print(f"\nARRÊT : seulement {len(candidats)} patients à un seul examen (origine fiable) pour "
-          f"{TAILLE_TEST} places en test. Rien n'a été écrit : les groupes sont à revoir ensemble.")
+
+# Tirage STRATIFIÉ par épaisseur de coupe (espacement le long du 3e axe) : chaque strate reçoit son
+# quota de places en test (QUOTAS_TEST), pour que le test représente les deux types d'examens.
+def strate_de(c):
+    """Épaisseur de coupe du cas c si elle correspond à une strate connue, sinon None."""
+    ep = float(entetes[c]["espacement"][2])
+    return next((s for s in QUOTAS_TEST if abs(ep - s) <= TOLERANCE_ESPACEMENT), None)
+
+# zooms[2] n'est l'espacement entre coupes que si le 3e axe du volume va des pieds à la tête (code
+# d'orientation S ou I). Sinon ce serait un espacement dans le plan de coupe : on s'arrête.
+axe_inattendu = [(c, entetes[c]["orientation"]) for c in candidats if entetes[c]["orientation"][2] not in "SI"]
+if axe_inattendu:
+    print(f"\nARRÊT : 3e axe qui n'est pas l'axe des coupes (orientation) pour {axe_inattendu} : "
+          "l'épaisseur de coupe serait mal lue. Rien n'a été écrit.")
     sys.exit(1)
-melange = list(candidats)                   # liste triée d'abord : le tirage ne dépend que de la graine
-random.Random(a.graine).shuffle(melange)    # mélange reproductible
-test = melange[:TAILLE_TEST]                # les 5 premiers après mélange
+# Même tolérance que pour comparer deux espacements (TOLERANCE_ESPACEMENT).
+hors_strate = [c for c in candidats if strate_de(c) is None]
+if hors_strate:   # une épaisseur imprévue : les quotas ne représenteraient plus le jeu, on s'arrête
+    print(f"\nARRÊT : épaisseur de coupe hors des strates {sorted(QUOTAS_TEST)} mm pour "
+          f"{[(c, round(float(entetes[c]['espacement'][2]), 3)) for c in hors_strate]}. Rien n'a été écrit.")
+    sys.exit(1)
+tirage = random.Random(a.graine)            # un seul générateur, strates parcourues dans un ordre fixe
+test = []
+print("\nTirage stratifié par épaisseur de coupe (patients à un seul examen, origine fiable) :")
+for s in sorted(QUOTAS_TEST):
+    strate = sorted(c for c in candidats if strate_de(c) == s)   # trié : le tirage ne dépend que de la graine
+    print(f"  {s} mm : {len(strate)} candidat(s), {QUOTAS_TEST[s]} place(s) en test")
+    if len(strate) < QUOTAS_TEST[s]:
+        print(f"\nARRÊT : seulement {len(strate)} patient(s) à un seul examen à {s} mm pour "
+              f"{QUOTAS_TEST[s]} place(s) en test. Rien n'a été écrit : les groupes sont à revoir ensemble.")
+        sys.exit(1)
+    tirage.shuffle(strate)                   # mélange reproductible
+    test += strate[:QUOTAS_TEST[s]]          # les premiers après mélange
 nouveau_ts = sorted(test)
 nouveau_tr = sorted(c for c in tous if c not in test)
 
-# Vérifications : aucun cas perdu ou en double, 5 cas en test, uniquement des patients à un seul
-# examen, et aucun groupe coupé (tous les groupes de plusieurs cas sont entièrement en entraînement).
+# Vérifications : aucun cas perdu ou en double, 5 cas en test, quotas respectés, uniquement des patients
+# à un seul examen, et aucun groupe coupé (tous les groupes de plusieurs cas sont entièrement en entraînement).
 assert sorted(nouveau_ts + nouveau_tr) == tous and len(nouveau_ts) == TAILLE_TEST
+assert all(sum(strate_de(c) == s for c in nouveau_ts) == q for s, q in QUOTAS_TEST.items())
 assert all(len(groupe_de[c]) == 1 for c in nouveau_ts)
 assert all(c in nouveau_tr for g in groupes if len(g) > 1 for c in g)
 
 # --- 5. Affichage de la proposition et des changements ------------------------------------------
 print(f"\nProposition (graine {a.graine}) :")
-print(f"  test sous clé ({len(nouveau_ts)} cas) : {nouveau_ts}")
+print(f"  test sous clé ({len(nouveau_ts)} cas) : "
+      f"{[f'{c} ({strate_de(c)} mm)' for c in nouveau_ts]}")
 print(f"  entraînement / validation croisée ({len(nouveau_tr)} cas) : {nouveau_tr}")
 
 sortent = sorted(set(ancien_ts) - set(nouveau_ts))
@@ -226,8 +267,9 @@ methode = (f"Décision D20 : découpage par patient. Deux cas appartiennent au m
            f"la même forme, le même espacement (tolérance {TOLERANCE_ESPACEMENT} mm) et la même affine "
            f"(tolérance {a.tolerance_origine} mm), d'après l'en-tête NIfTI des scanners, et si leur origine "
            f"est fiable (sform_code ou qform_code non nul) ; regroupement de proche en proche, à confirmer par "
-           f"l'examen visuel. Test = {TAILLE_TEST} patients à un seul examen (origine fiable), tirés avec "
-           f"random.Random({a.graine}) ; tous les groupes de plusieurs cas sont en entraînement "
+           f"l'examen visuel. Test = {TAILLE_TEST} patients à un seul examen (origine fiable), tirage stratifié "
+           f"par épaisseur de coupe ({', '.join(f'{v} à {s} mm' for s, v in sorted(QUOTAS_TEST.items()))}) "
+           f"avec random.Random({a.graine}) ; tous les groupes de plusieurs cas sont en entraînement "
            f"(script scripts/03b_regrouper_patients.py).")
 proposition = {
     "jeu": split["jeu"],
