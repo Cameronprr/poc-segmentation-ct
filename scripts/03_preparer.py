@@ -10,7 +10,9 @@ Ce que fait le script :
   4. écrit le rapport de contrôle `rapport_qc_etape3.csv` dans --sortie ;
   5. si tout est conforme, et seulement dans ce cas, écrit le jeu au format nnU-Net v2 dans
      --sortie/Dataset101_MMWHS/ (images copiées à l'identique, masques renumérotés 0..7, dataset.json).
-  Le découpage figé (splits/mmwhs_split.json) est seulement LU, jamais modifié.
+  Le découpage figé (splits/mmwhs_split.json) est seulement LU, jamais modifié. Il est d'abord contrôlé :
+  20 cas au total, 4 à 6 en test, aucun cas répété ni dans les deux lots ; depuis D20, chaque groupe
+  de « groupes_patients » (cas d'un même patient probable) doit exister et rester entier dans un seul lot.
 
 Entrées :
   --donnees     dossier où MM-WHS a été téléchargé (dans Google Drive), cherché récursivement
@@ -107,11 +109,20 @@ with open(a.split, encoding="utf-8") as f:          # lecture seule du découpag
 cas_tr, cas_ts = split["entrainement_validation_croisee"], split["test_sous_cle"]
 
 # Cohérence du découpage : un cas présent dans les deux lots fuirait du test vers l'entraînement.
+# Depuis D20, le découpage est fait par patient : le test compte « environ 5 » cas (4 à 6), 20 au total.
 communs = set(cas_tr) & set(cas_ts)
-if communs or len(set(cas_tr)) != 15 or len(set(cas_ts)) != 5 \
+if communs or len(set(cas_tr)) + len(set(cas_ts)) != 20 or not 4 <= len(set(cas_ts)) <= 6 \
         or len(cas_tr) != len(set(cas_tr)) or len(cas_ts) != len(set(cas_ts)):
     sys.exit(f"ARRÊT : découpage incohérent (cas dans les deux lots : {sorted(communs)}, "
-             f"entraînement = {len(cas_tr)} cas, test = {len(cas_ts)} cas, attendu 15 et 5, sans répétition).")
+             f"entraînement = {len(cas_tr)} cas, test = {len(cas_ts)} cas ; attendu 20 cas au total, "
+             f"4 à 6 en test, sans répétition).")
+# Un même patient (groupe de cas, décision D20) ne doit jamais être réparti entre test et entraînement.
+for groupe in split.get("groupes_patients", []):
+    inconnus = set(groupe) - set(cas_tr) - set(cas_ts)
+    if inconnus:   # ex. faute de frappe dans un nom de cas : le contrôle ci-dessous serait sans effet
+        sys.exit(f"ARRÊT : groupes_patients cite des cas absents du découpage : {sorted(inconnus)}.")
+    if set(groupe) & set(cas_ts) and set(groupe) & set(cas_tr):
+        sys.exit(f"ARRÊT : le patient {groupe} est réparti entre test et entraînement (décision D20).")
 
 def trouver(nom, suffixe):
     """Recherche récursive dans --donnees. Renvoie la LISTE triée des fichiers trouvés :
