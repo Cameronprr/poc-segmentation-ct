@@ -20,7 +20,7 @@ Boucle à chaque étape : l'agent écrit le script ici → le dépôt est mis à
 | 0. Cadrage | But, périmètre, décisions | Projet Claude.ai | ✅ |
 | 1. Installer les lieux | Ce dépôt, agents, Colab relié à Drive | GitHub, Claude Code, Colab | ✅ |
 | 2. Données | Télécharger MM-WHS dans Drive, vérifier ; découpage figé (`splits/mmwhs_split.json`) | Colab, `scripts/02_verifier_donnees.py` | ✅ 20 cas conformes |
-| 3. Préparation | Contrôle qualité détaillé, conversion au format nnU-Net | MONAI, `scripts/03_preparer.py` | 🟡 script relu par QA, à exécuter dans Colab |
+| 3. Préparation | Contrôle qualité détaillé, conversion au format nnU-Net | MONAI, `scripts/03_preparer.py` | ✅ 20 cas convertis (15 entraînement, 5 test) ; 2 quasi-doublons possibles à examiner (1005/1012, 1020/1001) |
 | 4. Ligne de base | TotalSegmentator sur les 5 cas de test | TotalSegmentator, agent ml-engineer | ⬜ |
 | 5. Entraînement | nnU-Net v2 puis Auto3DSeg sur les 15 cas | nnU-Net, MONAI Auto3DSeg, MLflow | ⬜ |
 | 6. Évaluation | Dice, HD95, volumes sur les 5 cas de test | MONAI (métriques), agent qa-reviewer | ⬜ |
