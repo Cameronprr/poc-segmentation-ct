@@ -11,8 +11,12 @@ Ce que fait le script :
   5. si tout est conforme, et seulement dans ce cas, écrit le jeu au format nnU-Net v2 dans
      --sortie/Dataset101_MMWHS/ (images copiées à l'identique, masques renumérotés 0..7, dataset.json).
   Le découpage figé (splits/mmwhs_split.json) est seulement LU, jamais modifié. Il est d'abord contrôlé :
-  20 cas au total, 4 à 6 en test, aucun cas répété ni dans les deux lots ; depuis D20, chaque groupe
-  de « groupes_patients » (cas d'un même patient probable) doit exister et rester entier dans un seul lot.
+  20 cas au total, 4 à 6 en test, aucun cas répété ni dans les deux lots ; depuis D20, chaque cas de
+  « groupes_patients » (patient probable à plusieurs examens) doit exister et être en entraînement :
+  le test ne contient que des patients à un seul examen.
+  Le script liste aussi, pour information, toutes les paires test/entraînement dont la corrélation des
+  miniatures dépasse 0,95 (--seuil-info) : un même patient recadré autrement échapperait au critère
+  géométrique du script 03b, cette liste est le filet de sécurité.
 
 Entrées :
   --donnees     dossier où MM-WHS a été téléchargé (dans Google Drive), cherché récursivement
@@ -22,6 +26,8 @@ Entrées :
   --ecraser     autorise à remplacer un dossier Dataset déjà rempli (sinon le script s'arrête)
   --seuil-quasi-doublon  corrélation au-delà de laquelle un cas de test est signalé comme
                 quasi-doublon d'un cas d'entraînement (défaut : 0.98 ; avertissement seulement)
+  --seuil-info  corrélation au-delà de laquelle une paire test/entraînement est listée pour
+                information (défaut : 0.95 ; n'arrête rien)
 Sorties (uniquement dans --sortie, jamais dans le dépôt) :
   rapport_qc_etape3.csv ; Dataset101_MMWHS/{imagesTr, labelsTr, imagesTs, labelsTs, dataset.json}
 Codes de sortie :
@@ -92,6 +98,7 @@ p.add_argument("--split", default=os.path.join(depot, "splits", "mmwhs_split.jso
 p.add_argument("--id-dataset", type=int, default=101)
 p.add_argument("--ecraser", action="store_true")
 p.add_argument("--seuil-quasi-doublon", type=float, default=0.98)
+p.add_argument("--seuil-info", type=float, default=0.95)
 a = p.parse_args()
 
 sortie = os.path.abspath(a.sortie)
@@ -109,20 +116,22 @@ with open(a.split, encoding="utf-8") as f:          # lecture seule du découpag
 cas_tr, cas_ts = split["entrainement_validation_croisee"], split["test_sous_cle"]
 
 # Cohérence du découpage : un cas présent dans les deux lots fuirait du test vers l'entraînement.
-# Depuis D20, le découpage est fait par patient : le test compte « environ 5 » cas (4 à 6), 20 au total.
+# Depuis D20, le découpage est fait par patient : 5 cas en test (script 03b), tolérance 4 à 6 ; 20 au total.
 communs = set(cas_tr) & set(cas_ts)
 if communs or len(set(cas_tr)) + len(set(cas_ts)) != 20 or not 4 <= len(set(cas_ts)) <= 6 \
         or len(cas_tr) != len(set(cas_tr)) or len(cas_ts) != len(set(cas_ts)):
     sys.exit(f"ARRÊT : découpage incohérent (cas dans les deux lots : {sorted(communs)}, "
              f"entraînement = {len(cas_tr)} cas, test = {len(cas_ts)} cas ; attendu 20 cas au total, "
              f"4 à 6 en test, sans répétition).")
-# Un même patient (groupe de cas, décision D20) ne doit jamais être réparti entre test et entraînement.
+# Un patient à plusieurs examens (groupe de cas) ne doit jamais être en test (D20 : test = patients à un seul examen).
 for groupe in split.get("groupes_patients", []):
     inconnus = set(groupe) - set(cas_tr) - set(cas_ts)
     if inconnus:   # ex. faute de frappe dans un nom de cas : le contrôle ci-dessous serait sans effet
         sys.exit(f"ARRÊT : groupes_patients cite des cas absents du découpage : {sorted(inconnus)}.")
-    if set(groupe) & set(cas_ts) and set(groupe) & set(cas_tr):
-        sys.exit(f"ARRÊT : le patient {groupe} est réparti entre test et entraînement (décision D20).")
+    if set(groupe) & set(cas_ts):
+        # Règle D20 : le test ne contient que des patients à un seul examen (chaque patient compte une
+        # fois dans le verdict). Un patient à plusieurs examens va donc, entier, en entraînement.
+        sys.exit(f"ARRÊT : le patient {groupe} a plusieurs examens et ne doit pas être en test (décision D20).")
 
 def trouver(nom, suffixe):
     """Recherche récursive dans --donnees. Renvoie la LISTE triée des fichiers trouvés :
@@ -199,6 +208,7 @@ for c in cas_tr + cas_ts:
 
 # --- 2. Doublons : chaque cas de test contre chaque cas d'entraînement ------------------------
 par_cas = {l["cas"]: l for l in lignes}
+paires_info = []   # toutes les paires test/entraînement au-dessus de --seuil-info (pour information)
 for t in cas_ts:
     if t not in minis:
         continue
@@ -211,6 +221,8 @@ for t in cas_ts:
         if par_cas[t]["hash_masque"] == par_cas[e]["hash_masque"]:
             bloquants.append(f"DOUBLON EXACT (masque) : {t} (test) = {e} (entraînement)")
         r = float(np.corrcoef(minis[t], minis[e])[0, 1])   # corrélation de Pearson
+        if r > a.seuil_info:
+            paires_info.append((r, t, e))
         if r > a.seuil_quasi_doublon:   # signal à vérifier à l'œil (ouvrir les deux scanners), pas un arrêt
             avertissements.append(f"QUASI-DOUBLON possible : {t} (test) ~ {e} (entraînement), "
                                   f"corrélation {r:.4f} > {a.seuil_quasi_doublon}")
@@ -234,6 +246,15 @@ for t in cas_ts:
     if "plus_proche_entr" in par_cas.get(t, {}):
         print(f"  {t} : cas d'entraînement le plus ressemblant = {par_cas[t]['plus_proche_entr']}"
               f" (corrélation {par_cas[t]['correlation']})")
+
+# Filet de sécurité contre les patients communs que la géométrie ne voit pas (ex. recadrage différent).
+# Rappel : 0,95-0,97 est courant entre deux thorax différents cadrés pareil ; c'est une liste à
+# regarder, pas une preuve. Les paires 1005/1012 et 1020/1001 (D20) étaient à 0,962 et 0,974.
+print(f"\nToutes les paires test/entraînement de corrélation > {a.seuil_info} (pour information, triées) :")
+if not paires_info:
+    print("  aucune")
+for r, t, e in sorted(paires_info, reverse=True):
+    print(f"  {t} (test) ~ {e} (entraînement) : {r:.4f}")
 
 os.makedirs(sortie, exist_ok=True)
 chemin_csv = os.path.join(sortie, "rapport_qc_etape3.csv")

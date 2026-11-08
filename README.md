@@ -20,7 +20,7 @@ Boucle à chaque étape : l'agent écrit le script ici → le dépôt est mis à
 | 0. Cadrage | But, périmètre, décisions | Projet Claude.ai | ✅ |
 | 1. Installer les lieux | Ce dépôt, agents, Colab relié à Drive | GitHub, Claude Code, Colab | ✅ |
 | 2. Données | Télécharger MM-WHS dans Drive, vérifier ; découpage figé (`splits/mmwhs_split.json`) | Colab, `scripts/02_verifier_donnees.py` | ✅ 20 cas conformes |
-| 3. Préparation | Contrôle qualité détaillé, conversion au format nnU-Net | MONAI, `scripts/03_preparer.py` | 🟡 20 cas convertis, puis 2 paires « même patient probable » trouvées (1005/1012, 1020/1001) → découpage par patient à refaire (D20, `scripts/03b_regrouper_patients.py`), puis reconversion |
+| 3. Préparation | Contrôle qualité détaillé, conversion au format nnU-Net | MONAI, `scripts/03_preparer.py` | 🟡 20 cas convertis, puis 2 paires « même patient probable » trouvées (1005/1012, 1020/1001) → découpage par patient à refaire (D20, `scripts/03b_regrouper_patients.py` : test = 5 patients à un seul examen), puis reconversion |
 | 4. Ligne de base | TotalSegmentator sur les 5 cas de test | TotalSegmentator, agent ml-engineer | ⬜ |
 | 5. Entraînement | nnU-Net v2 puis Auto3DSeg sur les 15 cas | nnU-Net, MONAI Auto3DSeg, MLflow | ⬜ |
 | 6. Évaluation | Dice, HD95, volumes sur les 5 cas de test | MONAI (métriques), agent qa-reviewer | ⬜ |
@@ -29,7 +29,9 @@ Boucle à chaque étape : l'agent écrit le script ici → le dépôt est mis à
 ### Vérifications à faire au début de l'étape 5
 - **Géométrie image / masque vue par nnU-Net** (relecture QA de l'étape 3, point A3). Le script 03 compare les affines avec MONAI et nibabel, mais nnU-Net lit les fichiers avec SimpleITK. Or l'image est copiée telle quelle, alors que le masque est réenregistré : son en-tête d'origine est recopié, seul le type de données change (uint8). Avant tout entraînement, définir les variables d'environnement `nnUNet_raw`, `nnUNet_preprocessed` et `nnUNet_results` vers des dossiers de Drive, puis lancer `nnUNetv2_plan_and_preprocess -d 101 --verify_dataset_integrity`. Cette commande vérifie, cas par cas, que l'image et son masque ont le même espacement, la même origine, la même orientation et la même taille.
 - **Listes de données** : elles sont construites uniquement depuis `imagesTr` et `labelsTr`, jamais depuis `labelsTs` (décision D18).
-- **Validation croisée par patient (D20)** : par défaut, nnU-Net répartit les cas d'entraînement entre ses 5 plis au hasard, cas par cas. Deux cas d'un même patient pourraient alors tomber dans des plis différents. Il faudra lui fournir un fichier `splits_final.json` qui garde chaque groupe de `groupes_patients` dans le même pli.
+- **Validation croisée par patient (D20)** : les deux paires `{1001, 1020}` et `{1005, 1012}` (clé `groupes_patients` du découpage) sont en entraînement. Chaque paire doit rester dans la même part de validation croisée (part = *fold* : sous-ensemble mis de côté à tour de rôle pour valider), sinon le modèle serait validé sur un patient qu'il a vu à l'entraînement :
+  - **nnU-Net** répartit par défaut les cas au hasard, cas par cas, entre ses 5 parts. Il faut lui fournir un fichier `splits_final.json` construit par patient ;
+  - **Auto3DSeg** (MONAI) a le même comportement : il faut fixer les parts (champ `fold` de la liste de données) par patient.
 
 Phase 2 (plus tard) : jeu ImageCAS annoté (plus de cas), scanners d'autres hôpitaux, cœurs pathologiques, scanners sans contraste.
 

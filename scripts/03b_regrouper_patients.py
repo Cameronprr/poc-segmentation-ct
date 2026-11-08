@@ -13,8 +13,9 @@ Ce que fait le script :
      Un cas dont l'origine n'est pas fiable (sform_code = qform_code = 0) n'est JAMAIS regroupé ;
   3. affiche pour information les « paires proches » (même plan de coupe, même position x, y, mais
      nombre de coupes ou hauteur différents) : possibles patients communs NON regroupés, à examiner ;
-  4. propose un nouveau découpage où un groupe n'est jamais coupé en deux : les groupes sont mélangés
-     avec une graine fixe, puis le lot de test est rempli jusqu'à 5 cas sans jamais dépasser 5 ;
+  4. propose un nouveau découpage : le lot de test ne contient QUE des patients à un seul examen
+     (groupe d'un seul cas, origine fiable), tirés au sort avec une graine fixe : 5 cas = 5 patients
+     indépendants. Les groupes de plusieurs cas (même patient) vont tous en entraînement, entiers ;
   5. affiche la proposition, les cas qui changent de lot, et l'écrit en JSON dans --sortie (Drive).
   Le découpage figé (splits/mmwhs_split.json) est seulement LU, jamais modifié : c'est l'utilisateur
   qui recopiera la proposition dans le dépôt après validation.
@@ -26,14 +27,14 @@ Entrées :
   --donnees            dossier où MM-WHS a été téléchargé (dans Google Drive), cherché récursivement
   --sortie             dossier de Google Drive où écrire la proposition (jamais dans le dépôt)
   --split              découpage actuel (défaut : ../splits/mmwhs_split.json à côté du script)
-  --graine             graine du mélange des groupes (défaut : 42, comme le découpage d'origine)
+  --graine             graine du tirage des 5 patients de test (défaut : 42, comme le découpage d'origine)
   --tolerance-origine  écart maximal entre deux affines (donc entre deux origines), en mm (défaut : 0.01)
 Sortie (uniquement dans --sortie) :
   mmwhs_split_par_patient_PROPOSITION.json : même format que splits/mmwhs_split.json, plus les clés
   "groupes_patients" (groupes d'au moins 2 cas) et "methode" (comment la proposition a été faite).
 Codes de sortie : 0 = proposition écrite (lire les avertissements en fin de sortie) ;
   1 = arrêt (fichier manquant ou ambigu, découpage incohérent, --sortie dans le dépôt, ou moins de
-  4 cas possibles en test sans couper de groupe) : rien n'a été écrit.
+  5 patients à un seul examen (origine fiable) disponibles pour le test) : rien n'a été écrit.
 
 Vocabulaire :
   - en-tête (header) : le début du fichier NIfTI, qui décrit le volume (taille, espacement, position)
@@ -53,7 +54,10 @@ Vocabulaire :
     produire plusieurs volumes du même patient, un par phase ;
   - fuite de patient : le même patient dans deux lots. Le modèle aurait « vu » ce patient pendant
     l'entraînement : son score sur le test serait trop optimiste ;
-  - graine : nombre qui fixe le tirage au sort. Même graine = même mélange à chaque exécution.
+  - graine : nombre qui fixe le tirage au sort. Même graine = même mélange à chaque exécution ;
+  - patients indépendants : dans le test, chaque patient ne doit compter qu'une fois. Deux examens du
+    même patient en test feraient compter ce patient double dans le verdict (et ne seraient pas deux
+    preuves indépendantes) : c'est pourquoi le test ne prend que des patients à un seul examen.
 """
 import argparse, glob, json, os, random, sys
 import nibabel as nib
@@ -61,8 +65,7 @@ import numpy as np
 
 TOLERANCE_ESPACEMENT = 1e-3   # mm : deux espacements plus proches que cela sont considérés égaux
 TOLERANCE_PAIRE_PROCHE = 1.0  # mm : écart maximal en x et y pour signaler une « paire proche »
-TAILLE_TEST = 5               # nombre de cas visé dans le lot de test (comme le découpage d'origine)
-TAILLE_TEST_MIN = 4           # en dessous, on s'arrête (03_preparer.py exige 4 à 6 cas en test)
+TAILLE_TEST = 5               # nombre de patients (= de cas) dans le lot de test, comme le découpage d'origine
 NOM_FICHIER = "mmwhs_split_par_patient_PROPOSITION.json"
 
 # --- Arguments --------------------------------------------------------------------------------
@@ -176,40 +179,27 @@ for x, y in paires_proches:
     print(f"  {x} {entetes[x]['forme']} z={entetes[x]['origine'][2]:.2f} mm  ~  "
           f"{y} {entetes[y]['forme']} z={entetes[y]['origine'][2]:.2f} mm")
 
-# --- 4. Nouveau découpage par groupe ----------------------------------------------------------
-melange = list(groupes)
-random.Random(a.graine).shuffle(melange)   # mélange reproductible des groupes
-
-def sommes_possibles(tailles):
-    """Toutes les tailles de lot de test (≤ TAILLE_TEST) atteignables avec ces groupes entiers."""
-    possibles = {0}
-    for t in tailles:
-        possibles |= {s + t for s in possibles if s + t <= TAILLE_TEST}
-    return possibles
-
-# Cible = 5 si c'est possible sans couper de groupe, sinon le plus proche en dessous.
-cible = max(sommes_possibles([len(g) for g in melange]))
-if cible < TAILLE_TEST_MIN:
-    print(f"\nARRÊT : au mieux {cible} cas en test sans couper un groupe (minimum {TAILLE_TEST_MIN}, "
-          "comme dans 03_preparer.py). Rien n'a été écrit : les groupes sont à revoir ensemble.")
+# --- 4. Nouveau découpage par patient ---------------------------------------------------------
+# Règle D20 : le test ne contient que des patients à UN SEUL examen, pour que chaque patient de test
+# compte une seule fois dans le verdict. Candidats = groupes d'un seul cas dont l'origine est fiable
+# (un cas à origine non fiable pourrait être un patient commun non détecté : il reste en entraînement).
+# Les groupes de plusieurs cas (même patient, plusieurs phases) vont tous, entiers, en entraînement.
+candidats = sorted(g[0] for g in groupes if len(g) == 1 and entetes[g[0]]["fiable"])
+if len(candidats) < TAILLE_TEST:
+    print(f"\nARRÊT : seulement {len(candidats)} patients à un seul examen (origine fiable) pour "
+          f"{TAILLE_TEST} places en test. Rien n'a été écrit : les groupes sont à revoir ensemble.")
     sys.exit(1)
-if cible != TAILLE_TEST:
-    print(f"\nATTENTION : impossible d'avoir exactement {TAILLE_TEST} cas en test sans couper un groupe ; "
-          f"le lot de test aura {cible} cas.")
-# Remplissage glouton : on parcourt les groupes dans l'ordre du mélange et on prend un groupe s'il
-# tient dans la place restante ET si la cible reste atteignable avec les groupes suivants
-# (cette précaution évite de s'arrêter à 4 alors que 5 était possible).
-test, reste = [], cible
-for i, g in enumerate(melange):
-    if len(g) <= reste and (reste - len(g)) in sommes_possibles([len(h) for h in melange[i + 1:]]):
-        test += g
-        reste -= len(g)
+melange = list(candidats)                   # liste triée d'abord : le tirage ne dépend que de la graine
+random.Random(a.graine).shuffle(melange)    # mélange reproductible
+test = melange[:TAILLE_TEST]                # les 5 premiers après mélange
 nouveau_ts = sorted(test)
 nouveau_tr = sorted(c for c in tous if c not in test)
 
-# Vérifications : aucun groupe coupé, aucun cas perdu ou en double.
-assert sorted(nouveau_ts + nouveau_tr) == tous and len(nouveau_ts) == cible
-assert all(len({c in test for c in g}) == 1 for g in groupes)
+# Vérifications : aucun cas perdu ou en double, 5 cas en test, uniquement des patients à un seul
+# examen, et aucun groupe coupé (tous les groupes de plusieurs cas sont entièrement en entraînement).
+assert sorted(nouveau_ts + nouveau_tr) == tous and len(nouveau_ts) == TAILLE_TEST
+assert all(len(groupe_de[c]) == 1 for c in nouveau_ts)
+assert all(c in nouveau_tr for g in groupes if len(g) > 1 for c in g)
 
 # --- 5. Affichage de la proposition et des changements ------------------------------------------
 print(f"\nProposition (graine {a.graine}) :")
@@ -236,16 +226,17 @@ methode = (f"Décision D20 : découpage par patient. Deux cas appartiennent au m
            f"la même forme, le même espacement (tolérance {TOLERANCE_ESPACEMENT} mm) et la même affine "
            f"(tolérance {a.tolerance_origine} mm), d'après l'en-tête NIfTI des scanners, et si leur origine "
            f"est fiable (sform_code ou qform_code non nul) ; regroupement de proche en proche, à confirmer par "
-           f"l'examen visuel. Groupes mélangés avec random.Random({a.graine}), puis lot de test rempli de "
-           f"façon gloutonne jusqu'à {TAILLE_TEST} cas sans couper de groupe "
+           f"l'examen visuel. Test = {TAILLE_TEST} patients à un seul examen (origine fiable), tirés avec "
+           f"random.Random({a.graine}) ; tous les groupes de plusieurs cas sont en entraînement "
            f"(script scripts/03b_regrouper_patients.py).")
 proposition = {
     "jeu": split["jeu"],
     "graine": a.graine,
     "test_sous_cle": nouveau_ts,
     "entrainement_validation_croisee": nouveau_tr,
-    "regle": "Le lot de test n'est utilisé qu'une seule fois, pour le verdict final. Les cas d'un même "
-             "patient restent toujours dans le même lot. Ne jamais modifier ce fichier.",
+    "regle": "Le lot de test n'est utilisé qu'une seule fois, pour le verdict final. Il ne contient que "
+             "des patients à un seul examen ; les cas d'un même patient restent ensemble, en entraînement "
+             "(et dans la même part de validation croisée). Ne jamais modifier ce fichier.",
     "groupes_patients": [list(g) for g in groupes if len(g) >= 2],
     "methode": methode,
 }
@@ -265,6 +256,7 @@ if non_fiables:
     print("\n" + "!" * 100)
     print(f"ATTENTION : ORIGINE NON FIABLE pour {len(non_fiables)} cas (sform_code = qform_code = 0) :")
     print("  " + ", ".join(non_fiables))
-    print("  Leur en-tête ne contient pas de position : ces cas n'ont été regroupés avec AUCUN autre.")
+    print("  Leur en-tête ne contient pas de position : ces cas n'ont été regroupés avec AUCUN autre, et ils")
+    print("  ont été exclus du lot de test par prudence (ils restent en entraînement).")
     print("  Le regroupement de ces cas n'est pas démontré par la géométrie : à décider avec l'examen visuel.")
     print("!" * 100)
