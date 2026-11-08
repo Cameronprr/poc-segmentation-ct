@@ -1,0 +1,7 @@
+monai>=1.3
+nibabel
+numpy
+matplotlib
+totalsegmentator
+nnunetv2
+mlflow

@@ -1,0 +1,15 @@
+# Les données ne vont JAMAIS dans le dépôt (licences, poids)
+data/
+*.nii
+*.nii.gz
+*.dcm
+# Résultats d'entraînement et suivi MLflow
+mlruns/
+resultats/
+nnUNet_raw/
+nnUNet_preprocessed/
+nnUNet_results/
+__pycache__/
+.ipynb_checkpoints/
+# Fiche projet : conservée en local, non publiée
+docs/fiche_projet.pdf
