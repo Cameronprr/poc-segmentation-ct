@@ -21,7 +21,8 @@ Boucle à chaque étape : l'agent écrit le script ici → le dépôt est mis à
 | 1. Installer les lieux | Ce dépôt, agents, Colab relié à Drive | GitHub, Claude Code, Colab | ✅ |
 | 2. Données | Télécharger MM-WHS dans Drive, vérifier ; découpage figé (`splits/mmwhs_split.json`) | Colab, `scripts/02_verifier_donnees.py` | ✅ 20 cas conformes |
 | 3. Préparation | Contrôle qualité détaillé, conversion au format nnU-Net | MONAI, `scripts/03_preparer.py` | ✅ `Dataset101_MMWHS` reconstruit avec le découpage par patient (D20) : CONFORME, 15 cas en entraînement, 5 en test (1004, 1010, 1011, 1013, 1014) ; aucune paire test/entraînement au-dessus de 0,95 (corrélation maximale 0,638) |
-| 4. Ligne de base | TotalSegmentator sur les 5 cas de test | TotalSegmentator, agent ml-engineer | 🟡 `scripts/04_totalsegmentator.py` relu par QA (tâche `heartchambers_highres`, prédictions seulement, D19) ; à exécuter dans Colab (section 10) une fois la clé de licence obtenue |
+| 4. Ligne de base | TotalSegmentator sur les 5 cas de test | TotalSegmentator, agent ml-engineer | ✅ `heartchambers_highres` : 5 cas prédits en 576 s (GPU T4), contrôle CONFORME (même forme et même affine que les scanners, étiquettes 1 à 7) ; aucun score calculé (D19). Correspondance des étiquettes : `docs/correspondance_etiquettes.md` |
+| 4 bis. Définitions | Avant l'étape 6 : TotalSegmentator sur 2 cas d'**entraînement** (1003 à 0,45 mm, 1002 à 0,625 mm), contours superposés à la vérité terrain, sans score, pour fixer les règles de comparaison sans regarder le test | `scripts/04b_comparer_definitions.py`, notebook section 11 | 🟡 relu par QA, à exécuter dans Colab |
 | 5. Entraînement | nnU-Net v2 puis Auto3DSeg sur les 15 cas | nnU-Net, MONAI Auto3DSeg, MLflow | ⬜ |
 | 6. Évaluation | Dice, HD95, volumes sur les 5 cas de test | MONAI (métriques), agent qa-reviewer | ⬜ |
 | 7. Rapport | Comparaison des trois approches, verdict | — | ⬜ |
@@ -41,6 +42,7 @@ Phase 2 (plus tard) : jeu ImageCAS annoté (plus de cas), scanners d'autres hôp
 CLAUDE.md                     Instructions pour Claude Code
 .claude/agents/               Les agents (data-engineer, ml-engineer, qa-reviewer)
 docs/journal_decisions.md     Décisions tracées
+docs/correspondance_etiquettes.md  Étiquettes TotalSegmentator ↔ MM-WHS (avant l'étape 6)
 splits/mmwhs_split.json       Découpage figé entraînement / test
 scripts/                      Scripts du pipeline, numérotés par étape
 notebooks/colab_runner.ipynb  Notebook qui exécute le pipeline dans Colab
