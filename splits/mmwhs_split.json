@@ -2,28 +2,39 @@
   "jeu": "MM-WHS CT (20 cas annotés)",
   "graine": 42,
   "test_sous_cle": [
-    "ct_train_1005",
-    "ct_train_1006",
+    "ct_train_1004",
     "ct_train_1010",
-    "ct_train_1015",
-    "ct_train_1020"
+    "ct_train_1011",
+    "ct_train_1013",
+    "ct_train_1014"
   ],
   "entrainement_validation_croisee": [
     "ct_train_1001",
     "ct_train_1002",
     "ct_train_1003",
-    "ct_train_1004",
+    "ct_train_1005",
+    "ct_train_1006",
     "ct_train_1007",
     "ct_train_1008",
     "ct_train_1009",
-    "ct_train_1011",
     "ct_train_1012",
-    "ct_train_1013",
-    "ct_train_1014",
+    "ct_train_1015",
     "ct_train_1016",
     "ct_train_1017",
     "ct_train_1018",
-    "ct_train_1019"
+    "ct_train_1019",
+    "ct_train_1020"
   ],
-  "regle": "Le lot de test n'est utilisé qu'une seule fois, pour le verdict final. Ne jamais modifier ce fichier."
+  "regle": "Le lot de test n'est utilisé qu'une seule fois, pour le verdict final. Il ne contient que des patients à un seul examen ; les cas d'un même patient restent ensemble, en entraînement (et dans la même part de validation croisée). Ne jamais modifier ce fichier.",
+  "groupes_patients": [
+    [
+      "ct_train_1001",
+      "ct_train_1020"
+    ],
+    [
+      "ct_train_1005",
+      "ct_train_1012"
+    ]
+  ],
+  "methode": "Décision D20 : découpage par patient. Deux cas appartiennent au même patient probable s'ils ont la même forme, le même espacement (tolérance 0.001 mm) et la même affine (tolérance 0.01 mm), d'après l'en-tête NIfTI des scanners, et si leur origine est fiable (sform_code ou qform_code non nul) ; regroupement de proche en proche, à confirmer par l'examen visuel. Test = 5 patients à un seul examen (origine fiable), tirage stratifié par épaisseur de coupe (1 à 0.45 mm, 4 à 0.625 mm) avec random.Random(42) ; tous les groupes de plusieurs cas sont en entraînement (script scripts/03b_regrouper_patients.py)."
 }

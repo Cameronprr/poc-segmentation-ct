@@ -20,7 +20,7 @@ Boucle à chaque étape : l'agent écrit le script ici → le dépôt est mis à
 | 0. Cadrage | But, périmètre, décisions | Projet Claude.ai | ✅ |
 | 1. Installer les lieux | Ce dépôt, agents, Colab relié à Drive | GitHub, Claude Code, Colab | ✅ |
 | 2. Données | Télécharger MM-WHS dans Drive, vérifier ; découpage figé (`splits/mmwhs_split.json`) | Colab, `scripts/02_verifier_donnees.py` | ✅ 20 cas conformes |
-| 3. Préparation | Contrôle qualité détaillé, conversion au format nnU-Net | MONAI, `scripts/03_preparer.py` | 🟡 20 cas convertis, puis 2 paires « même patient probable » trouvées (1005/1012, 1020/1001) → découpage par patient à refaire (D20, `scripts/03b_regrouper_patients.py` : test = 5 patients à un seul examen, tirage stratifié par épaisseur de coupe : 1 à 0,45 mm, 4 à 0,625 mm), puis reconversion |
+| 3. Préparation | Contrôle qualité détaillé, conversion au format nnU-Net | MONAI, `scripts/03_preparer.py` | 🟡 20 cas convertis, puis 2 paires « même patient probable » trouvées (1005/1012, 1020/1001) → nouveau découpage par patient validé et figé (D20 : test = 1004, 1010, 1011, 1013, 1014, patients à un seul examen, stratifié par épaisseur de coupe) ; reste à reconstruire `Dataset101_MMWHS` (section 7, variante `--ecraser`) |
 | 4. Ligne de base | TotalSegmentator sur les 5 cas de test | TotalSegmentator, agent ml-engineer | ⬜ |
 | 5. Entraînement | nnU-Net v2 puis Auto3DSeg sur les 15 cas | nnU-Net, MONAI Auto3DSeg, MLflow | ⬜ |
 | 6. Évaluation | Dice, HD95, volumes sur les 5 cas de test | MONAI (métriques), agent qa-reviewer | ⬜ |
