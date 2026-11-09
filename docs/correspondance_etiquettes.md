@@ -18,6 +18,8 @@ Ce document fixe, **avant l'étape 6**, la règle qui relie les étiquettes prod
 | 6 | `aorta` | 820 | `aorte_ascendante` | **non, sur l'étendue** : MM-WHS s'arrête au bord supérieur des oreillettes (« from the aortic valve to the superior level of the atria ») ; TotalSegmentator inclut probablement d'autres segments de l'aorte, par exemple l'aorte descendante |
 | 7 | `pulmonary_artery` | 850 | `artere_pulmonaire` | **à vérifier, sur l'étendue** : MM-WHS ne garde que le tronc, de la valve à la bifurcation ; TotalSegmentator inclut peut-être le début des branches |
 
+*Hypothèses formulées avant l'étape 4 bis ; les constats de la dernière section font foi.*
+
 **Règle :** l'étiquette *k* de TotalSegmentator correspond à notre étiquette *k*, pour *k* = 1 à 7. Aucune renumérotation n'est nécessaire. Les numéros coïncident, mais les définitions peuvent différer : la dernière colonne le signale.
 
 Sources des définitions MM-WHS : https://zmiclab.github.io/zxh/0/mmwhs/data.html. TotalSegmentator ne publie pas de définition précise de ses classes ; les écarts marqués « à vérifier » sont des hypothèses.
@@ -30,3 +32,17 @@ Les règles de comparaison de l'étape 6 seront fixées d'après ce que montre c
 - rapporter à part les structures définies différemment ;
 - limiter la comparaison à une zone fixée d'avance ;
 - comparer seulement les 4 cavités et le myocarde.
+
+## Constats de l'étape 4 bis (cas d'entraînement 1003 et 1002)
+
+| Étiquette | Constat |
+|---|---|
+| 1 `myocarde_VG` | même définition (volumes à moins de 7 %, niveaux à 2 mm). Le myocarde MM-WHS est en plusieurs morceaux (10 sur 1003) : îlots d'annotation |
+| 2 `oreillette_gauche` | même définition (volumes à moins de 7 %, niveaux à 2 mm) |
+| 3 `cavite_VG` | même définition (volumes à moins de 7 %, niveaux à 2 mm) |
+| 4 `oreillette_droite` | comparable, écarts variables (1002 : +46 %), frontières moins nettes |
+| 5 `ventricule_droit` | comparable, écarts variables (1002 : −18 %), frontières moins nettes |
+| 6 `aorte_ascendante` | **définition différente** : TotalSegmentator inclut l'aorte descendante (volume doublé, 66 à 72 mm plus bas) |
+| 7 `artere_pulmonaire` | **définition différente** : TotalSegmentator inclut une partie des branches (+8 % et +29 %) |
+
+Règles de comparaison qui en découlent pour l'étape 6 : décision D23 du journal.
