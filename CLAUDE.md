@@ -9,6 +9,8 @@ Projet personnel d'un product manager medtech qui débute en développement IA. 
 - Chaque script accepte donc les chemins en paramètres (`--donnees`, `--sortie`) et fonctionne dans Colab.
 
 ## Règles
+Réponds toujours en français, avec des explications accessibles à un débutant.
+
 1. Une étape de la feuille de route (README) à la fois. Ne pas anticiper les étapes suivantes.
 2. Scripts dans `scripts/`, numérotés par étape (`03_preparer.py`, `04_totalsegmentator.py`...), courts, commentés en français, avec un bloc d'explication en tête : ce que fait le script, entrées, sorties.
 3. Utiliser les briques existantes plutôt que réécrire : MONAI (chargement, transformations, métriques Dice/HD95), nnU-Net v2, TotalSegmentator.
