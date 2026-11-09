@@ -98,41 +98,98 @@ CHAMPS_EPOQUE = {"duree_epoque_s": r"Epoch time: (\S+) s", "train_loss": r"train
 
 def lire_journal(texte):
     """Extrait d'un journal nnU-Net : les époques (CHAMPS_EPOQUE + Dice pseudo), les messages sur les plis
-    et quelques repères de temps. Renvoie un dictionnaire."""
+    et quelques repères de temps. Renvoie un dictionnaire.
+    Le journal peut être lu PENDANT que nnU-Net l'écrit : une dernière ligne sans fin de ligne est ignorée
+    (elle est peut-être incomplète), et une ligne illisible est sautée au lieu d'arrêter le script.
+    Repères de sauvegarde, par époque (05c) : nnU-Net écrit « Epoch time », PUIS checkpoint_latest.pth,
+    PUIS « Yayy! New best », PUIS checkpoint_best.pth. Une ligne qui suit prouve que l'écriture précédente
+    est finie : « apres_temps » (une ligne suit « Epoch time »), « meilleur » (ligne « Yayy » présente),
+    « apres_meilleur » (une ligne suit « Yayy »)."""
     r = {"epoques": {}, "splits_utilise": None, "split_cree": False, "split_hasard_80_20": False,
          "pli_demande": None, "nb_train": None, "nb_val": None, "debut": None, "premiere_epoque": None,
          "fin_entrainement": None, "fin": None, "dice_validation_finale": None}
-    ep = None
-    for ligne in texte.splitlines():
+    ep, attente = None, None                      # attente : (époque, repère) à poser à la ligne suivante
+    lignes = texte.splitlines()
+    if lignes and not texte.endswith(("\n", "\r")):
+        lignes = lignes[:-1]                          # dernière ligne en cours d'écriture
+    for ligne in lignes:
         m = RE_LIGNE.match(ligne)
         if not m:
             continue
-        date, msg = datetime.datetime.fromisoformat(m.group(1)), m.group(2).strip()
-        r["debut"], r["fin"] = r["debut"] or date, date
-        if (e := re.fullmatch(r"Epoch (\d+)", msg)):
-            ep = r["epoques"][int(e.group(1))] = {}      # une reprise (--c) réécrit l'époque : on garde la dernière
-            r["premiere_epoque"] = r["premiere_epoque"] or date
-        elif msg.startswith("Using splits from existing split file:"):
-            r["splits_utilise"] = msg.split(":", 1)[1].strip()
-        elif msg.startswith("Creating new 5-fold cross-validation split"):
-            r["split_cree"] = True
-        elif "random (but seeded) 80:20 split" in msg:
-            r["split_hasard_80_20"] = True
-        elif (e := re.match(r"Desired fold for training: (\d+)", msg)):
-            r["pli_demande"] = int(e.group(1))
-        elif (e := re.match(r"This split has (\d+) training and (\d+) validation cases", msg)):
-            r["nb_train"], r["nb_val"] = int(e.group(1)), int(e.group(2))
-        elif msg.startswith("Training done"):
-            r["fin_entrainement"] = date
-        elif (e := re.match(r"Mean Validation Dice:\s*(\S+)", msg)):
-            r["dice_validation_finale"] = float(e.group(1))
-        elif ep is not None and msg.startswith("Pseudo dice"):
-            ep["pseudo_dice"] = _nombres(msg[len("Pseudo dice"):])
-        elif ep is not None:
-            for nom, motif in CHAMPS_EPOQUE.items():
-                if (e := re.match(motif, msg)):
-                    ep[nom] = float(e.group(1))
+        try:
+            date, msg = datetime.datetime.fromisoformat(m.group(1)), m.group(2).strip()
+            ep, attente = _lire_ligne(r, date, msg, ep, attente)
+        except (ValueError, TypeError, IndexError):  # ligne abîmée : ignorée
+            continue
     return r
+
+
+def _lire_ligne(r, date, msg, ep, attente):
+    """Traite une ligne datée du journal (voir lire_journal). Renvoie (époque en cours, repère en attente)."""
+    if attente is not None:
+        attente[0][attente[1]] = True
+        attente = None
+    r["debut"], r["fin"] = r["debut"] or date, date
+    if (e := re.fullmatch(r"Epoch (\d+)", msg)):
+        ep = r["epoques"][int(e.group(1))] = {"debut": date}   # une reprise (--c) réécrit l'époque : on garde la dernière
+        r["premiere_epoque"] = r["premiere_epoque"] or date
+    elif msg.startswith("Using splits from existing split file:"):
+        r["splits_utilise"] = msg.split(":", 1)[1].strip()
+    elif msg.startswith("Creating new 5-fold cross-validation split"):
+        r["split_cree"] = True
+    elif "random (but seeded) 80:20 split" in msg:
+        r["split_hasard_80_20"] = True
+    elif (e := re.match(r"Desired fold for training: (\d+)", msg)):
+        r["pli_demande"] = int(e.group(1))
+    elif (e := re.match(r"This split has (\d+) training and (\d+) validation cases", msg)):
+        r["nb_train"], r["nb_val"] = int(e.group(1)), int(e.group(2))
+    elif msg.startswith("Training done"):
+        r["fin_entrainement"] = date
+    elif (e := re.match(r"Mean Validation Dice:\s*(\S+)", msg)):
+        r["dice_validation_finale"] = float(e.group(1))
+    elif ep is not None and msg.startswith("Pseudo dice"):
+        ep["pseudo_dice"] = _nombres(msg[len("Pseudo dice"):])
+    elif ep is not None and msg.startswith("Yayy! New best"):
+        ep["meilleur"] = True
+        attente = (ep, "apres_meilleur")
+    elif ep is not None:
+        for nom, motif in CHAMPS_EPOQUE.items():
+            if (e := re.match(motif, msg)):
+                ep[nom] = float(e.group(1))
+                if nom == "duree_epoque_s":
+                    attente = (ep, "apres_temps")
+    return ep, attente
+
+
+def journaux_chronologiques(dossier_pli):
+    """Journaux training_log_*.txt du pli, du plus ancien au plus récent. nnU-Net écrit le mois et le jour
+    sans zéro (training_log_2026_11_9_...) : un tri alphabétique placerait le 10 avant le 9. On trie donc
+    sur les nombres du nom."""
+    cle = lambda c: [int(x) for x in re.findall(r"\d+", os.path.basename(c))]
+    return sorted(glob.glob(os.path.join(dossier_pli, "training_log_*.txt")), key=cle)
+
+
+def series_par_epoque(epoques):
+    """Ajoute à chaque époque son Dice pseudo moyen (sans les classes absentes : NaN) et renvoie les séries
+    MLflow : {nom: [(numéro d'époque, valeur), ...]} (CHAMPS_EPOQUE, Dice pseudo moyen et par étiquette 1..7)."""
+    for e in epoques.values():
+        valides = [d for d in e.get("pseudo_dice", []) if d == d]
+        e["pseudo_dice_moyen"] = sum(valides) / len(valides) if valides else float("nan")
+    series = {nom: [(k, e[nom]) for k, e in epoques.items() if nom in e]
+              for nom in list(CHAMPS_EPOQUE) + ["pseudo_dice_moyen"]}
+    for k, e in epoques.items():
+        for i, d in enumerate(e.get("pseudo_dice", []), start=1):
+            series.setdefault(f"pseudo_dice_etiquette_{i}", []).append((k, d))
+    return series
+
+
+def afficher_epoques(epoques, dernieres=None):
+    """Tableau des époques (les « dernieres » seulement, si précisé). À appeler après series_par_epoque."""
+    print("\nÉpoque | durée (s) | train_loss | val_loss | Dice pseudo moyen")
+    for k in sorted(epoques)[-dernieres if dernieres else 0:]:
+        e = {c: epoques[k].get(c, float("nan")) for c in ("duree_epoque_s", "train_loss", "val_loss", "pseudo_dice_moyen")}
+        print(f"{k:>6} | {e['duree_epoque_s']:>9.1f} | {e['train_loss']:>10.4f} | {e['val_loss']:>8.4f} | "
+              f"{e['pseudo_dice_moyen']:.4f}")
 
 
 def bilan_durees(epoques):
@@ -168,10 +225,15 @@ def verifier_usage_splits(journaux, chemins_acceptes, pli, plis):
 
 
 # --- MLflow : base SQLite dans Drive, écrite d'un seul coup ----------------------------------
-def tracer_mlflow(dossier, nom_run, params, tags, series, metriques, artefacts):
+def tracer_mlflow(dossier, nom_run, params, tags, series, metriques, artefacts, id_run=None, remplacer_depuis=None):
     """Enregistre un essai. Une base SQLite ne supporte pas bien les écritures directes dans Drive
     (verrous de fichiers) : on travaille sur une copie locale, puis on la recopie dans Drive en une fois.
-    Les artefacts (fichiers) sont écrits directement dans --mlflow/artefacts. Renvoie l'identifiant du run."""
+    Les artefacts (fichiers) sont écrits directement dans --mlflow/artefacts. Renvoie l'identifiant du run.
+    id_run (05c) : complète ce run s'il existe dans la base, au lieu d'en créer un nouveau. Les paramètres
+    déjà notés ne sont pas réécrits (MLflow les interdit de modification), et une mesure par époque n'est
+    ajoutée que pour les époques pas encore notées : relancer ne crée pas de doublons.
+    remplacer_depuis (05c, cas de secours) : à partir de cette époque, une valeur différente de celles déjà
+    notées est ajoutée quand même (MLflow ne sait pas effacer une valeur : la plus récente fait foi)."""
     os.environ.setdefault("MLFLOW_DISABLE_AGENT_HINT", "1")      # message d'aide de MLflow, inutile ici
     import mlflow
     os.makedirs(dossier, exist_ok=True)
@@ -180,15 +242,30 @@ def tracer_mlflow(dossier, nom_run, params, tags, series, metriques, artefacts):
     if os.path.exists(base_drive):
         shutil.copy2(base_drive, base_locale)
     mlflow.set_tracking_uri("sqlite:///" + base_locale.replace("\\", "/"))
+    client = mlflow.tracking.MlflowClient()
     exp = mlflow.get_experiment_by_name(EXPERIENCE_MLFLOW)
     id_exp = exp.experiment_id if exp else mlflow.create_experiment(
         EXPERIENCE_MLFLOW, artifact_location=Path(dossier, "artefacts").resolve().as_uri())
-    with mlflow.start_run(experiment_id=id_exp, run_name=nom_run) as run:
-        mlflow.log_params({k: str(v)[:500] for k, v in params.items()})
+    if id_run is not None:
+        try:
+            client.get_run(id_run)
+        except Exception:                                # run absent de la base (base perdue ou remplacée)
+            print(f"ATTENTION : run MLflow {id_run} introuvable dans {base_drive} : un nouveau run est créé.")
+            id_run = None
+    options = {"run_id": id_run} if id_run else {"experiment_id": id_exp, "run_name": nom_run}
+    with mlflow.start_run(**options) as run:
+        deja = client.get_run(run.info.run_id).data.params
+        mlflow.log_params({k: str(v)[:500] for k, v in params.items() if k not in deja})
         mlflow.set_tags(tags)
         for nom, valeurs in series.items():              # une valeur par époque (step = numéro d'époque)
+            historique = client.get_metric_history(run.info.run_id, nom) if id_run else []
+            notees = {m.step for m in historique}
+            couples = {(m.step, m.value) for m in historique}
             for etape, v in valeurs:
-                if v == v:                               # ignore NaN (classe absente des patchs de validation)
+                if v != v:                               # ignore NaN (classe absente des patchs de validation)
+                    continue
+                if etape not in notees or (remplacer_depuis is not None and etape >= remplacer_depuis
+                                           and (etape, v) not in couples):
                     mlflow.log_metric(nom, v, step=etape)
         mlflow.log_metrics({k: v for k, v in metriques.items() if v is not None and v == v})
         for f in artefacts:
@@ -228,6 +305,61 @@ def taille_dossier(d):
     return sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(d) for f in fs)
 
 
+# --- Prérequis communs avec 05c (arrêt en code 1 si un contrôle échoue) -----------------------
+def verifier_prerequis_05a(raw, pre, nom_ds, split, pli):
+    """Marqueur de vérification de 05a présent ; splits_final.json = celui de 05a (empreinte de la fiche,
+    et plis recalculés depuis le découpage figé, la graine et les strates relues dans imagesTr).
+    Renvoie (ds_pre, chemin_splits, chemin_trace, trace, plis)."""
+    ds_pre = os.path.join(pre, nom_ds)
+    cas, cas_test, groupes, _ = prep.lire_decoupage(split)
+    message = prep.lire_marqueur(ds_pre, cas)
+    if message:
+        sys.exit(f"ARRÊT : {message} Lancer d'abord le script 05a jusqu'à « PRÊT ».")
+    chemin_splits, chemin_trace = os.path.join(ds_pre, prep.NOM_SPLITS), os.path.join(ds_pre, prep.NOM_TRACE)
+    if not (os.path.exists(chemin_splits) and os.path.exists(chemin_trace)):
+        sys.exit(f"ARRÊT : {chemin_splits} ou sa fiche {prep.NOM_TRACE} manque. Lancer d'abord le script 05a "
+                 "(sinon nnU-Net tirerait ses plis au hasard, cas par cas).")
+    with open(chemin_trace, encoding="utf-8") as f:
+        trace = json.load(f)
+    with open(chemin_splits, encoding="utf-8") as f:
+        plis = json.load(f)
+    # Strates relues dans les en-têtes de imagesTr (pas recopiées de la fiche), puis comparées à la fiche.
+    strates, problemes = prep.lire_strates(os.path.join(raw, nom_ds), cas)
+    if strates != trace.get("strates_mm"):
+        problemes.append(f"strates relues {strates} ≠ strates de la fiche 05a {trace.get('strates_mm')}")
+    if problemes:
+        sys.exit("ARRÊT : épaisseurs de coupe incohérentes :\n  - " + "\n  - ".join(problemes))
+    attendus = prep.construire_plis(cas, groupes, strates, prep.NB_PLIS, trace["graine"])
+    problemes = prep.controler_plis(plis, cas, cas_test, groupes, strates)
+    if prep.sha256_fichier(chemin_splits) != trace["sha256_splits_final"]:
+        problemes.append("empreinte de splits_final.json ≠ celle notée par 05a (fichier modifié depuis)")
+    if [{"train": sorted(p["train"]), "val": sorted(p["val"])} for p in plis] != attendus:
+        problemes.append("splits_final.json ≠ plis recalculés depuis le découpage figé, les strates et la graine de 05a")
+    if problemes:
+        sys.exit("ARRÊT : splits_final.json n'est pas celui de 05a :\n  - " + "\n  - ".join(problemes))
+    print(f"splits_final.json vérifié (écrit par 05a, graine {trace['graine']}). "
+          f"Pli {pli} : validation = {plis[pli]['val']}")
+    return ds_pre, chemin_splits, chemin_trace, trace, plis
+
+
+def copie_locale(ds_pre, local, nom_ds, trace):
+    """Copie les données prétraitées de Drive vers le disque local (seulement les fichiers changés) et
+    vérifie la copie de splits_final.json. Renvoie le chemin de cette copie (celui que lira nnU-Net)."""
+    locale = os.path.abspath(local)
+    besoin, libre = taille_dossier(ds_pre), shutil.disk_usage(os.path.dirname(locale) or "/").free
+    if besoin * 1.1 > libre:
+        sys.exit(f"ARRÊT : pas assez de place sur le disque local ({besoin / 1e9:.1f} Go à copier, "
+                 f"{libre / 1e9:.1f} Go libres). Relancer avec --lire-depuis-drive.")
+    t0 = time.time()
+    n, octets = copier_si_different(ds_pre, os.path.join(locale, nom_ds))
+    print(f"Copie locale : {n} fichiers ({octets / 1e9:.2f} Go) copiés en {time.time() - t0:.0f} s "
+          f"vers {locale} (total {besoin / 1e9:.2f} Go)")
+    chemin = os.path.join(locale, nom_ds, prep.NOM_SPLITS)
+    if prep.sha256_fichier(chemin) != trace["sha256_splits_final"]:
+        sys.exit("ARRÊT : la copie locale de splits_final.json diffère de celle de Drive.")
+    return chemin
+
+
 def lire_arguments():
     p = argparse.ArgumentParser()
     p.add_argument("--raw", default=f"{DRIVE}/nnunet_raw")
@@ -262,35 +394,7 @@ def main():
             sys.exit(f"ARRÊT : {nom} est dans le dépôt. Les données et résultats restent hors du dépôt.")
 
     # --- 1. Vérification du jeu faite par 05a, puis splits_final.json écrit par 05a -----------------
-    ds_pre = os.path.join(pre, nom_ds)
-    cas, cas_test, groupes, _ = prep.lire_decoupage(a.split)
-    message = prep.lire_marqueur(ds_pre, cas)
-    if message:
-        sys.exit(f"ARRÊT : {message} Lancer d'abord le script 05a jusqu'à « PRÊT ».")
-    chemin_splits, chemin_trace = os.path.join(ds_pre, prep.NOM_SPLITS), os.path.join(ds_pre, prep.NOM_TRACE)
-    if not (os.path.exists(chemin_splits) and os.path.exists(chemin_trace)):
-        sys.exit(f"ARRÊT : {chemin_splits} ou sa fiche {prep.NOM_TRACE} manque. Lancer d'abord le script 05a "
-                 "(sinon nnU-Net tirerait ses plis au hasard, cas par cas).")
-    with open(chemin_trace, encoding="utf-8") as f:
-        trace = json.load(f)
-    with open(chemin_splits, encoding="utf-8") as f:
-        plis = json.load(f)
-    # Strates relues dans les en-têtes de imagesTr (pas recopiées de la fiche), puis comparées à la fiche.
-    strates, problemes = prep.lire_strates(os.path.join(raw, nom_ds), cas)
-    if strates != trace.get("strates_mm"):
-        problemes.append(f"strates relues {strates} ≠ strates de la fiche 05a {trace.get('strates_mm')}")
-    if problemes:
-        sys.exit("ARRÊT : épaisseurs de coupe incohérentes :\n  - " + "\n  - ".join(problemes))
-    attendus = prep.construire_plis(cas, groupes, strates, prep.NB_PLIS, trace["graine"])
-    problemes = prep.controler_plis(plis, cas, cas_test, groupes, strates)
-    if prep.sha256_fichier(chemin_splits) != trace["sha256_splits_final"]:
-        problemes.append("empreinte de splits_final.json ≠ celle notée par 05a (fichier modifié depuis)")
-    if [{"train": sorted(p["train"]), "val": sorted(p["val"])} for p in plis] != attendus:
-        problemes.append("splits_final.json ≠ plis recalculés depuis le découpage figé, les strates et la graine de 05a")
-    if problemes:
-        sys.exit("ARRÊT : splits_final.json n'est pas celui de 05a :\n  - " + "\n  - ".join(problemes))
-    print(f"splits_final.json vérifié (écrit par 05a, graine {trace['graine']}). "
-          f"Pli {a.pli} : validation = {plis[a.pli]['val']}")
+    ds_pre, chemin_splits, chemin_trace, trace, plis = verifier_prerequis_05a(raw, pre, nom_ds, a.split, a.pli)
 
     # --- 2. Dossier de l'essai : déjà présent ? ---------------------------------------------------
     dossier_pli = os.path.join(res, nom_ds, f"{a.trainer}__nnUNetPlans__{a.configuration}", f"fold_{a.pli}")
@@ -331,19 +435,8 @@ def main():
 
         # --- 4. Copie locale des données prétraitées ------------------------------------------------
         if not a.lire_depuis_drive:
-            locale = os.path.abspath(a.local)
-            besoin, libre = taille_dossier(ds_pre), shutil.disk_usage(os.path.dirname(locale) or "/").free
-            if besoin * 1.1 > libre:
-                sys.exit(f"ARRÊT : pas assez de place sur le disque local ({besoin / 1e9:.1f} Go à copier, "
-                         f"{libre / 1e9:.1f} Go libres). Relancer avec --lire-depuis-drive.")
-            t0 = time.time()
-            n, octets = copier_si_different(ds_pre, os.path.join(locale, nom_ds))
-            print(f"Copie locale : {n} fichiers ({octets / 1e9:.2f} Go) copiés en {time.time() - t0:.0f} s "
-                  f"vers {locale} (total {besoin / 1e9:.2f} Go)")
-            chemin_splits_vu = os.path.join(locale, nom_ds, prep.NOM_SPLITS)
-            if prep.sha256_fichier(chemin_splits_vu) != trace["sha256_splits_final"]:
-                sys.exit("ARRÊT : la copie locale de splits_final.json diffère de celle de Drive.")
-            env["nnUNet_preprocessed"] = locale
+            chemin_splits_vu = copie_locale(ds_pre, a.local, nom_ds, trace)
+            env["nnUNet_preprocessed"] = os.path.abspath(a.local)
 
         # --- 5. Entraînement --------------------------------------------------------------------------
         if a.ecraser and os.path.isdir(dossier_pli):
@@ -359,7 +452,7 @@ def main():
         print(f"\nnnU-Net terminé (code {code}) en {duree_totale / 60:.1f} min")
 
     # --- 6. Lecture des journaux --------------------------------------------------------------------
-    tous = sorted(glob.glob(os.path.join(dossier_pli, "training_log_*.txt")))
+    tous = journaux_chronologiques(dossier_pli)
     nouveaux = tous if a.tracer_seulement else [j for j in tous if j not in avant]
     lus = {}
     for chemin in tous:
@@ -379,14 +472,8 @@ def main():
 
     # --- 7. Affichage des durées --------------------------------------------------------------------
     durees, moyenne, extrapolation = bilan_durees(epoques)
-    for e in epoques.values():                           # Dice pseudo moyen (sans les classes absentes : NaN)
-        valides = [d for d in e.get("pseudo_dice", []) if d == d]
-        e["pseudo_dice_moyen"] = sum(valides) / len(valides) if valides else float("nan")
-    print("\nÉpoque | durée (s) | train_loss | val_loss | Dice pseudo moyen")
-    for k in sorted(epoques):
-        e = {c: epoques[k].get(c, float("nan")) for c in ("duree_epoque_s", "train_loss", "val_loss", "pseudo_dice_moyen")}
-        print(f"{k:>6} | {e['duree_epoque_s']:>9.1f} | {e['train_loss']:>10.4f} | {e['val_loss']:>8.4f} | "
-              f"{e['pseudo_dice_moyen']:.4f}")
+    series = series_par_epoque(epoques)                # calcule aussi le Dice pseudo moyen de chaque époque
+    afficher_epoques(epoques)
     j = lus[nouveaux[-1]] if nouveaux else {}
     demarrage = (j["premiere_epoque"] - j["debut"]).total_seconds() if j.get("premiere_epoque") else None
     validation_finale = ((j["fin"] - j["fin_entrainement"]).total_seconds()
@@ -422,12 +509,6 @@ def main():
     artefacts = tous + [os.path.join(dossier_pli, f) for f in ("progress.png", "debug.json")] + \
         [os.path.join(dossier_pli, "validation", "summary.json"), chemin_splits, chemin_trace, plans,
          os.path.join(ds_pre, prep.NOM_MARQUEUR)]
-    # Une série MLflow par mesure : (numéro d'époque, valeur). Dice pseudo : moyen, puis étiquettes 1..7.
-    series = {nom: [(k, e[nom]) for k, e in epoques.items() if nom in e]
-              for nom in list(CHAMPS_EPOQUE) + ["pseudo_dice_moyen"]}
-    for k, e in epoques.items():
-        for i, d in enumerate(e.get("pseudo_dice", []), start=1):
-            series.setdefault(f"pseudo_dice_etiquette_{i}", []).append((k, d))
     params = {"pli": a.pli, "trainer": a.trainer, "configuration": a.configuration,
               "nnunetv2": version_paquet("nnunetv2"), "torch": version_paquet("torch"), "gpu": gpu,
               "torch_compile": not a.sans_compile, "nnUNet_def_n_proc": a.processus,
