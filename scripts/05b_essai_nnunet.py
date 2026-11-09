@@ -4,9 +4,10 @@
 Ce que fait le script :
   1. garde-fous : dossiers hors du dépôt, GPU présent, variante d'entraînement (trainer) disponible ;
      marqueur verification_05a.json présent (05a a vérifié image contre masque, avec SimpleITK et
-     nnU-Net, sans aucun écart) ; splits_final.json existe ET est celui écrit par 05a (même empreinte que sa fiche de traçabilité, et
-     même contenu que les plis recalculés depuis le découpage figé). Sinon nnU-Net tirerait ses plis au
-     hasard, cas par cas ;
+     nnU-Net, sans aucun écart) ; splits_final.json existe ET est celui écrit par 05a : même empreinte
+     que sa fiche de traçabilité, et mêmes plis une fois recalculés depuis le découpage figé, la graine et
+     les épaisseurs de coupe relues dans les en-têtes de imagesTr (plis stratifiés, comme en 05a). Sinon
+     nnU-Net tirerait ses plis au hasard, cas par cas ;
   2. (par défaut) copie les données prétraitées de Drive vers le disque local de Colab, beaucoup plus
      rapide à lire pendant l'entraînement. Les résultats et points de reprise restent écrits dans Drive ;
   3. lance `nnUNetv2_train 101 3d_fullres 0 -tr nnUNetTrainer_5epochs` (réglages par défaut de nnU-Net
@@ -274,12 +275,18 @@ def main():
         trace = json.load(f)
     with open(chemin_splits, encoding="utf-8") as f:
         plis = json.load(f)
-    attendus = prep.construire_plis(cas, groupes, prep.NB_PLIS, trace["graine"])
-    problemes = prep.controler_plis(plis, cas, cas_test, groupes)
+    # Strates relues dans les en-têtes de imagesTr (pas recopiées de la fiche), puis comparées à la fiche.
+    strates, problemes = prep.lire_strates(os.path.join(raw, nom_ds), cas)
+    if strates != trace.get("strates_mm"):
+        problemes.append(f"strates relues {strates} ≠ strates de la fiche 05a {trace.get('strates_mm')}")
+    if problemes:
+        sys.exit("ARRÊT : épaisseurs de coupe incohérentes :\n  - " + "\n  - ".join(problemes))
+    attendus = prep.construire_plis(cas, groupes, strates, prep.NB_PLIS, trace["graine"])
+    problemes = prep.controler_plis(plis, cas, cas_test, groupes, strates)
     if prep.sha256_fichier(chemin_splits) != trace["sha256_splits_final"]:
         problemes.append("empreinte de splits_final.json ≠ celle notée par 05a (fichier modifié depuis)")
     if [{"train": sorted(p["train"]), "val": sorted(p["val"])} for p in plis] != attendus:
-        problemes.append("splits_final.json ≠ plis recalculés depuis le découpage figé et la graine de 05a")
+        problemes.append("splits_final.json ≠ plis recalculés depuis le découpage figé, les strates et la graine de 05a")
     if problemes:
         sys.exit("ARRÊT : splits_final.json n'est pas celui de 05a :\n  - " + "\n  - ".join(problemes))
     print(f"splits_final.json vérifié (écrit par 05a, graine {trace['graine']}). "

@@ -7,7 +7,10 @@ Ce que fait le script :
      les 15 cas d'entraînement, et aucun cas de test. Seuls imagesTr et labelsTr sont listés : jamais
      imagesTs ni labelsTs (décision D18) ;
   2. construit 5 plis de validation croisée PAR PATIENT (groupes lus dans « groupes_patients » : 1001/1020
-     et 1005/1012 toujours dans le même pli), avec une graine fixe, et les contrôle (voir controler_plis) ;
+     et 1005/1012 toujours dans le même pli) et STRATIFIÉS par épaisseur de coupe, comme le test (D20) :
+     l'épaisseur est lue dans l'en-tête des images de imagesTr (définition du script 03b) ; les 3 patients
+     à 0,45 mm (1001/1020, 1003, 1016) vont dans 3 plis différents, tirés avec la graine ; puis les patients
+     à 0,625 mm remplissent les plis les moins chargés. Les plis sont ensuite contrôlés (controler_plis) ;
      s'arrête tout de suite si un splits_final.json DIFFÉRENT existe déjà (sauf --ecraser) ;
   3. compare lui-même, avec SimpleITK (la bibliothèque de lecture d'images de nnU-Net), chaque image de
      imagesTr à son masque de labelsTr : taille, espacement, origine, orientation (même tolérance que
@@ -37,11 +40,13 @@ Entrées :
   --ecraser       autorise à remplacer un splits_final.json existant DIFFÉRENT
 Sorties (dans Drive) :
   nnUNet_preprocessed/Dataset101_MMWHS/ : plans, empreinte, données prétraitées 3d_fullres (par nnU-Net),
-      splits_final.json, splits_final_05a.json (traçabilité : graine, groupes, empreinte SHA-256),
+      splits_final.json, splits_final_05a.json (traçabilité : graine, groupes, strate de chaque cas, règle
+      de stratification, empreinte SHA-256),
       verification_05a.json (marqueur : vérification conforme, date, cas vérifiés) ;
   nnUNet_preprocessed/journal_05a_plan_and_preprocess.txt (sortie complète de nnU-Net).
 Codes de sortie :
-  0 = prêt ; 1 = garde-fou (rien n'est lancé ; avec --sauter-pretraitement : marqueur absent ou périmé) ;
+  0 = prêt ; 1 = garde-fou (rien n'est lancé ; épaisseurs de coupe différentes de celles attendues ;
+  avec --sauter-pretraitement : marqueur absent ou périmé) ;
   2 = splits_final.json différent déjà présent (relancer avec --ecraser) ; 3 = nnU-Net a échoué ;
   4 = problème de géométrie, masque vide ou étiquettes signalé par SimpleITK ou par nnU-Net :
   NE PAS ENTRAÎNER, splits_final.json n'est pas écrit.
@@ -58,6 +63,9 @@ Vocabulaire :
   - splits_final.json : le fichier où nnU-Net lit ses plis. S'il manque, nnU-Net en tire un AU HASARD,
     cas par cas, et pourrait séparer les deux examens d'un même patient ;
   - graine : nombre qui fixe le tirage au sort, pour retrouver exactement les mêmes plis à chaque fois ;
+  - stratifier : répartir séparément chaque sous-groupe (« strate ») pour que chaque pli lui ressemble.
+    Ici les strates sont les deux familles d'examens : coupes de 0,45 mm (probablement un autre scanner)
+    et de 0,625 mm. Sans cela, les examens à 0,45 mm pourraient se concentrer dans un ou deux plis ;
   - processus : programmes Python lancés en parallèle par nnU-Net ; chacun charge des volumes entiers
     en mémoire vive (RAM), d'où la limite.
 
@@ -77,6 +85,16 @@ CONFIGURATION = "3d_fullres"
 NOM_SPLITS = "splits_final.json"
 NOM_TRACE = "splits_final_05a.json"
 NOM_MARQUEUR = "verification_05a.json"
+# Stratification des plis par épaisseur de coupe, comme le test (D20, script 03b) : mêmes strates, même
+# tolérance. Cas d'entraînement à 0,45 mm attendus : 1001/1020 (un patient), 1003 et 1016 → 3 patients.
+STRATES_MM = (0.45, 0.625)
+STRATE_MINORITAIRE = 0.45
+TOLERANCE_ESPACEMENT = 1e-3                       # mm, comme TOLERANCE_ESPACEMENT de 03b
+CAS_FINS_ATTENDUS = {"mmwhs_1001", "mmwhs_1003", "mmwhs_1016", "mmwhs_1020"}
+REGLE_STRATIFICATION = ("strate = espacement entre coupes (zooms[2] de l'en-tête de imagesTr, 3e axe S ou I), "
+                        "0,45 ou 0,625 mm à 0,001 mm près (définition du script 03b) ; patients à 0,45 mm "
+                        "répartis d'abord, au plus un par pli, dans des plis tirés avec la graine ; puis patients "
+                        "à 0,625 mm dans les plis les moins remplis ; paires d'abord dans chaque strate")
 DEPOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 DRIVE = "/content/drive/MyDrive/poc_ct"
 # Messages de verify_dataset_integrity (nnunetv2 2.8.1, experiment_planning/verify_dataset_integrity.py).
@@ -115,26 +133,81 @@ def lire_decoupage(chemin):
     return tr, ts, groupes, split.get("graine", 42)
 
 
-def construire_plis(cas, groupes, nb_plis=NB_PLIS, graine=42):
-    """Répartit les cas en nb_plis plis de validation, PAR PATIENT.
-    Un patient = un groupe de groupes_patients, ou un cas seul. Les patients sont mélangés avec la graine,
-    puis rangés du plus grand au plus petit (les paires d'abord : plus faciles à caser), et chacun va dans
-    le pli de validation le moins rempli (à égalité, le premier). Résultat ici : 5 plis de 3 cas.
-    Renvoie la liste nnU-Net : [{"train": [...], "val": [...]}, ...] (listes triées)."""
+def lire_strates(ds_raw, cas):
+    """Strate (épaisseur de coupe, en mm) de chaque cas d'entraînement, même définition que le script 03b :
+    espacement le long du 3e axe (zooms[2] de l'en-tête NIfTI lu par nibabel), valable seulement si ce 3e
+    axe est l'axe des coupes (orientation S ou I), rattaché à 0,45 ou 0,625 mm à TOLERANCE_ESPACEMENT près.
+    Lit UNIQUEMENT l'en-tête des images de imagesTr (copies à l'identique des fichiers d'origine, étape 3).
+    Renvoie (strates, problèmes)."""
+    import nibabel as nib
+    strates, pb = {}, []
+    for c in sorted(cas):
+        img = nib.load(os.path.join(ds_raw, "imagesTr", f"{c}_0000.nii.gz"))   # en-tête seulement
+        orientation, ep = "".join(nib.aff2axcodes(img.affine)), float(img.header.get_zooms()[2])
+        strates[c] = next((s for s in STRATES_MM if abs(ep - s) <= TOLERANCE_ESPACEMENT), None)
+        if orientation[2] not in "SI":
+            pb.append(f"{c} : 3e axe hors de l'axe des coupes (orientation {orientation}) : épaisseur mal lue")
+        if strates[c] is None:
+            pb.append(f"{c} : épaisseur de coupe {ep:.4f} mm hors des strates {STRATES_MM}")
+    fines = {c for c, s in strates.items() if s == STRATE_MINORITAIRE}
+    if not pb and fines != CAS_FINS_ATTENDUS:
+        pb.append(f"cas à {STRATE_MINORITAIRE} mm lus : {sorted(fines)} ; attendus (D20) : {sorted(CAS_FINS_ATTENDUS)}")
+    return strates, pb
+
+
+def patients(cas, groupes, strates):
+    """Liste des patients : (cas du patient, strate). Un patient = un groupe de groupes_patients, ou un cas
+    seul. Lève ValueError si les cas d'un même patient n'ont pas la même épaisseur de coupe."""
     dans_un_groupe = {c for g in groupes for c in g}
-    patients = [sorted(g) for g in groupes] + [[c] for c in sorted(cas) if c not in dans_un_groupe]
-    random.Random(graine).shuffle(patients)
-    patients.sort(key=len, reverse=True)          # tri stable : l'ordre tiré au sort est gardé à taille égale
+    liste = [sorted(g) for g in groupes] + [[c] for c in sorted(cas) if c not in dans_un_groupe]
+    for p in liste:
+        if len({strates.get(c) for c in p}) != 1:
+            raise ValueError(f"le patient {p} a des épaisseurs de coupe différentes : {[strates.get(c) for c in p]}")
+    return [(p, strates[p[0]]) for p in liste]
+
+
+def construire_plis(cas, groupes, strates, nb_plis=NB_PLIS, graine=42):
+    """Répartit les cas en nb_plis plis de validation, PAR PATIENT et STRATIFIÉ par épaisseur de coupe.
+    Un seul générateur aléatoire (la graine), utilisé dans un ordre fixe :
+      1. patients de la strate minoritaire (0,45 mm) : mélangés, paires d'abord, puis chacun dans un pli
+         différent, tiré au sort (au plus un patient à 0,45 mm par pli) ;
+      2. autres patients (0,625 mm) : mélangés, paires d'abord, chacun dans le pli de validation le moins
+         rempli (à égalité, le premier). Résultat ici : 5 plis de 3 cas.
+    Renvoie la liste nnU-Net : [{"train": [...], "val": [...]}, ...] (listes triées)."""
+    tirage = random.Random(graine)
+    tous = patients(cas, groupes, strates)
+    fins = [p for p, s in tous if s == STRATE_MINORITAIRE]
+    autres = [p for p, s in tous if s != STRATE_MINORITAIRE]
+    if len(fins) > nb_plis:
+        raise ValueError(f"{len(fins)} patients à {STRATE_MINORITAIRE} mm pour {nb_plis} plis")
     validation = [[] for _ in range(nb_plis)]
-    for p in patients:
+    for groupe in (fins, autres):
+        tirage.shuffle(groupe)
+        groupe.sort(key=len, reverse=True)        # tri stable : paires d'abord, ordre tiré au sort ensuite
+    for p, k in zip(fins, tirage.sample(range(nb_plis), len(fins))):
+        validation[k] += p
+    for p in autres:
         k = min(range(nb_plis), key=lambda i: (len(validation[i]), i))
         validation[k] += p
     return [{"train": sorted(c for c in cas if c not in v), "val": sorted(v)} for v in validation]
 
 
-def controler_plis(plis, cas, cas_test, groupes, nb_plis=NB_PLIS):
+def controler_plis(plis, cas, cas_test, groupes, strates, nb_plis=NB_PLIS):
     """Contrôles bloquants. Renvoie la liste des problèmes (vide = conforme)."""
     pb, cas = [], set(cas)
+    try:
+        fins = [p for p, s in patients(cas, groupes, strates) if s == STRATE_MINORITAIRE]
+    except (ValueError, KeyError) as err:
+        return [f"strates : {err}"]
+    plis_des_fins = []
+    for i, p in enumerate(plis):
+        n = sum(1 for f in fins if set(f) <= set(p.get("val", [])))
+        plis_des_fins += [i] * n
+        if n > 1:
+            pb.append(f"pli {i} : {n} patients à {STRATE_MINORITAIRE} mm en validation (au plus 1)")
+    if len(set(plis_des_fins)) != len(fins):
+        pb.append(f"les {len(fins)} patients à {STRATE_MINORITAIRE} mm ne sont pas dans {len(fins)} plis différents "
+                  f"(plis : {plis_des_fins})")
     if len(cas) != NB_CAS_ENTRAINEMENT:
         pb.append(f"{len(cas)} cas d'entraînement au lieu de {NB_CAS_ENTRAINEMENT}")
     if len(plis) != nb_plis:
@@ -316,14 +389,21 @@ def main():
         if json.load(f).get("numTraining") != len(cas):
             sys.exit(f"ARRÊT : dataset.json n'annonce pas {len(cas)} cas d'entraînement (numTraining).")
 
-    # --- 2. Plis par patient ----------------------------------------------------------------------
-    plis = construire_plis(cas, groupes, NB_PLIS, graine)
-    problemes = controler_plis(plis, cas, cas_test, groupes)
+    # --- 2. Plis par patient, stratifiés par épaisseur de coupe ------------------------------------
+    strates, problemes = lire_strates(ds_raw, cas)  # en-têtes de imagesTr uniquement
+    if problemes:
+        sys.exit("ARRÊT : épaisseurs de coupe inattendues :\n  - " + "\n  - ".join(problemes))
+    try:
+        plis = construire_plis(cas, groupes, strates, NB_PLIS, graine)
+    except ValueError as err:
+        sys.exit(f"ARRÊT : {err}")
+    problemes = controler_plis(plis, cas, cas_test, groupes, strates)
     if problemes:
         sys.exit("ARRÊT : plis non conformes :\n  - " + "\n  - ".join(problemes))
-    print(f"\nPlis de validation croisée (par patient, graine {graine}) :")
+    print(f"\nPlis de validation croisée (par patient, stratifiés par épaisseur de coupe, graine {graine}) :")
     for i, p in enumerate(plis):
-        print(f"  pli {i} : validation = {p['val']}  ({len(p['train'])} en entraînement)")
+        print(f"  pli {i} : validation = {[f'{c} ({strates[c]} mm)' for c in p['val']]}  "
+              f"({len(p['train'])} en entraînement)")
     print(f"  patients regroupés : {groupes}")
 
     chemin_splits = os.path.join(ds_pre, NOM_SPLITS)
@@ -416,6 +496,7 @@ def main():
     trace = {"script": "scripts/05a_preparer_nnunet.py", "commit": commit_git(),
              "date": datetime.datetime.now().isoformat(timespec="seconds"),
              "graine": graine, "nb_plis": NB_PLIS, "groupes_patients": groupes,
+             "strates_mm": strates, "regle_stratification": REGLE_STRATIFICATION,
              "decoupage_fige": os.path.relpath(a.split, DEPOT) if dans(a.split, DEPOT) else a.split,
              "sha256_decoupage_fige": sha256_fichier(a.split),
              "sha256_splits_final": sha256_fichier(chemin_splits)}
