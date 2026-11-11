@@ -1,6 +1,6 @@
 # Spécification : contrôle de plausibilité des segmentations (décision D28)
 
-*Version 0.1 du 2026-11-11. Projet de spécification à valider par l'utilisateur. Le contrôle lui-même n'est pas encore codé ; seul le script de mesure `05e_densites_vaisseaux.py` existe (pas encore exécuté).*
+*Version 1.0 du 2026-11-11. Questions Q1 à Q9 tranchées par l'utilisateur (section 10, décision D29). Le contrôle lui-même n'est pas encore codé ; seul le script de mesure `05e_densites_vaisseaux.py` existe (pas encore exécuté).*
 *Rédigée sans ouvrir le lot de test. Les seuls chiffres cités viennent du pli 0 (cas d'entraînement 1001, 1019 et 1020) et de D27.*
 
 ---
@@ -18,8 +18,8 @@ Ce document définit le **contrôle de plausibilité**. Il s'exécute après la 
 | Inclus (phase 1) | Exclu (phase 2, en perspective) |
 |---|---|
 | Contrôle **après** la segmentation, à partir de l'image et du masque prédit | Contrôle **avant** la segmentation : en-tête DICOM, estimation de la phase d'injection, scanners sans contraste (section 11) |
-| Masques nnU-Net et Auto3DSeg (définitions MM-WHS, étiquettes 1 à 7) | Masques TotalSegmentator : leur aorte et leur AP sont définies autrement (D23). Voir la question ouverte Q7 |
-| Calibrage sur les 15 cas d'entraînement uniquement | Toute donnée du lot de test avant l'étape 6 |
+| Masques nnU-Net et Auto3DSeg (définitions MM-WHS, étiquettes 1 à 7) | Masques TotalSegmentator : contrôle **restreint** aux structures 1 à 5, plus R0 et R7, aucune règle sur l'aorte ni l'AP (D23, Q7) ; alertes rapportées à part, à titre d'information |
+| Calibrage sur les cas d'entraînement uniquement, 1019 exclu (section 6.4) | Toute donnée du lot de test avant l'étape 6 |
 
 Le contrôle **ne remplace pas** une relecture humaine. Il ne prouve pas qu'un masque est bon. Il repère seulement les masques manifestement invraisemblables.
 
@@ -40,22 +40,22 @@ Pour chaque cas, un **statut** :
 - **OK** : aucune règle bloquante n'est déclenchée ;
 - **ALERTE** : au moins une règle est déclenchée. Les règles et leurs chiffres sont listés.
 
-Format JSON proposé (un fichier par cas, plus un récapitulatif par lot) :
+Format JSON prévu (un fichier par cas, plus un récapitulatif par lot) :
 
 ```json
 {
   "cas": "mmwhs_1019",
   "statut": "ALERTE",
   "modele": "nnUNet 3d_fullres, pli 0",
-  "seuils": {"fichier": "seuils_controle_v1.json", "sha256": "…", "date_gel": "2026-11-…"},
+  "seuils": {"fichier": "config/seuils_plausibilite.json", "sha256": "…", "date_gel": "2026-11-…"},
   "regles_declenchees": [
     {"regle": "R4", "categorie": "erreur_probable",
      "libelle": "densité de l'aorte prédite éloignée de celle de la cavité VG prédite",
      "mesure": {"hu_aorte": 410, "hu_VG": 255, "ecart_hu": 155},
      "seuil": {"ecart_hu_max": 90},
-     "origine_seuil": "vérité terrain, 15 cas d'entraînement, max + marge"}
+     "origine_seuil": "vérité terrain, 14 cas d'entraînement (sans 1019), max + 50 HU"}
   ],
-  "regles_verifiees": ["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9"],
+  "regles_verifiees": ["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"],
   "mesures": {"volumes_ml": {"1": 0.0}, "hu_medianes": {"3": 0.0}, "morceaux": {"6": 0}},
   "masque": "chemin du masque, inchangé",
   "avertissement": "Résultat hors du domaine validé : ne pas utiliser sans relecture."
@@ -68,7 +68,7 @@ Chaque règle porte une **catégorie** :
 - `erreur_probable` : le masque est probablement faux ;
 - `hors_domaine` : le masque peut être juste, mais l'examen ne ressemble pas à ceux qui ont servi à la validation (exemple : AP plus dense que l'aorte).
 
-Les deux catégories donnent le statut ALERTE. La catégorie aide seulement la personne qui relit.
+Les deux catégories donnent le statut ALERTE. Dans le rapport, elles sont présentées **séparément** (Q8) : une alerte `hors_domaine` (R6, R7) est présentée comme une **limite du modèle** (D27), pas comme une erreur de segmentation ; une alerte `erreur_probable` signale un masque suspect.
 
 ## 5. Règles
 
@@ -79,18 +79,18 @@ Une *composante connexe* (ou « morceau ») est un bloc de voxels qui se touchen
 | N° | Règle | Ce qu'elle détecte | Comment la mesurer | D'où vient le seuil | Catégorie |
 |---|---|---|---|---|---|
 | R0 | Cohérence technique | Masque inutilisable : forme ou affine différente de l'image, étiquette hors de 0 à 7 | Comparer forme et affine (tolérance 0,01 mm), lister les valeurs présentes | Fixé, sans calibrage | erreur_probable (bloquante) |
-| R1 | Présence des étiquettes 1 à 7 | Structure oubliée | Volume de chaque étiquette > *V*min,abs (proposé : 1 mL, pour ignorer quelques voxels égarés) | Fixé (1 mL). Toutes les structures sont présentes dans la vérité des 15 cas | erreur_probable |
-| R2 | Volume de chaque structure dans la plage observée | Structure beaucoup trop petite ou trop grande, par exemple l'aorte de 1019 réduite à un fragment | Volume en mL, comparé à [min × (1 − *m*), max × (1 + *m*)] | Vérité des 15 cas d'entraînement (section 6). Marge *m* à choisir (Q2) | erreur_probable |
-| R3 | Rapports de volumes | Même chose que R2, mais sans dépendre de la taille du patient ni de l'espacement des voxels : aorte/cavité VG, AP/aorte, OG/cavité VG, VD/cavité VG, myocarde/cavité VG | Rapport des nombres de voxels, dans une même image | Vérité des 15 cas, min/max élargis | erreur_probable |
-| R4 | Densité de l'aorte proche de celle de la cavité VG | L'« aorte » prédite n'est pas l'aorte. Le sang de l'aorte ascendante est celui qui sort du VG : leurs densités doivent être proches, quelle que soit la phase | \|HU médiane aorte prédite − HU médiane cavité VG prédite\| ≤ *S*4 | Vérité des 15 cas : écart maximal aorte/VG (sorties de `05e_densites_vaisseaux.py`), plus une marge en HU | erreur_probable |
-| R5 | Densité de l'AP proche de celle du VD | Symétrique de R4 pour le circuit droit : le sang de l'AP est celui qui sort du VD | \|HU AP prédite − HU VD prédit\| ≤ *S*5 | Vérité des 15 cas (05e, qui mesure aussi le VD : colonne `AP_moins_VD_ref`) | erreur_probable |
-| R6 | Aorte pas moins dense que l'AP | **Phase d'injection hors domaine** : AP plus dense que l'aorte, comme sur 1019. Cette règle peut se déclencher sur un masque **correct** : elle signale l'examen, pas le masque | HU aorte prédite − HU AP prédite ≥ −*S*6 | Vérité des 15 cas (05e) : écart aorte − AP observé hors 1019. Voir la remarque de la section 6.4 | hors_domaine |
-| R7 | Contraste présent | Scanner sans injection, ou injection ratée : ce cas est hors domaine, même si les contours sont justes | HU médiane cavité VG prédite ≥ *S*7 | Vérité des 15 cas : minimum observé, moins une marge | hors_domaine |
+| R1 | Présence des étiquettes 1 à 7 | Structure oubliée | Volume de chaque étiquette > *V*min,abs = 1 mL, pour ignorer quelques voxels égarés | Fixé (1 mL). Toutes les structures sont présentes dans la vérité des 15 cas | erreur_probable |
+| R2 | Volume de chaque structure dans la plage observée | Structure beaucoup trop petite ou trop grande, par exemple l'aorte de 1019 réduite à un fragment | Volume en mL, comparé à [min × (1 − *m*), max × (1 + *m*)] | Vérité des 14 cas d'entraînement sans 1019 (sections 6 et 6.4). Marge *m* = 30 % (Q2) | erreur_probable |
+| R3 | Rapports de volumes | Même chose que R2, mais sans dépendre de la taille du patient ni de l'espacement des voxels : aorte/cavité VG, AP/aorte, OG/cavité VG, VD/cavité VG, myocarde/cavité VG | Rapport des nombres de voxels, dans une même image | Vérité des 14 cas sans 1019 : [min × (1 − *m*), max × (1 + *m*)], *m* = 30 % (Q2) | erreur_probable |
+| R4 | Densité de l'aorte proche de celle de la cavité VG | L'« aorte » prédite n'est pas l'aorte. Le sang de l'aorte ascendante est celui qui sort du VG : leurs densités doivent être proches, quelle que soit la phase | \|HU médiane aorte prédite − HU médiane cavité VG prédite\| ≤ *S*4 | Vérité des 14 cas sans 1019 : écart maximal aorte/VG (sorties de `05e_densites_vaisseaux.py`), plus 50 HU (Q2) | erreur_probable |
+| R5 | Densité de l'AP proche de celle du VD | Symétrique de R4 pour le circuit droit : le sang de l'AP est celui qui sort du VD | \|HU AP prédite − HU VD prédit\| ≤ *S*5 | Vérité des 14 cas sans 1019 (05e, qui mesure aussi le VD : colonne `AP_moins_VD_ref`), plus 50 HU (Q2) | erreur_probable |
+| R6 | Aorte pas moins dense que l'AP | **Phase d'injection hors domaine** : AP plus dense que l'aorte, comme sur 1019. Cette règle peut se déclencher sur un masque **correct** : elle signale l'examen, pas le masque | HU aorte prédite − HU AP prédite ≥ −*S*6 | Vérité des 14 cas sans 1019 (05e) : écart aorte − AP minimal observé, moins 50 HU (Q2). Voir la remarque de la section 6.4 | hors_domaine |
+| R7 | Contraste présent | Scanner sans injection, ou injection ratée : ce cas est hors domaine, même si les contours sont justes | HU médiane cavité VG prédite ≥ *S*7 | Vérité des 14 cas sans 1019 : minimum observé, moins 50 HU (Q2) | hors_domaine |
 | R8 | Morceaux | Prédiction éclatée : plusieurs morceaux, ou une étiquette posée à deux endroits (un bout d'AP appelé « aorte ») | Pour chaque étiquette : nombre de morceaux > 0,5 mL et part du plus gros morceau dans le volume total | **Prédictions hors-pli** (section 6.2). La vérité ne convient pas : le myocarde MM-WHS y est en plusieurs morceaux (10 sur 1003, D23) | erreur_probable |
-| R9 *(optionnelle)* | Position relative et contacts | Étiquettes permutées ou posées au mauvais endroit : l'aorte ascendante doit toucher la cavité VG, l'AP doit toucher le VD, et l'AP est à gauche de l'aorte, plus en avant | Contact : voxels voisins entre deux étiquettes (oui/non). Position : écart des centres de gravité en mm, dans le repère RAS (axe 1 vers la droite du patient, axe 2 vers l'avant, axe 3 vers la tête) | Vérité des 15 cas : signe de l'écart (règle anatomique), pas de seuil fin | erreur_probable |
+| R9 *(version 2, hors version 1 : Q1)* | Position relative et contacts | Étiquettes permutées ou posées au mauvais endroit : l'aorte ascendante doit toucher la cavité VG, l'AP doit toucher le VD, et l'AP est à gauche de l'aorte, plus en avant | Contact : voxels voisins entre deux étiquettes (oui/non). Position : écart des centres de gravité en mm, dans le repère RAS (axe 1 vers la droite du patient, axe 2 vers l'avant, axe 3 vers la tête) | Vérité des 15 cas : signe de l'écart (règle anatomique), pas de seuil fin | erreur_probable |
 
 Remarques :
-- **R2 contre R3.** Les volumes en mL varient avec la taille du patient et la phase cardiaque. 1001 et 1020 sont probablement le même patient à deux phases cardiaques (D20). Les rapports de R3 varient moins. Je propose de garder les deux.
+- **R2 contre R3.** Les volumes en mL varient avec la taille du patient et la phase cardiaque. 1001 et 1020 sont probablement le même patient à deux phases cardiaques (D20). Les rapports de R3 varient moins. Les deux règles sont gardées (version 1 = R0 à R8, Q1).
 - **Illustration seulement, sans valeur de calibrage.** Rapports tirés des voxels **prédits** du pli 0 (`summary.json`, champ `n_pred`) :
 
   | Cas | aorte / cavité VG | AP / aorte |
@@ -101,31 +101,35 @@ Remarques :
 
   Sur la **vérité** de 1019, le rapport aorte / cavité VG vaut 1,28 (378 433 / 295 457). R2, R3 et R4 auraient donc probablement signalé 1019. Ces chiffres ont servi à concevoir les règles : ils ne peuvent pas les valider (section 6.4).
 - **R6 relève de D28 plus que d'une erreur.** Sur 1019, la vérité respecte R4 (aorte de même densité que le VG, D27) mais pas R6 (aorte moins dense que l'AP). R6 se déclencherait donc même si le modèle avait bien segmenté 1019. C'est voulu : D28 demande de signaler tout examen hors domaine. Il reste un détail de mesure. Quand le modèle se trompe comme sur 1019, l'« aorte » et l'« AP » prédites tombent toutes les deux sur l'AP réelle, et leurs densités sont proches. R6 peut alors ne pas se déclencher, alors que R4 le fait. Les deux règles se complètent.
-- Les seuils *S*4 à *S*7 et la marge *m* restent **vides** tant que 05e n'a pas tourné et que l'utilisateur n'a pas tranché Q2.
+- **Version 1 = R0 à R8** (Q1). R9 est reportée à une version 2 : contacts et positions sont plus délicats à mesurer (voisinage voxel à voxel, orientation) et risquent des fausses alertes, alors que R2, R3 et R4 suffisent à signaler 1019.
+- Marges fixées **avant** de voir les résultats de 05e (Q2) : *m* = 30 % pour les volumes et les rapports, 50 HU pour les densités. Les seuils *S*4 à *S*7 restent vides tant que 05e n'a pas tourné.
 
 ## 6. Méthode de calibrage
 
 ### 6.1 Données autorisées
 
-Seuls les **15 cas d'entraînement** du découpage figé (`splits/mmwhs_split.json`) servent au calibrage. **Aucun cas de test** (1004, 1010, 1011, 1013, 1014) n'est lu, ni pour les seuils, ni pour choisir les règles.
+Seuls les **15 cas d'entraînement** du découpage figé (`splits/mmwhs_split.json`) servent au calibrage ; 1019 est mesuré mais exclu du calcul des seuils (D28, section 6.4). **Aucun cas de test** (1004, 1010, 1011, 1013, 1014) n'est lu, ni pour les seuils, ni pour choisir les règles.
 
 ### 6.2 Vérité terrain ou prédictions hors-pli : lesquelles, et pourquoi
 
-| Source | Avantages | Limites | Usage proposé |
+| Source | Avantages | Limites | Usage retenu (Q9) |
 |---|---|---|---|
-| **Vérité terrain** des 15 cas | Disponible tout de suite (05d, 05e). Elle décrit l'anatomie et les densités **plausibles** | Elle ne contient **aucune erreur typique du modèle** : morceaux égarés, bords baveux. Le myocarde y est fragmenté (îlots d'annotation) | Volumes (R2), rapports (R3), densités (R4 à R7), positions (R9) : ce sont des propriétés de l'anatomie et de l'examen |
+| **Vérité terrain** des 15 cas | Densités (R4 à R7) mesurées par 05e ; volumes et rapports (R2, R3) **restent à mesurer** (05e ne les calcule pas). Elle décrit l'anatomie et les densités **plausibles** | Elle ne contient **aucune erreur typique du modèle** : morceaux égarés, bords baveux. Le myocarde y est fragmenté (îlots d'annotation) | Volumes (R2), rapports (R3), densités (R4 à R7), positions (R9, version 2) : ce sont des propriétés de l'anatomie et de l'examen |
 | **Prédictions hors-pli** (*out-of-fold* : chaque cas est prédit par le pli qui ne l'a pas vu à l'entraînement) | Elles reflètent le comportement réel du modèle, et donc ce qu'est un « masque normal du modèle » | Elles n'existent que pour le pli 0 (3 cas). Il faut les **5 plis** pour en avoir 15. Elles contiennent l'échec de 1019 | Morceaux (R8). Vérification des faux positifs de toutes les règles |
 
-**Proposition :**
-1. **Maintenant** : calibrer R2 à R7 et R9 sur la **vérité** des 15 cas. Ces règles décrivent ce qui est anatomiquement plausible. La vérité est la bonne référence, et elle ne dépend pas du modèle.
+**Calendrier retenu (Q9) :**
+1. **Juste après la section 18 du notebook** : calibrer R2 à R7 sur la **vérité** des cas d'entraînement (1019 exclu des seuils). R4 à R7 viennent de 05e ; R2 et R3 demandent une mesure des volumes des étiquettes 1 à 7, **à prévoir** (05e ne la fait pas). Ces règles décrivent ce qui est anatomiquement plausible. La vérité est la bonne référence, et elle ne dépend pas du modèle.
 2. **Après les 5 plis** : calibrer R8 sur les **prédictions hors-pli**, puis vérifier toutes les règles sur ces 15 prédictions (critère de la section 7).
 3. **Geler** le fichier de seuils, puis le tracer dans le journal (date, empreinte SHA-256). Tout cela **avant** l'étape 6.
 
+**Rangement (Q6) :** `config/seuils_plausibilite.json`, **dans le dépôt**. Il ne contient que des valeurs agrégées (plages, marges, version, date de gel), **aucune valeur par cas** et aucun identifiant de cas (pas de champ « cas du min / cas du max »). Le tableau cas par cas de 05e reste dans Drive. Git date le fichier, ce qui prouve qu'il a été figé avant l'étape 6.
+
 ### 6.3 Marge et statistiques
 
-Avec 15 cas, soit 13 patients, les percentiles ne veulent pas dire grand-chose : le 5e percentile de 13 valeurs est presque le minimum. Je propose donc :
-- **volumes et rapports** : [min × (1 − *m*), max × (1 + *m*)], avec *m* entre 20 et 30 % (Q2) ;
-- **écarts de densité** : maximum observé + une marge fixe en HU (par exemple 50 HU), qui couvre le bruit de mesure ;
+Avec 14 cas de calibrage (sans 1019), soit 12 patients, les percentiles ne veulent pas dire grand-chose : le 5e percentile de 12 valeurs est presque le minimum. Retenu (Q2) :
+- **volumes et rapports** : [min × (1 − *m*), max × (1 + *m*)], avec *m* = 30 % ;
+- **écarts de densité** : maximum observé + 50 HU, qui couvre le bruit de mesure (pour R7 : minimum observé − 50 HU) ;
+- si la validation en laissant un patient de côté produit malgré tout une fausse alerte, la marge est élargie et la modification est consignée dans le journal, **avant** le gel ;
 - **morceaux** : règle simple, par exemple « au plus *N* morceaux de plus de 0,5 mL, et plus gros morceau ≥ *p* % du volume ». *N* et *p* sont lus sur les prédictions hors-pli des cas réussis.
 
 **Paires d'un même patient** (1001/1020, 1005/1012) : elles comptent pour un seul patient. Un min/max n'en souffre pas, mais une moyenne ou un écart-type si. Dans la validation « en laissant un patient de côté » (section 6.4), on retire **les deux cas de la paire** ensemble.
@@ -136,12 +140,12 @@ Avec 15 cas, soit 13 patients, les percentiles ne veulent pas dire grand-chose :
 
 **Le problème.** Les règles ont été **imaginées après avoir vu l'échec de 1019**. Si 1019 sert aussi à fixer les seuils, puis à « prouver » que le contrôle marche, la démonstration tourne en rond. On trouvera toujours un seuil qui sépare un cas connu des autres.
 
-**Méthode honnête proposée :**
+**Méthode retenue (D28) :**
 1. **Calibrer sans 1019.** Les seuils sont tirés des 14 autres cas d'entraînement, soit 12 patients. 1019 sert seulement à la vérification.
 2. **Validation en laissant un patient de côté** (*leave-one-patient-out*). Pour chaque patient, on recalcule les seuils sans lui (sans les deux cas pour une paire), puis on applique le contrôle à ce patient. On mesure ainsi combien de cas réussis seraient signalés à tort par des seuils qui ne les ont pas vus.
 3. **Le dire dans le rapport.** Signaler 1019 est une **vérification de cohérence**, pas une preuve d'efficacité. Avec un seul échec connu, on ne peut pas mesurer la *sensibilité*, c'est-à-dire la part des échecs que le contrôle attrape. Le choix des règles reste lui-même inspiré par 1019. Ce biais ne disparaît pas, il est seulement documenté.
 
-**Cas particulier de R4 et R6 calibrées sur la vérité.** La vérité de 1019 respecte R4 (aorte ≈ VG) : l'inclure ne change presque rien au seuil de R4. En revanche, elle **viole** R6 (aorte moins dense que l'AP). L'inclure dans le calibrage de R6 élargirait la plage jusqu'à accepter la phase de 1019. Il faut donc **exclure 1019 du calibrage de R6**, et le dire : la règle définit le domaine validé comme « les phases semblables aux 14 autres cas ».
+**Cas particulier de R4 et R6 calibrées sur la vérité.** La vérité de 1019 respecte R4 (aorte ≈ VG) : l'inclure ne change presque rien au seuil de R4. En revanche, elle **viole** R6 (aorte moins dense que l'AP). L'inclure dans le calibrage de R6 élargirait la plage jusqu'à accepter la phase de 1019. C'est la raison principale pour laquelle 1019 est **exclu du calibrage de toutes les règles** (D28), R6 comprise, et il faut le dire : la règle définit le domaine validé comme « les phases semblables aux 14 autres cas ».
 
 ## 7. Critère de validation du contrôle
 
@@ -151,7 +155,7 @@ Le contrôle est **validé** si, avec des seuils calibrés comme en section 6 :
 |---|---|---|
 | 1019 → ALERTE | prédiction du pli 0 | maintenant |
 | 1001 et 1020 → OK | prédictions du pli 0 | maintenant |
-| Aucun cas réussi → ALERTE (ou nombre de fausses alertes rapporté et accepté par l'utilisateur, Q3) | prédictions hors-pli des plis 1 à 4 | après les 5 plis |
+| Fausses alertes sur les 14 cas réussis : objectif zéro, au plus une tolérée si elle est expliquée et consignée dans le journal ; au-delà, la règle en cause est revue ou retirée (Q3) | prédictions hors-pli des 5 plis (1001 et 1020 du pli 0, les 12 autres des plis 1 à 4) | après les 5 plis |
 | Aucune fausse alerte en *leave-one-patient-out* sur la vérité des 15 cas, sauf 1019 pour R6 | vérité | maintenant |
 
 Interdits :
@@ -166,7 +170,7 @@ Le test ne contient que 5 cas. S'ils sont tous en phase « normale », il ne dir
 
 - **Jamais de résultat silencieux.** Le statut ALERTE s'affiche **en première ligne** de la sortie du script, **en tête** du rapport du cas, et dans **MLflow** (étiquette `controle_plausibilite = ALERTE`, nombre de règles déclenchées, JSON du contrôle joint comme fichier).
 - **Le masque reste disponible**, inchangé, avec son fichier JSON de contrôle à côté. On ne le renomme pas, pour ne pas casser les outils nnU-Net, mais tout rapport qui l'affiche reprend l'avertissement. Rien n'est supprimé, rien n'est corrigé automatiquement.
-- **Métriques de l'étape 6.** Proposition à faire valider par l'utilisateur (Q5), ce n'est pas à moi de trancher :
+- **Métriques de l'étape 6** (validé par l'utilisateur, Q5) :
   1. métriques principales (D23) calculées sur **tous** les cas du test, alertes comprises ;
   2. **nombre de cas en alerte**, et règles déclenchées, rapportés à côté ;
   3. en complément, métriques **sans** les cas en alerte, clairement libellées, jamais présentées comme le résultat principal.
@@ -179,20 +183,25 @@ Le test ne contient que 5 cas. S'ils sont tous en phase « normale », il ne dir
 - **Un seul échec connu** (1019) : on ne peut pas estimer la sensibilité. Un autre type d'erreur (bord mal placé, structure de bon volume mais décalée) peut passer (faux négatif).
 - **Les règles ont été conçues après avoir vu 1019** : c'est un biais de conception, documenté en section 6.4.
 - **Le contrôle porte sur la vraisemblance, pas sur l'exactitude.** Un masque plausible peut être faux de quelques millimètres. Le contrôle ne remplace ni le Dice sur données annotées, ni la relecture d'un expert.
-- **Mesures dépendantes du masque.** R4 à R7 mesurent les densités dans le masque prédit. Si le modèle se trompe de façon cohérente (deux structures permutées ensemble), certaines règles peuvent rester muettes. C'est la raison d'être de R9.
-- **Hors domaine ≠ faux.** R6 et R7 signalent des examens, pas des erreurs : elles produisent des alertes sur des masques peut-être justes. C'est voulu (D28).
+- **Mesures dépendantes du masque.** R4 à R7 mesurent les densités dans le masque prédit. Si le modèle se trompe de façon cohérente (deux structures permutées ensemble), certaines règles peuvent rester muettes. C'est la raison d'être de R9, prévue en version 2.
+- **Hors domaine ≠ faux.** R6 et R7 signalent des examens, pas des erreurs : elles produisent des alertes sur des masques peut-être justes. C'est voulu (D28). Le rapport les présente comme des limites du modèle (Q8).
+- **Version 1 sans R9** : une permutation cohérente de deux étiquettes peut passer inaperçue si volumes et densités restent plausibles.
 
-## 10. Questions ouvertes (à trancher par l'utilisateur)
+## 10. Décisions de l'utilisateur sur les questions ouvertes (D29)
 
-- **Q1.** Faut-il garder R9 (positions et contacts) dès la version 1, ou commencer avec R0 à R8 ?
-- **Q2.** Quelle marge *m* pour les volumes et les rapports (proposé : 20 à 30 %), et quelle marge en HU pour les densités (proposé : 50 HU) ?
-- **Q3.** Combien de fausses alertes acceptez-vous sur les 14 cas réussis : zéro, ou un petit nombre si le seuil est justifié ?
-- **Q4.** *(Réglée.)* Le script 05e mesure aussi le **VD** (pour R5) et la densité au **cœur** des structures (à plus de 3 mm du bord, fonction `intensites()` de 05d), avec repli sur la région entière si le cœur est vide : colonnes `_ref`. Le contrôle devra mesurer les densités exactement de la même façon.
-- **Q5.** Comment compter les cas en alerte dans les métriques de l'étape 6 (proposition de la section 8) ?
-- **Q6.** Où ranger le fichier de seuils gelé ? Ce sont des chiffres agrégés, sans image ni masque. On peut les mettre dans le dépôt (traçabilité par git) ou dans Drive, avec leur empreinte SHA-256 dans le journal. CLAUDE.md interdit les données dans le dépôt : est-ce qu'un min/max agrégé compte comme une donnée ?
-- **Q7.** Applique-t-on le contrôle aux masques de **TotalSegmentator** à l'étape 6 ? Ses aortes et AP sont définies autrement (D23). Il faudrait au minimum désactiver R2, R3, R8 et R9 pour les étiquettes 6 et 7.
-- **Q8.** Faut-il inscrire R6 (phase hors domaine) dans le rapport comme une **limite du modèle** (D27) plutôt que comme une alerte d'erreur ? La catégorie `hors_domaine` le permet.
-- **Q9.** Calendrier : on calibre maintenant sur la vérité, avant le pli 1, puis on complète R8 après les 5 plis ? Ou on attend les 5 plis pour tout calibrer d'un coup ?
+Tranchées le 2026-11-11 : toutes les recommandations ont été suivies, sans modification.
+
+| Question | Décision |
+|---|---|
+| **Q1.** R9 (positions et contacts) dès la version 1 ? | **Non.** Version 1 = R0 à R8. R9 est reportée à une version 2 : plus délicate à mesurer, risque de fausses alertes, et R2, R3, R4 suffisent pour 1019 |
+| **Q2.** Marges ? | **30 %** pour les volumes et les rapports, **50 HU** pour les densités, fixées avant de voir les résultats de 05e. Élargies seulement si la validation par patient laissé de côté produit une fausse alerte, avec une ligne dans le journal |
+| **Q3.** Fausses alertes acceptées sur les 14 cas réussis ? | **Objectif zéro, au plus une**, expliquée et consignée. Au-delà, la règle en cause est revue ou retirée |
+| **Q4.** Mesure des densités | *(Réglée avant.)* Même fonction `intensites()` que 05d, cœur à plus de 3 mm du bord, repli sur la région entière ; 05e mesure aussi le VD |
+| **Q5.** Cas en alerte dans les métriques de l'étape 6 | Métriques principales sur **tous** les cas, alertes comprises ; nombre d'alertes et règles déclenchées rapportés à côté ; métriques sans les alertes en complément seulement, clairement libellées |
+| **Q6.** Où ranger les seuils figés ? | **Dans le dépôt**, `config/seuils_plausibilite.json` : valeurs agrégées seulement, aucune valeur ni identifiant par cas. Le tableau cas par cas reste dans Drive |
+| **Q7.** Contrôle des masques TotalSegmentator à l'étape 6 ? | **Oui, restreint** aux structures 1 à 5, plus R0 et R7 ; aucune règle sur l'aorte ni l'AP (définitions différentes, D23). Alertes rapportées à part, à titre d'information |
+| **Q8.** R6 comme limite du modèle ? | **Oui.** Les alertes `hors_domaine` (R6, R7) sont présentées comme des limites du modèle (D27), séparément des alertes `erreur_probable` |
+| **Q9.** Calendrier de calibrage | **En deux temps** : R2 à R7 sur la vérité juste après la section 18 (version 1) ; R8 et vérification des fausses alertes sur les prédictions hors-pli après les 5 plis. Tout est figé avant l'étape 6 |
 
 ---
 
