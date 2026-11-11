@@ -1,0 +1,244 @@
+# Spécification : contrôle de plausibilité des segmentations (décision D28)
+
+*Version 0.1 du 2026-11-11. Projet de spécification à valider par l'utilisateur. Le contrôle lui-même n'est pas encore codé ; seul le script de mesure `05e_densites_vaisseaux.py` existe (pas encore exécuté).*
+*Rédigée sans ouvrir le lot de test. Les seuls chiffres cités viennent du pli 0 (cas d'entraînement 1001, 1019 et 1020) et de D27.*
+
+---
+
+## 1. But
+
+Le Dice moyen de 0,850 du pli 0 cachait un échec complet sur l'aorte de `mmwhs_1019` (D26, D27). Le modèle a laissé l'aorte dans le fond et a appelé « aorte » un morceau de l'artère pulmonaire (AP). La cause est une **phase d'injection atypique**. La *phase d'injection* est le moment où les images sont prises après l'injection du produit de contraste. Sur 1019, l'aorte est à 253 HU et l'AP à 416 HU. Sur 1001, c'est l'inverse : aorte 562 HU, AP 192 HU. (HU, unités Hounsfield : l'échelle des densités du scanner, où l'eau vaut 0.)
+
+D28 fixe la règle : **le pipeline ne rend jamais en silence un résultat hors du domaine validé.** Le *domaine validé* est l'ensemble des examens qui ressemblent à ceux sur lesquels le modèle a été vérifié.
+
+Ce document définit le **contrôle de plausibilité**. Il s'exécute après la segmentation et répond à une question : « ce masque ressemble-t-il à un cœur segmenté correctement, sur un examen semblable à ceux qu'on connaît ? » Si la réponse est non, le cas reçoit le statut **ALERTE**. Le contrôle ne corrige rien.
+
+## 2. Périmètre
+
+| Inclus (phase 1) | Exclu (phase 2, en perspective) |
+|---|---|
+| Contrôle **après** la segmentation, à partir de l'image et du masque prédit | Contrôle **avant** la segmentation : en-tête DICOM, estimation de la phase d'injection, scanners sans contraste (section 11) |
+| Masques nnU-Net et Auto3DSeg (définitions MM-WHS, étiquettes 1 à 7) | Masques TotalSegmentator : leur aorte et leur AP sont définies autrement (D23). Voir la question ouverte Q7 |
+| Calibrage sur les 15 cas d'entraînement uniquement | Toute donnée du lot de test avant l'étape 6 |
+
+Le contrôle **ne remplace pas** une relecture humaine. Il ne prouve pas qu'un masque est bon. Il repère seulement les masques manifestement invraisemblables.
+
+## 3. Entrées
+
+| Entrée | Contenu | Utilisation |
+|---|---|---|
+| Image CT (NIfTI) | Intensités en HU | Densités médianes dans chaque structure prédite |
+| Masque prédit (NIfTI) | Étiquettes 0 à 7 (`dataset.json` : 1 myocarde VG, 2 OG, 3 cavité VG, 4 OD, 5 VD, 6 aorte ascendante, 7 AP) | Présence, volumes, morceaux, positions |
+| Géométrie | Forme, espacement des voxels (mm) et affine, lus dans l'en-tête de l'image | Conversion des voxels en mL (volume = nombre de voxels × produit des 3 espacements / 1000) et des positions en mm |
+| Fichier de seuils | Seuils figés, version et date, empreinte SHA-256 | Comparaisons. **Le contrôle refuse de tourner sans fichier de seuils figé** |
+
+Aucune vérité terrain n'est lue : le contrôle doit fonctionner sur un examen nouveau, sans annotation.
+
+## 4. Sorties
+
+Pour chaque cas, un **statut** :
+- **OK** : aucune règle bloquante n'est déclenchée ;
+- **ALERTE** : au moins une règle est déclenchée. Les règles et leurs chiffres sont listés.
+
+Format JSON proposé (un fichier par cas, plus un récapitulatif par lot) :
+
+```json
+{
+  "cas": "mmwhs_1019",
+  "statut": "ALERTE",
+  "modele": "nnUNet 3d_fullres, pli 0",
+  "seuils": {"fichier": "seuils_controle_v1.json", "sha256": "…", "date_gel": "2026-11-…"},
+  "regles_declenchees": [
+    {"regle": "R4", "categorie": "erreur_probable",
+     "libelle": "densité de l'aorte prédite éloignée de celle de la cavité VG prédite",
+     "mesure": {"hu_aorte": 410, "hu_VG": 255, "ecart_hu": 155},
+     "seuil": {"ecart_hu_max": 90},
+     "origine_seuil": "vérité terrain, 15 cas d'entraînement, max + marge"}
+  ],
+  "regles_verifiees": ["R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8", "R9"],
+  "mesures": {"volumes_ml": {"1": 0.0}, "hu_medianes": {"3": 0.0}, "morceaux": {"6": 0}},
+  "masque": "chemin du masque, inchangé",
+  "avertissement": "Résultat hors du domaine validé : ne pas utiliser sans relecture."
+}
+```
+
+*(Les chiffres de l'exemple sont fictifs. Ils montrent seulement la forme du fichier.)*
+
+Chaque règle porte une **catégorie** :
+- `erreur_probable` : le masque est probablement faux ;
+- `hors_domaine` : le masque peut être juste, mais l'examen ne ressemble pas à ceux qui ont servi à la validation (exemple : AP plus dense que l'aorte).
+
+Les deux catégories donnent le statut ALERTE. La catégorie aide seulement la personne qui relit.
+
+## 5. Règles
+
+Notations : « structure *k* » = voxels du masque prédit portant l'étiquette *k*. La *densité médiane* d'une structure est la médiane des HU de l'image dans cette structure. On la mesure sur le **cœur** de la structure, c'est-à-dire les voxels à plus de 3 mm du bord, comme dans le script 05d. On évite ainsi l'*effet de volume partiel* : sur les bords, un voxel mélange le sang et la paroi, ce qui fausse sa densité. Si le cœur est vide (structure trop fine), on prend la médiane sur toute la structure et on le note.
+
+Une *composante connexe* (ou « morceau ») est un bloc de voxels qui se touchent. On utilise la connexité 26, comme les scripts 04b et 05d : deux voxels se touchent s'ils partagent une face, une arête ou un coin.
+
+| N° | Règle | Ce qu'elle détecte | Comment la mesurer | D'où vient le seuil | Catégorie |
+|---|---|---|---|---|---|
+| R0 | Cohérence technique | Masque inutilisable : forme ou affine différente de l'image, étiquette hors de 0 à 7 | Comparer forme et affine (tolérance 0,01 mm), lister les valeurs présentes | Fixé, sans calibrage | erreur_probable (bloquante) |
+| R1 | Présence des étiquettes 1 à 7 | Structure oubliée | Volume de chaque étiquette > *V*min,abs (proposé : 1 mL, pour ignorer quelques voxels égarés) | Fixé (1 mL). Toutes les structures sont présentes dans la vérité des 15 cas | erreur_probable |
+| R2 | Volume de chaque structure dans la plage observée | Structure beaucoup trop petite ou trop grande, par exemple l'aorte de 1019 réduite à un fragment | Volume en mL, comparé à [min × (1 − *m*), max × (1 + *m*)] | Vérité des 15 cas d'entraînement (section 6). Marge *m* à choisir (Q2) | erreur_probable |
+| R3 | Rapports de volumes | Même chose que R2, mais sans dépendre de la taille du patient ni de l'espacement des voxels : aorte/cavité VG, AP/aorte, OG/cavité VG, VD/cavité VG, myocarde/cavité VG | Rapport des nombres de voxels, dans une même image | Vérité des 15 cas, min/max élargis | erreur_probable |
+| R4 | Densité de l'aorte proche de celle de la cavité VG | L'« aorte » prédite n'est pas l'aorte. Le sang de l'aorte ascendante est celui qui sort du VG : leurs densités doivent être proches, quelle que soit la phase | \|HU médiane aorte prédite − HU médiane cavité VG prédite\| ≤ *S*4 | Vérité des 15 cas : écart maximal aorte/VG (sorties de `05e_densites_vaisseaux.py`), plus une marge en HU | erreur_probable |
+| R5 | Densité de l'AP proche de celle du VD | Symétrique de R4 pour le circuit droit : le sang de l'AP est celui qui sort du VD | \|HU AP prédite − HU VD prédit\| ≤ *S*5 | Vérité des 15 cas (05e, qui mesure aussi le VD : colonne `AP_moins_VD_ref`) | erreur_probable |
+| R6 | Aorte pas moins dense que l'AP | **Phase d'injection hors domaine** : AP plus dense que l'aorte, comme sur 1019. Cette règle peut se déclencher sur un masque **correct** : elle signale l'examen, pas le masque | HU aorte prédite − HU AP prédite ≥ −*S*6 | Vérité des 15 cas (05e) : écart aorte − AP observé hors 1019. Voir la remarque de la section 6.4 | hors_domaine |
+| R7 | Contraste présent | Scanner sans injection, ou injection ratée : ce cas est hors domaine, même si les contours sont justes | HU médiane cavité VG prédite ≥ *S*7 | Vérité des 15 cas : minimum observé, moins une marge | hors_domaine |
+| R8 | Morceaux | Prédiction éclatée : plusieurs morceaux, ou une étiquette posée à deux endroits (un bout d'AP appelé « aorte ») | Pour chaque étiquette : nombre de morceaux > 0,5 mL et part du plus gros morceau dans le volume total | **Prédictions hors-pli** (section 6.2). La vérité ne convient pas : le myocarde MM-WHS y est en plusieurs morceaux (10 sur 1003, D23) | erreur_probable |
+| R9 *(optionnelle)* | Position relative et contacts | Étiquettes permutées ou posées au mauvais endroit : l'aorte ascendante doit toucher la cavité VG, l'AP doit toucher le VD, et l'AP est à gauche de l'aorte, plus en avant | Contact : voxels voisins entre deux étiquettes (oui/non). Position : écart des centres de gravité en mm, dans le repère RAS (axe 1 vers la droite du patient, axe 2 vers l'avant, axe 3 vers la tête) | Vérité des 15 cas : signe de l'écart (règle anatomique), pas de seuil fin | erreur_probable |
+
+Remarques :
+- **R2 contre R3.** Les volumes en mL varient avec la taille du patient et la phase cardiaque. 1001 et 1020 sont probablement le même patient à deux phases cardiaques (D20). Les rapports de R3 varient moins. Je propose de garder les deux.
+- **Illustration seulement, sans valeur de calibrage.** Rapports tirés des voxels **prédits** du pli 0 (`summary.json`, champ `n_pred`) :
+
+  | Cas | aorte / cavité VG | AP / aorte |
+  |---|---|---|
+  | 1001 | 2,11 | 1,08 |
+  | 1020 | 1,13 | 1,06 |
+  | 1019 | 0,055 | 8,8 |
+
+  Sur la **vérité** de 1019, le rapport aorte / cavité VG vaut 1,28 (378 433 / 295 457). R2, R3 et R4 auraient donc probablement signalé 1019. Ces chiffres ont servi à concevoir les règles : ils ne peuvent pas les valider (section 6.4).
+- **R6 relève de D28 plus que d'une erreur.** Sur 1019, la vérité respecte R4 (aorte de même densité que le VG, D27) mais pas R6 (aorte moins dense que l'AP). R6 se déclencherait donc même si le modèle avait bien segmenté 1019. C'est voulu : D28 demande de signaler tout examen hors domaine. Il reste un détail de mesure. Quand le modèle se trompe comme sur 1019, l'« aorte » et l'« AP » prédites tombent toutes les deux sur l'AP réelle, et leurs densités sont proches. R6 peut alors ne pas se déclencher, alors que R4 le fait. Les deux règles se complètent.
+- Les seuils *S*4 à *S*7 et la marge *m* restent **vides** tant que 05e n'a pas tourné et que l'utilisateur n'a pas tranché Q2.
+
+## 6. Méthode de calibrage
+
+### 6.1 Données autorisées
+
+Seuls les **15 cas d'entraînement** du découpage figé (`splits/mmwhs_split.json`) servent au calibrage. **Aucun cas de test** (1004, 1010, 1011, 1013, 1014) n'est lu, ni pour les seuils, ni pour choisir les règles.
+
+### 6.2 Vérité terrain ou prédictions hors-pli : lesquelles, et pourquoi
+
+| Source | Avantages | Limites | Usage proposé |
+|---|---|---|---|
+| **Vérité terrain** des 15 cas | Disponible tout de suite (05d, 05e). Elle décrit l'anatomie et les densités **plausibles** | Elle ne contient **aucune erreur typique du modèle** : morceaux égarés, bords baveux. Le myocarde y est fragmenté (îlots d'annotation) | Volumes (R2), rapports (R3), densités (R4 à R7), positions (R9) : ce sont des propriétés de l'anatomie et de l'examen |
+| **Prédictions hors-pli** (*out-of-fold* : chaque cas est prédit par le pli qui ne l'a pas vu à l'entraînement) | Elles reflètent le comportement réel du modèle, et donc ce qu'est un « masque normal du modèle » | Elles n'existent que pour le pli 0 (3 cas). Il faut les **5 plis** pour en avoir 15. Elles contiennent l'échec de 1019 | Morceaux (R8). Vérification des faux positifs de toutes les règles |
+
+**Proposition :**
+1. **Maintenant** : calibrer R2 à R7 et R9 sur la **vérité** des 15 cas. Ces règles décrivent ce qui est anatomiquement plausible. La vérité est la bonne référence, et elle ne dépend pas du modèle.
+2. **Après les 5 plis** : calibrer R8 sur les **prédictions hors-pli**, puis vérifier toutes les règles sur ces 15 prédictions (critère de la section 7).
+3. **Geler** le fichier de seuils, puis le tracer dans le journal (date, empreinte SHA-256). Tout cela **avant** l'étape 6.
+
+### 6.3 Marge et statistiques
+
+Avec 15 cas, soit 13 patients, les percentiles ne veulent pas dire grand-chose : le 5e percentile de 13 valeurs est presque le minimum. Je propose donc :
+- **volumes et rapports** : [min × (1 − *m*), max × (1 + *m*)], avec *m* entre 20 et 30 % (Q2) ;
+- **écarts de densité** : maximum observé + une marge fixe en HU (par exemple 50 HU), qui couvre le bruit de mesure ;
+- **morceaux** : règle simple, par exemple « au plus *N* morceaux de plus de 0,5 mL, et plus gros morceau ≥ *p* % du volume ». *N* et *p* sont lus sur les prédictions hors-pli des cas réussis.
+
+**Paires d'un même patient** (1001/1020, 1005/1012) : elles comptent pour un seul patient. Un min/max n'en souffre pas, mais une moyenne ou un écart-type si. Dans la validation « en laissant un patient de côté » (section 6.4), on retire **les deux cas de la paire** ensemble.
+
+**Familles d'épaisseur de coupe** (0,45 mm : 1001/1020, 1003, 1016 ; 0,625 mm : les autres) : les volumes en mL et les HU sont des grandeurs physiques. Ils ne devraient pas dépendre de l'épaisseur de coupe. On ne calibre **pas** de seuils par famille : 3 patients à 0,45 mm, c'est trop peu. On **vérifie** en revanche qu'aucune règle ne sépare les deux familles, par exemple un bruit plus fort qui décalerait les médianes. Si c'est le cas, on le signale.
+
+### 6.4 Risque de circularité (à lire attentivement)
+
+**Le problème.** Les règles ont été **imaginées après avoir vu l'échec de 1019**. Si 1019 sert aussi à fixer les seuils, puis à « prouver » que le contrôle marche, la démonstration tourne en rond. On trouvera toujours un seuil qui sépare un cas connu des autres.
+
+**Méthode honnête proposée :**
+1. **Calibrer sans 1019.** Les seuils sont tirés des 14 autres cas d'entraînement, soit 12 patients. 1019 sert seulement à la vérification.
+2. **Validation en laissant un patient de côté** (*leave-one-patient-out*). Pour chaque patient, on recalcule les seuils sans lui (sans les deux cas pour une paire), puis on applique le contrôle à ce patient. On mesure ainsi combien de cas réussis seraient signalés à tort par des seuils qui ne les ont pas vus.
+3. **Le dire dans le rapport.** Signaler 1019 est une **vérification de cohérence**, pas une preuve d'efficacité. Avec un seul échec connu, on ne peut pas mesurer la *sensibilité*, c'est-à-dire la part des échecs que le contrôle attrape. Le choix des règles reste lui-même inspiré par 1019. Ce biais ne disparaît pas, il est seulement documenté.
+
+**Cas particulier de R4 et R6 calibrées sur la vérité.** La vérité de 1019 respecte R4 (aorte ≈ VG) : l'inclure ne change presque rien au seuil de R4. En revanche, elle **viole** R6 (aorte moins dense que l'AP). L'inclure dans le calibrage de R6 élargirait la plage jusqu'à accepter la phase de 1019. Il faut donc **exclure 1019 du calibrage de R6**, et le dire : la règle définit le domaine validé comme « les phases semblables aux 14 autres cas ».
+
+## 7. Critère de validation du contrôle
+
+Le contrôle est **validé** si, avec des seuils calibrés comme en section 6 :
+
+| Exigence | Cas | Quand |
+|---|---|---|
+| 1019 → ALERTE | prédiction du pli 0 | maintenant |
+| 1001 et 1020 → OK | prédictions du pli 0 | maintenant |
+| Aucun cas réussi → ALERTE (ou nombre de fausses alertes rapporté et accepté par l'utilisateur, Q3) | prédictions hors-pli des plis 1 à 4 | après les 5 plis |
+| Aucune fausse alerte en *leave-one-patient-out* sur la vérité des 15 cas, sauf 1019 pour R6 | vérité | maintenant |
+
+Interdits :
+- **jamais** de calibrage, de réglage ni d'essai sur le lot de test ;
+- **jamais** de modification des seuils après le gel.
+
+**À l'étape 6**, le contrôle est appliqué aux prédictions du test avec les seuils **figés avant**, sur le modèle de D23 (règles fixées avant tout calcul). Le statut de chaque cas est rapporté, quel qu'il soit. Si un seuil se révèle mauvais sur le test, on le note comme limite. On ne le corrige pas.
+
+Le test ne contient que 5 cas. S'ils sont tous en phase « normale », il ne dira rien de la capacité du contrôle à attraper un échec. Il dira seulement s'il produit de fausses alertes.
+
+## 8. Comportement en cas d'alerte
+
+- **Jamais de résultat silencieux.** Le statut ALERTE s'affiche **en première ligne** de la sortie du script, **en tête** du rapport du cas, et dans **MLflow** (étiquette `controle_plausibilite = ALERTE`, nombre de règles déclenchées, JSON du contrôle joint comme fichier).
+- **Le masque reste disponible**, inchangé, avec son fichier JSON de contrôle à côté. On ne le renomme pas, pour ne pas casser les outils nnU-Net, mais tout rapport qui l'affiche reprend l'avertissement. Rien n'est supprimé, rien n'est corrigé automatiquement.
+- **Métriques de l'étape 6.** Proposition à faire valider par l'utilisateur (Q5), ce n'est pas à moi de trancher :
+  1. métriques principales (D23) calculées sur **tous** les cas du test, alertes comprises ;
+  2. **nombre de cas en alerte**, et règles déclenchées, rapportés à côté ;
+  3. en complément, métriques **sans** les cas en alerte, clairement libellées, jamais présentées comme le résultat principal.
+
+  Exclure les alertes du chiffre principal embellirait le verdict. Les inclure seules masquerait l'intérêt du contrôle. Rapporter les deux, avec le décompte, reste transparent.
+
+## 9. Limites
+
+- **15 cas, dont 13 patients** : les plages observées sont étroites et les seuils fragiles. Un patient normal mais plus grand, ou un cœur pathologique, peut sortir de la plage (fausse alerte).
+- **Un seul échec connu** (1019) : on ne peut pas estimer la sensibilité. Un autre type d'erreur (bord mal placé, structure de bon volume mais décalée) peut passer (faux négatif).
+- **Les règles ont été conçues après avoir vu 1019** : c'est un biais de conception, documenté en section 6.4.
+- **Le contrôle porte sur la vraisemblance, pas sur l'exactitude.** Un masque plausible peut être faux de quelques millimètres. Le contrôle ne remplace ni le Dice sur données annotées, ni la relecture d'un expert.
+- **Mesures dépendantes du masque.** R4 à R7 mesurent les densités dans le masque prédit. Si le modèle se trompe de façon cohérente (deux structures permutées ensemble), certaines règles peuvent rester muettes. C'est la raison d'être de R9.
+- **Hors domaine ≠ faux.** R6 et R7 signalent des examens, pas des erreurs : elles produisent des alertes sur des masques peut-être justes. C'est voulu (D28).
+
+## 10. Questions ouvertes (à trancher par l'utilisateur)
+
+- **Q1.** Faut-il garder R9 (positions et contacts) dès la version 1, ou commencer avec R0 à R8 ?
+- **Q2.** Quelle marge *m* pour les volumes et les rapports (proposé : 20 à 30 %), et quelle marge en HU pour les densités (proposé : 50 HU) ?
+- **Q3.** Combien de fausses alertes acceptez-vous sur les 14 cas réussis : zéro, ou un petit nombre si le seuil est justifié ?
+- **Q4.** *(Réglée.)* Le script 05e mesure aussi le **VD** (pour R5) et la densité au **cœur** des structures (à plus de 3 mm du bord, fonction `intensites()` de 05d), avec repli sur la région entière si le cœur est vide : colonnes `_ref`. Le contrôle devra mesurer les densités exactement de la même façon.
+- **Q5.** Comment compter les cas en alerte dans les métriques de l'étape 6 (proposition de la section 8) ?
+- **Q6.** Où ranger le fichier de seuils gelé ? Ce sont des chiffres agrégés, sans image ni masque. On peut les mettre dans le dépôt (traçabilité par git) ou dans Drive, avec leur empreinte SHA-256 dans le journal. CLAUDE.md interdit les données dans le dépôt : est-ce qu'un min/max agrégé compte comme une donnée ?
+- **Q7.** Applique-t-on le contrôle aux masques de **TotalSegmentator** à l'étape 6 ? Ses aortes et AP sont définies autrement (D23). Il faudrait au minimum désactiver R2, R3, R8 et R9 pour les étiquettes 6 et 7.
+- **Q8.** Faut-il inscrire R6 (phase hors domaine) dans le rapport comme une **limite du modèle** (D27) plutôt que comme une alerte d'erreur ? La catégorie `hors_domaine` le permet.
+- **Q9.** Calendrier : on calibre maintenant sur la vérité, avant le pli 1, puis on complète R8 après les 5 plis ? Ou on attend les 5 plis pour tout calibrer d'un coup ?
+
+---
+
+## 11. Phase 2 : estimation de la phase d'injection (contrôle d'entrée)
+
+*Hors périmètre de la phase 1. Cette section est un état des lieux pour préparer la phase 2.*
+
+### 11.1 Ce que TotalSegmentator propose
+
+**Vérifié** (README du dépôt GitHub `wasserth/TotalSegmentator`, code de `totalseg_get_phase.py`, page `resources/contrast_phase_prediction.md`, consultés le 2026-11-11, branche `master`) :
+
+- **Commande :** `totalseg_get_phase -i ct.nii.gz -o contrast_phase.json`. Elle demande le paquet `xgboost`.
+- **Méthode, en deux temps :**
+  1. TotalSegmentator lance sa tâche principale `total` en mode rapide (`fast=True`, résolution 3 mm). Il segmente 16 structures : foie, pancréas, vessie, vésicule biliaire, cœur, aorte, veine cave inférieure, veine porte et veine splénique, veines et artères iliaques droites et gauches, veines pulmonaires, cerveau, côlon, intestin grêle. Si le cerveau est visible (volume > 100), la tâche `headneck_bones_vessels` ajoute 4 vaisseaux du cou (carotides internes, jugulaires internes). Sinon, ces valeurs sont mises à 0.
+  2. La **densité médiane (HU)** de chaque structure alimente un classifieur *XGBoost* (une méthode d'apprentissage à base d'arbres de décision). Il s'agit d'un ensemble de 5 modèles, fichier `contrast_phase_classifiers_2024_07_19.pkl` livré avec le paquet. Il prédit le **temps écoulé depuis l'injection** (`pi_time`, en secondes), puis le convertit en phase.
+- **Sorties (JSON) :** `pi_time`, `phase`, `probability`, `pi_time_min`, `pi_time_max`, `stddev`. L'écart-type entre les 5 modèles sert d'indice de confiance : faible = les modèles sont d'accord.
+- **Phases reconnues :** `native` (sans contraste, < 10 s), `arterial_early` (10 à 30 s), `arterial_late` (30 à 60 s), `portal_venous` (≥ 60 s). La phase « tardive » (*delayed*) est **désactivée** dans le code, faute de données d'entraînement suffisantes selon le commentaire de l'auteur.
+- **Performances annoncées** (validation croisée en 5 plis, page du dépôt) : erreur absolue moyenne de 5,55 s. Score F1 : 0,980 en natif, 0,915 en artériel (précoce et tardif regroupés), 0,940 en portal. (Le F1 combine la part des cas détectés et la part des détections justes : 1 = parfait.)
+- **Données d'entraînement :** « entraîné sur le jeu TotalSegmentator ». La page ne donne ni le nombre d'examens, ni les régions du corps, ni l'origine des temps de référence.
+- **Licence :** la tâche `total` et la tâche `headneck_bones_vessels` figurent dans la liste « *Openly available for any usage (Apache-2.0 license)* ». Le script `totalseg_get_phase.py` ne contient **aucune vérification de licence**. En revanche, il **envoie des statistiques d'usage** à la fin (`send_usage_stats_application("get_phase")`). Le README indique qu'on les désactive avec `send_usage_stats: false` dans `~/.totalsegmentator/config.json`. Il faut les désactiver comme le prévoit D21.
+
+**Supposé (non vérifié) :**
+- Le jeu TotalSegmentator (1 228 examens CT de routine clinique, hôpital universitaire de Bâle, selon l'article et le README) couvre surtout des scanners **thoraco-abdominaux et du corps entier**. On ne sait pas combien de **scanners cardiaques** (champ de vue serré sur le cœur) il contient. Il y en a probablement peu.
+- Sur un CT cardiaque, la plupart des 16 structures (foie entier, pancréas, vessie, iliaques, côlon, cerveau) sont **absentes ou coupées par le bord du champ**. Les caractéristiques d'entrée du classifieur seraient alors manquantes ou faussées : l'examen serait hors du domaine du classifieur lui-même. Ce comportement n'a pas été testé.
+- La liste des 16 structures ne contient pas l'**artère pulmonaire**. Elle mesure le cœur entier, l'aorte entière (ascendante et descendante) et les veines pulmonaires.
+
+### 11.2 Pertinence pour notre problème
+
+La distinction utile pour nous n'est **pas** « artériel précoce / tardif / portal ». C'est **« sang le plus dense dans l'aorte (circuit systémique, celui du corps) ou dans l'AP (circuit pulmonaire) »**. 1019 est probablement un examen pris trop tôt, quand le produit de contraste est encore dans le cœur droit et l'AP. Les phases de `totalseg_get_phase` ont été définies pour l'abdomen. Une phase « artérielle précoce » n'implique pas forcément « AP plus dense que l'aorte », et l'outil ne mesure pas l'AP.
+
+**Conclusion (avis, à confirmer par un essai) :** `totalseg_get_phase` est **peu pertinent** tel quel pour le contrôle d'entrée d'un CT cardiaque. Il pourrait servir de repère grossier, par exemple pour détecter un examen **natif** (sans contraste), où son score F1 est le meilleur. Mais son comportement sur un champ cardiaque serré est inconnu. Pour la phase 2, une piste plus directe : mesurer soi-même les densités de l'aorte, de l'AP, du VG et du VD dans des régions simples, puis comparer aux plages des cas d'entraînement. C'est la logique des règles R4, R6 et R7, appliquée avant la segmentation.
+
+**Essai possible, sans danger pour le protocole** (à décider en phase 2) : lancer `totalseg_get_phase` sur quelques cas d'**entraînement** (1001, 1019 et d'autres), jamais sur le test avant l'étape 6, pour voir s'il distingue 1019. Ce serait un essai, pas une validation.
+
+### 11.3 Règle du projet et licence
+
+- **Règle 5 de CLAUDE.md :** ne jamais entraîner sur des masques produits par TotalSegmentator. Utiliser une **phase estimée** comme contrôle d'entrée n'est pas entraîner : la règle n'est pas enfreinte, tant qu'aucun masque TotalSegmentator n'entre dans `nnunet_raw` ni dans une liste de données d'entraînement.
+- **Licence :** `total` et `headneck_bones_vessels` sont sous Apache-2.0 d'après le README. Aucune licence académique n'est demandée pour `totalseg_get_phase`, contrairement à `heartchambers_highres` (étape 4, licence requise). Deux points restent **à vérifier** avant usage :
+  1. la licence du fichier de poids XGBoost `contrast_phase_classifiers_2024_07_19.pkl`, que le README ne mentionne pas explicitement ;
+  2. le contenu des statistiques d'usage. Elles sont à désactiver dans tous les cas (D21).
+
+### 11.4 Sources
+
+- README de TotalSegmentator (commandes, liste des tâches Apache-2.0 et sous licence, statistiques d'usage) : https://github.com/wasserth/TotalSegmentator/blob/master/README.md
+- Code de la commande : https://github.com/wasserth/TotalSegmentator/blob/master/totalsegmentator/bin/totalseg_get_phase.py
+- Description de la méthode et performances : https://github.com/wasserth/TotalSegmentator/blob/master/resources/contrast_phase_prediction.md
+- Article TotalSegmentator (jeu d'entraînement) : Wasserthal et al., *Radiology: Artificial Intelligence* 2023, https://pubs.rsna.org/doi/10.1148/ryai.230024
+- Travail indépendant fondé sur les mêmes caractéristiques (autre jeu, 4 phases dont « tardive ») : https://arxiv.org/html/2501.14066v2
+- Application web de l'auteur (page vide lors de la consultation) : https://compute.totalsegmentator.com/contrast-phase/

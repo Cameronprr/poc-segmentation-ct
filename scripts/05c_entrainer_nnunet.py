@@ -22,6 +22,9 @@ Ce que fait le script :
      Une erreur du suivi n'arrête jamais l'entraînement ; si le script s'arrête, il arrête aussi nnU-Net ;
   6. à la fin : contrôle que nnU-Net a utilisé NOS plis, durées, estimation du temps restant et des
      unités de calcul, Dice de validation finale (3 cas du pli, PAS le test), traçage MLflow.
+  Tout ce qui s'affiche (messages du script ET sortie de nnU-Net) est aussi recopié dans un fichier de
+  Drive, sortie_05c_<SESSION>.txt : il reste lisible si la session est coupée. Les heures sont affichées
+  en UTC (l'heure de la machine Colab) ET en heure de Paris.
   Le script ne lance AUCUNE prédiction sur le lot de test (étape 6).
 
 Entrées :
@@ -41,6 +44,9 @@ Sorties (dans Drive) :
       checkpoint_best.pth, checkpoint_final.pth, progress.png, validation/ (par nnU-Net) ;
       mlflow_run_id.txt (identifiant du run MLflow de ce pli, retrouvé à chaque reprise) ;
       entrainement_en_cours.verrou (pendant l'entraînement seulement) ;
+      sortie_05c_<SESSION>.txt : copie de tout l'affichage de la session (un fichier par session ; SESSION =
+      date et heure du lancement, heure de la machine Colab, donc UTC, comme dans le verrou et MLflow).
+      Écrit en ajout toutes les 2 s environ ; une erreur d'écriture n'arrête jamais l'entraînement ;
   --mlflow/mlflow.db et --mlflow/artefacts/ : UN run par pli, complété à chaque session.
 Codes de sortie :
   0 = session terminée normalement (entraînement fini, ou déjà fini) ; 1 = garde-fou (dont : verrou d'une
@@ -57,9 +63,12 @@ Vocabulaire :
     nnU-Net repart quand même de latest, c'est le comportement normal ;
   - session : une connexion à une machine Colab. Elle peut être coupée (durée maximale, inactivité,
     unités épuisées). Relancer la même cellule dans une nouvelle session reprend l'entraînement ;
-  - unité de calcul : la « monnaie » de Colab ; chaque heure de GPU en consomme un nombre fixe.
+  - unité de calcul : la « monnaie » de Colab ; chaque heure de GPU en consomme un nombre fixe ;
+  - UTC : l'heure universelle, celle de la machine Colab. Paris = UTC + 1 h en hiver, UTC + 2 h en été ;
+  - tube (pipe) : canal par lequel le script reçoit la sortie de nnU-Net pour l'afficher ET la recopier.
+    Un fil (thread) séparé le vide en continu : s'il se remplissait, nnU-Net resterait bloqué.
 """
-import argparse, datetime, glob, importlib.util, json, os, shutil, subprocess, sys, time
+import argparse, atexit, datetime, glob, importlib.util, json, os, shutil, subprocess, sys, threading, time
 
 ICI = os.path.dirname(os.path.abspath(__file__))
 _spec = importlib.util.spec_from_file_location("essai05b", os.path.join(ICI, "05b_essai_nnunet.py"))
@@ -78,6 +87,122 @@ VERROU_MINUTES = 15                               # un verrou plus vieux est le 
 PAS_VERROU_S = 5 * 60                             # le verrou est rafraîchi toutes les 5 min
 SESSION = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")   # fixé au lancement : un tag par session
 ORDRE_REPRISE = ("checkpoint_final.pth", "checkpoint_latest.pth", "checkpoint_best.pth")   # ordre de nnU-Net --c
+try:                                              # fuseau de Paris (heure d'été comprise)
+    from zoneinfo import ZoneInfo
+    PARIS, NOM_PARIS = ZoneInfo("Europe/Paris"), "Paris"
+except Exception:                                 # base des fuseaux absente : heure d'hiver supposée
+    PARIS, NOM_PARIS = datetime.timezone(datetime.timedelta(hours=1)), "Paris si UTC+1"
+
+
+# --- Heures et copie de la sortie dans Drive ---------------------------------------------------
+def heure(horodatage=None):
+    """« 10/11 14:52:10 UTC (10/11 15:52:10 Paris) » pour un horodatage time.time() (maintenant si None).
+    Calculé en UTC explicite : ne dépend pas du fuseau réglé sur la machine."""
+    t = datetime.datetime.fromtimestamp(time.time() if horodatage is None else horodatage, datetime.timezone.utc)
+    return f"{t:%d/%m %H:%M:%S} UTC ({t.astimezone(PARIS):%d/%m %H:%M:%S} {NOM_PARIS})"
+
+
+class Journal:
+    """Recopie de l'affichage dans un fichier texte de Drive. print() ne fait qu'ajouter le texte en mémoire
+    (rapide, jamais d'accès au disque) ; un fil séparé l'écrit dans le fichier toutes les PAUSE_S secondes
+    (ouverture en ajout, écriture, fermeture : Drive voit un fichier à jour). Si Drive refuse l'écriture,
+    un seul avertissement, le texte est gardé et réécrit plus tard : rien ne s'arrête. Avant ouvrir(), le
+    texte attend en mémoire (le dossier du pli n'est pas encore connu)."""
+    PAUSE_S, MAX_ATTENTE = 2, 2_000_000           # au plus ~2 Mo gardés en mémoire si Drive est indisponible
+
+    def __init__(self):
+        self.chemin, self.attente, self.taille, self.en_erreur = None, [], 0, False
+        self.verrou = threading.Lock()            # protège la liste d'attente (plusieurs fils écrivent)
+        self.ecriture = threading.Lock()          # une seule écriture du fichier à la fois, dans l'ordre
+        threading.Thread(target=self._boucle, daemon=True).start()
+        atexit.register(self.fermer)
+
+    def ouvrir(self, chemin):
+        self.chemin = chemin
+
+    def ajouter(self, texte):
+        try:
+            with self.verrou:
+                self.attente.append(str(texte))
+                self.taille += len(str(texte))
+        except Exception:
+            pass
+
+    def _boucle(self):
+        while True:
+            time.sleep(self.PAUSE_S)
+            try:                                  # ce fil ne doit jamais s'arrêter sur une erreur imprévue
+                self.vider()
+            except Exception:
+                pass
+
+    def vider(self):
+        with self.ecriture:
+            if self.chemin is None:
+                return
+            with self.verrou:
+                texte, self.attente, self.taille = "".join(self.attente), [], 0
+            if not texte:
+                return
+            try:
+                os.makedirs(os.path.dirname(self.chemin), exist_ok=True)
+                with open(self.chemin, "a", encoding="utf-8", errors="replace") as f:
+                    f.write(texte)
+                if self.en_erreur:
+                    self.en_erreur = False
+                    print(f"(copie de la sortie dans {os.path.basename(self.chemin)} rétablie)", flush=True)
+            except Exception as err:
+                with self.verrou:                 # remis en tête de la file, pour réessayer plus tard
+                    texte = texte + "".join(self.attente)
+                    if len(texte) > self.MAX_ATTENTE:
+                        texte = "[... début perdu : Drive indisponible trop longtemps ...]\n" + texte[-self.MAX_ATTENTE:]
+                    self.attente, self.taille = [texte], len(texte)
+                if not self.en_erreur:
+                    self.en_erreur = True
+                    print(f"ATTENTION : copie de la sortie dans {self.chemin} impossible pour l'instant "
+                          f"({type(err).__name__} : {err}) ; nouvel essai toutes les {self.PAUSE_S} s. "
+                          "L'entraînement continue.", flush=True)
+
+    def fermer(self, delai_s=30):
+        """Dernière écriture à la sortie du script ; n'attend pas plus de delai_s si Drive ne répond pas."""
+        fil = threading.Thread(target=self.vider, daemon=True)
+        fil.start()
+        fil.join(delai_s)
+
+
+class Copie:
+    """Remplace sys.stdout / sys.stderr : affiche comme avant ET ajoute le texte au Journal."""
+    def __init__(self, console, journal):
+        self.console, self.journal = console, journal
+
+    def write(self, texte):
+        n = self.console.write(texte)
+        self.journal.ajouter(texte)
+        return n
+
+    def flush(self):
+        self.console.flush()
+
+    def __getattr__(self, nom):                   # encoding, isatty, fileno... : ceux de la vraie console
+        return getattr(self.console, nom)
+
+
+def recopier_sortie(flux):
+    """Fil séparé : lit la sortie de nnU-Net ligne par ligne et l'affiche aussitôt (donc aussi dans le
+    Journal). Il ne doit jamais s'arrêter sur une erreur d'affichage : le tube ne serait plus vidé et
+    nnU-Net se bloquerait en écrivant. Il s'arrête quand nnU-Net (et ses processus enfants) ont fermé le tube."""
+    while True:
+        try:
+            ligne = flux.readline()
+        except Exception:
+            return
+        if not ligne:
+            return
+        try:
+            sys.stdout.write(ligne.decode("utf-8", errors="replace"))
+            sys.stdout.flush()
+        except Exception:
+            pass
 
 
 # --- Fonctions testables sans GPU ------------------------------------------------------------
@@ -96,15 +221,23 @@ def etat_du_pli(dossier_pli):
     return "termine" if os.path.isfile(os.path.join(dossier_pli, "validation", "summary.json")) else "validation_incomplete"
 
 
-def epoque_de_reprise(chemin):
-    """Numéro de la prochaine époque, lu dans le point de reprise (clé current_epoch de nnU-Net), ou None.
+def infos_reprise(chemin):
+    """(numéro de la prochaine époque, horodatage de la fin de la dernière époque faite), lus dans le point
+    de reprise : clé current_epoch, et logging/epoch_end_timestamps[current_epoch - 1] (nnU-Net note cette
+    heure juste avant d'écrire le point de reprise). None pour ce qui n'est pas lisible.
     Le fichier (quelques centaines de Mo) est lu sur le processeur, puis libéré."""
     try:
         import torch
-        return int(torch.load(chemin, map_location="cpu", weights_only=False)["current_epoch"])
+        ckpt = torch.load(chemin, map_location="cpu", weights_only=False)
+        epoque = int(ckpt["current_epoch"])
     except Exception as err:
         print(f"  (époque non lisible dans {os.path.basename(chemin)} : {err})")
-        return None
+        return None, None
+    try:
+        horodatage = float(ckpt["logging"]["epoch_end_timestamps"][epoque - 1]) if epoque > 0 else None
+    except Exception:                             # clé absente ou liste trop courte : heure inconnue
+        horodatage = None
+    return epoque, horodatage
 
 
 def lire_journaux(dossier_pli):
@@ -160,7 +293,7 @@ def verifier_verrou(chemin, ignorer):
         infos, age = {}, (time.time() - os.path.getmtime(chemin)) / 60
     if age < VERROU_MINUTES and not ignorer:
         print(f"ARRÊT : une autre session semble entraîner ce pli (verrou {os.path.basename(chemin)} rafraîchi il y a "
-              f"{age:.0f} min, session {infos.get('session', '?')}).")
+              f"{age:.0f} min, le {heure(time.time() - age * 60)}, session {infos.get('session', '?')}).")
         print(f"  Si c'est le reste d'une session coupée, attendre {VERROU_MINUTES} min ; si tu es SÛR qu'aucune "
               "autre session ne tourne, relancer avec --ignorer-verrou.")
         sys.exit(1)
@@ -260,7 +393,7 @@ def tracer(a, dossier_pli, ds_pre, chemin_splits, chemin_trace, trace, plis, gpu
                                      remplacer_depuis=getattr(a, "remplacer_depuis", None))
         ecrire_id_run(dossier_pli, id_run)
         if afficher:
-            print(f"MLflow mis à jour : run {id_run} (pli {a.pli}, statut {statut}, {len(durees)} époques faites, "
+            print(f"[{heure()}] MLflow mis à jour : run {id_run} (pli {a.pli}, statut {statut}, {len(durees)} époques faites, "
                   f"{borne} notées : celles couvertes par un point de reprise)", flush=True)
     except Exception as err:
         print(f"ATTENTION : traçage MLflow impossible ({err}). Relancer plus tard avec --tracer-seulement.", flush=True)
@@ -304,6 +437,10 @@ def lire_arguments():
 
 # --- Programme principal ----------------------------------------------------------------------
 def main():
+    # Tout ce qui s'affiche (y compris les messages d'erreur) est aussi gardé pour sortie_05c_<SESSION>.txt.
+    journal = Journal()
+    sys.stdout, sys.stderr = Copie(sys.stdout, journal), Copie(sys.stderr, journal)
+    print(f"Session {SESSION} (nom tiré de l'heure de la machine Colab, en UTC) ; début : {heure()}")
     a = lire_arguments()
     a.remplacer_depuis = None                     # fixé seulement en cas d'incohérence à la reprise (voir 5.)
     raw, pre, res = (os.path.abspath(x) for x in (a.raw, a.preprocessed, a.results))
@@ -321,6 +458,9 @@ def main():
 
     # --- 2. Où en est ce pli ? --------------------------------------------------------------------
     etat = etat_du_pli(dossier_pli)
+    if os.path.isdir(dossier_pli) or not a.tracer_seulement:   # --tracer-seulement ne crée pas de dossier
+        journal.ouvrir(os.path.join(dossier_pli, f"sortie_05c_{SESSION}.txt"))
+        print(f"Copie de cet affichage : {journal.chemin}")
     print(f"Dossier du pli : {dossier_pli}\nÉtat : {etat}")
     if a.tracer_seulement or (etat == "termine" and not a.terminer_validation):
         if not glob.glob(os.path.join(dossier_pli, "training_log_*.txt")):
@@ -378,9 +518,13 @@ def main():
     ckpt = point_de_reprise(dossier_pli)
     if ckpt:
         commande.append("--c")
-        epoque = epoque_de_reprise(ckpt)
+        epoque, horodatage = infos_reprise(ckpt)
         print(f"REPRISE depuis {os.path.basename(ckpt)} : époque {epoque if epoque is not None else 'inconnue'} "
               f"sur {NB_EPOQUES}")
+        if horodatage is not None:
+            print(f"  Point de reprise écrit juste après la fin de l'époque {epoque - 1} : {heure(horodatage)}")
+        else:
+            print("  (heure d'écriture du point de reprise non lisible)")
         lus_avant, epoques_avant = lire_journaux(dossier_pli)
         # Contrôle de cohérence : l'époque réelle de reprise doit être la borne calculée depuis les journaux.
         borne = borne_consolidee(dossier_pli, epoques_avant)
@@ -400,11 +544,17 @@ def main():
     else:
         print(f"NOUVEL ENTRAÎNEMENT du pli {a.pli} ({NB_EPOQUES} époques, point de reprise toutes les 10)")
     avant = set(glob.glob(os.path.join(dossier_pli, "training_log_*.txt")))
-    print("Commande :", " ".join(commande), flush=True)
-    t0, interrompu, proc = time.time(), False, None
+    print("Commande :", " ".join(commande))
+    print(f"Lancement de nnU-Net : {heure()}", flush=True)
+    t0, interrompu, proc, fil = time.time(), False, None, None
     poser_verrou(verrou)
     try:
-        proc = subprocess.Popen(commande, env=env)    # sortie de nnU-Net affichée telle quelle
+        # Sortie de nnU-Net (et ses erreurs) reçue par un tube : un fil séparé l'affiche ligne par ligne et la
+        # recopie dans sortie_05c_<SESSION>.txt. La boucle ci-dessous ne lit jamais le tube : elle ne peut pas
+        # être bloquée par lui, et le fil ne dépend pas d'elle.
+        proc = subprocess.Popen(commande, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        fil = threading.Thread(target=recopier_sortie, args=(proc.stdout,), daemon=True)
+        fil.start()
         dernier_trace = time.time()
         while True:
             try:
@@ -417,7 +567,7 @@ def main():
                         dernier_trace = time.time()
                         tracer(*contexte, gpu, "en_cours")   # suivi MLflow recopié dans Drive
                 except Exception as err:          # jamais d'arrêt du suivi pendant que nnU-Net tourne
-                    print(f"ATTENTION : suivi non mis à jour ({type(err).__name__} : {err}) ; l'entraînement continue.",
+                    print(f"[{heure()}] ATTENTION : suivi non mis à jour ({type(err).__name__} : {err}) ; l'entraînement continue.",
                           flush=True)
     except KeyboardInterrupt:                     # cellule arrêtée à la main
         interrompu = True
@@ -433,8 +583,12 @@ def main():
                 proc.kill()
                 proc.wait()
         retirer_verrou(verrou)
+        if fil is not None:
+            # Dernières lignes de nnU-Net. Délai limité : un processus enfant resté en vie peut garder le
+            # tube ouvert ; on n'attend pas indéfiniment.
+            fil.join(timeout=30)
     code = proc.returncode
-    print(f"\nnnU-Net {'interrompu' if interrompu else 'terminé'} (code {code}) après "
+    print(f"\nnnU-Net {'interrompu' if interrompu else 'terminé'} (code {code}) le {heure()}, après "
           f"{(time.time() - t0) / 3600:.2f} h", flush=True)
 
     # --- 6. Bilan --------------------------------------------------------------------------------------
