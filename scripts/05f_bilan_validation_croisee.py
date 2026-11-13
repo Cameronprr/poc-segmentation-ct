@@ -10,7 +10,8 @@ fold_X/validation/summary.json. Chaque cas d'entraînement est en validation dan
 Ce que fait le script :
   0. garde-fous : splits_final.json vérifié comme dans 05b et 05c (écrit par 05a, identique aux plis
      recalculés depuis le découpage figé, lu seulement) ; --sortie hors du dépôt et des dossiers nnU-Net ;
-     seuls les summary.json de fold_X/validation sont lus (aucune image, aucun masque) ;
+     seuls sont lus : les summary.json et les prédictions (.nii.gz) de fold_X/validation, et, pour les
+     mêmes cas, imagesTr et labelsTr (jamais imagesTs ni labelsTs, jamais un cas de test) ;
   1. pour chaque pli : lit summary.json s'il existe ; vérifie que ses cas sont EXACTEMENT les cas de
      validation du pli, qu'aucun n'est un cas de test et que la référence ne vient pas de labelsTs ;
      recalcule le Dice moyen du pli et le compare à celui écrit par nnU-Net ;
@@ -21,26 +22,52 @@ Ce que fait le script :
      moyenne par épaisseur de coupe ;
   4. cas faibles signalés, d'après des repères INDICATIFS fixés à l'avance et non validés : cellule
      « faible » si Dice < 0,85, « ÉCHEC » si Dice < 0,50. Pour chaque cellule signalée : la part d'oublis
-     et d'ajouts. Puis les 3 cas à la moyenne la plus basse, et la commande du script 05g pour les examiner.
+     et d'ajouts. Puis les 3 cas à la moyenne la plus basse, et la commande du script 05g pour les examiner ;
+  5. LIMITES AP / VD (suite de D31), sur les cas de validation UNIQUEMENT : pour chaque cas, on lit la
+     vérité (labelsTr) et la prédiction hors pli (fold_X/validation/<cas>.nii.gz) et on chiffre deux
+     décalages, en mm le long de l'axe tête-pieds :
+       - BAS de l'artère pulmonaire (étiquette 7) : niveau le plus bas prédit − niveau le plus bas annoté ;
+       - HAUT du ventricule droit (étiquette 5) : niveau le plus haut prédit − niveau le plus haut annoté.
+     Signe : POSITIF = la prédiction s'arrête plus haut (vers la tête) que l'annotation ; NÉGATIF = plus bas.
+     Exemple : une AP prédite qui descend plus bas que l'annotation donne un décalage négatif.
+     Calcul repris tel quel de 05d/05g (mêmes chiffres que la section 20) : charger() de 05d remet image,
+     vérité et prédiction dans le repère RAS avec la transformation de l'IMAGE ; mesurer() de 05d prend la
+     coupe la plus basse (ou la plus haute) qui contient au moins un voxel de la structure et la convertit
+     en mm avec l'affine (coordonnée « tête » du repère du scanner, au droit du centre de gravité de la
+     structure) ; les deux niveaux sont arrondis au dixième de mm, puis soustraits.
+     TOUS les morceaux d'un masque comptent, y compris un fragment isolé : pour 1018, l'AP prédite est en
+     3 morceaux, dont un isolé, et son niveau le plus bas est celui du morceau le plus bas (−69 mm dans 05g).
+     Ce choix mesure ce que le modèle a réellement prédit ; le nombre de morceaux prédits est affiché à côté
+     pour repérer ces cas.
+     Si la structure est absente de la vérité OU de la prédiction d'un cas (ou si un fichier manque), ce
+     cas n'a pas de décalage : sa ligne est SIGNALÉE et il est exclu des statistiques (le nombre de cas
+     utilisés est affiché). Statistiques de chaque décalage : minimum et maximum (avec le cas), médiane,
+     écart-type, moyenne et médiane des valeurs absolues, sur les cas puis PAR PATIENT (les deux cas d'une
+     paire sont d'abord moyennés ; si un seul des deux a un décalage, il représente le patient).
   Si des plis ne sont pas terminés, le bilan est PARTIEL (clairement marqué) et le code de sortie vaut 2.
-  Le script NE CONCLUT PAS et ne fixe aucun seuil du contrôle de plausibilité (D28, D29).
+  Le script NE CONCLUT PAS et ne fixe aucun seuil, ni pour le Dice (les repères ci-dessus sont indicatifs)
+  ni pour les décalages, ni pour le contrôle de plausibilité (D28, D29).
 
 Entrées :
-  --raw           dossier nnUNet_raw (défaut /content/drive/MyDrive/poc_ct/nnunet_raw) ; seuls les
-                  EN-TÊTES de Dataset101_MMWHS/imagesTr sont lus (épaisseurs de coupe, contrôle des plis)
+  --raw           dossier nnUNet_raw (défaut /content/drive/MyDrive/poc_ct/nnunet_raw) ; sont lus dans
+                  Dataset101_MMWHS : les en-têtes de imagesTr (épaisseurs de coupe, contrôle des plis), et,
+                  pour les 15 cas de validation seulement, imagesTr et labelsTr (vérité). L'image est lue EN
+                  ENTIER par charger() de 05d (environ 0,3 à 0,4 Go par cas, un cas à la fois, libérée aussitôt),
+                  mais seul son repère (affine) sert aux décalages
   --preprocessed  dossier nnUNet_preprocessed (défaut .../poc_ct/nnunet_preprocessed) : splits_final.json,
                   sa fiche splits_final_05a.json et le marqueur verification_05a.json (lus seulement)
-  --results       dossier nnUNet_results (défaut .../poc_ct/nnunet_results) ; seuls les
-                  .../nnUNetTrainer_250epochs_reprise10__nnUNetPlans__3d_fullres/fold_X/validation/summary.json
-                  sont lus
+  --results       dossier nnUNet_results (défaut .../poc_ct/nnunet_results) ; seul
+                  .../nnUNetTrainer_250epochs_reprise10__nnUNetPlans__3d_fullres/fold_X/validation/ est lu :
+                  summary.json et les prédictions <cas>.nii.gz des cas de validation du pli
   --sortie        dossier de sortie (défaut /content/drive/MyDrive/poc_ct/analyses/05f_bilan)
   --split         découpage figé (défaut : ../splits/mmwhs_split.json à côté du script)
 Sorties (uniquement dans --sortie) :
-  bilan_validation_croisee.csv (une ligne par cas) ; synthese_05f.json (tableau, statistiques, signaux)
+  bilan_validation_croisee.csv (une ligne par cas : Dice, puis niveaux et décalages AP / VD) ;
+  synthese_05f.json (tableau, statistiques, signaux, et la rubrique « limites_AP_VD »)
 Codes de sortie :
   0 = les 5 plis sont rassemblés ; 1 = garde-fou (rien n'est écrit) ; 2 = bilan PARTIEL (plis non terminés,
-  fichiers écrits quand même) ; 6 = un summary.json ne correspond pas aux plis (rien n'est écrit : ne pas
-  utiliser ces résultats).
+  fichiers écrits quand même) ; 6 = un summary.json ne correspond pas aux plis, ou image, vérité et
+  prédiction d'un cas n'ont pas la même forme (rien n'est écrit : ne pas utiliser ces résultats).
 
 Vocabulaire :
   - Dice : recouvrement entre la prédiction et la vérité, de 0 (aucun) à 1 (parfait) ;
@@ -51,7 +78,15 @@ Vocabulaire :
   - prédiction hors pli : prédiction d'un cas par le modèle qui ne l'a pas vu à l'entraînement ;
   - moyenne par patient : 1001 et 1020 sont deux examens du même patient (de même 1005 et 1012). Les
     compter comme deux cas donne deux fois plus de poids à ce patient : la moyenne par patient corrige cela ;
-  - écart-type : dispersion des valeurs autour de la moyenne.
+  - écart-type : dispersion des valeurs autour de la moyenne ;
+  - axe tête-pieds : axe vertical du patient allongé (de la tête vers les pieds). Les niveaux sont en mm
+    dans le repère du scanner : un niveau plus grand est plus près de la tête ;
+  - repère RAS : on remet chaque volume dans le même sens (1er axe vers la droite du patient, 2e vers
+    l'avant, 3e vers la tête), comme 05d ;
+  - affine : petite matrice de l'en-tête NIfTI qui convertit un numéro de voxel en position en mm ;
+  - médiane des valeurs absolues : médiane des décalages sans tenir compte de leur signe. Elle dit de
+    combien la limite prédite s'écarte « typiquement » de l'annotation, quel que soit le sens ;
+  - fragment isolé : morceau d'un masque séparé du reste (voir « morceaux » dans 05d).
 """
 import argparse, csv, datetime, importlib.util, json, math, os, re, statistics, sys
 
@@ -68,7 +103,8 @@ def charger_module(nom, fichier):
 
 
 essai = charger_module("essai05b", "05b_essai_nnunet.py")     # contrôle de splits_final.json (comme 05c)
-ana = charger_module("analyse05d", "05d_analyser_1019.py")     # garde-fous de sortie, nom du trainer
+ana = charger_module("analyse05d", "05d_analyser_1019.py")     # garde-fous de sortie, nom du trainer,
+                                                               # charger() et mesurer() (niveaux en mm)
 prep = essai.prep                                              # module du script 05a
 
 # --- Paramètres fixes -------------------------------------------------------------------------
@@ -78,6 +114,9 @@ SEUIL_FAIBLE, SEUIL_ECHEC = 0.85, 0.50   # repères INDICATIFS, fixés avant de 
 NB_PLUS_FAIBLES = 3
 TOLERANCE_MOYENNE = 1e-4                 # écart toléré entre notre moyenne et celle de nnU-Net
 NOM_CSV, NOM_SYNTHESE = "bilan_validation_croisee.csv", "synthese_05f.json"
+# Limites mesurées (partie 5) : nom court, étiquette, mesure de mesurer() (05d), libellé lisible.
+LIMITES = (("bas_AP", 7, "niveau_bas_mm", "bas de l'AP (7)"),
+           ("haut_VD", 5, "niveau_haut_mm", "haut du VD (5)"))
 
 
 def arret(code, message):
@@ -274,6 +313,92 @@ def commandes_05g(lignes, signaux):
     return commandes
 
 
+# --- 5. Limites AP / VD (cas de validation uniquement) ----------------------------------------
+def chemins_cas(raw, res, pli, cas, cas_test):
+    """Les 3 fichiers lus pour un cas de validation. Garde-fous : jamais un cas de test, jamais un
+    dossier de test (même règle que 05d et 05g)."""
+    if cas in cas_test:
+        arret(1, f"{cas} fait partie du LOT DE TEST : refusé (le test ne sert qu'à l'étape 6).")
+    ds = os.path.join(raw, NOM_DS)
+    c = {"image": os.path.join(ds, "imagesTr", f"{cas}_0000.nii.gz"),        # lue en entier par charger() (05d) ; seul son repère sert
+         "verite": os.path.join(ds, "labelsTr", f"{cas}.nii.gz"),
+         "pred": os.path.join(dossier_pli(res, pli), "validation", f"{cas}.nii.gz")}
+    if any(d in ("imagesTs", "labelsTs") for x in c.values() for d in re.split(r"[\\/]", x)):
+        arret(1, "un chemin passe par imagesTs ou labelsTs : refusé.")
+    return c
+
+
+def sans_decalage(raison):
+    """Rubrique d'une limite qu'on ne peut pas mesurer sur ce cas (le cas sera exclu des statistiques)."""
+    return {"verite_mm": None, "prediction_mm": None, "decalage_mm": None,
+            "morceaux_verite": None, "morceaux_prediction": None, "signal": raison}
+
+
+def mesurer_limites(lignes, raw, res, cas_test):
+    """Ajoute à chaque ligne (= un cas de validation) la rubrique « limites » : niveau annoté, niveau
+    prédit, décalage (prédit − annoté, en mm, + = vers la tête), nombre de morceaux, signal éventuel."""
+    for l in lignes:
+        c = chemins_cas(raw, res, l["pli"], l["cas"], cas_test)
+        manquants = [x for x in c.values() if not os.path.isfile(x)]
+        if manquants:
+            l["limites"] = {cle: sans_decalage(f"fichier absent : {manquants}") for cle, *_ in LIMITES}
+            l["remarques_geometrie"] = []
+            continue
+        print(f"  {l['cas']} (pli {l['pli']}) : lecture de la vérité et de la prédiction...", flush=True)
+        # Même lecture que 05d et 05g : les trois volumes remis dans le repère RAS avec la transformation
+        # de l'image. Si les formes diffèrent, charger() arrête le script (code 6, rien n'est écrit).
+        ct, ver, pred, affine, esp, geo = ana.charger(c)
+        del ct                                              # l'image elle-même ne sert pas ici
+        remarques = list(geo["anomalies"])                  # ex. affine de la vérité ≠ affine de l'image
+        if abs(float(affine[2, 0])) + abs(float(affine[2, 1])) > 1e-3:
+            remarques.append("axes du volume inclinés par rapport à l'axe tête-pieds : niveau lu au droit du "
+                             "centre de gravité de la structure, donc légèrement approché")
+        limites = {}
+        for cle, etiquette, mesure, _ in LIMITES:
+            # mesurer() de 05d : TOUS les voxels de l'étiquette comptent, fragments isolés compris.
+            mv, mp = ana.mesurer(ver == etiquette, affine, esp), ana.mesurer(pred == etiquette, affine, esp)
+            absente = [nom for nom, m in (("vérité", mv), ("prédiction", mp)) if not m["voxels"]]
+            if absente:
+                limites[cle] = sans_decalage(f"{STRUCTURES[etiquette]} absente de la {' et de la '.join(absente)} : "
+                                             "pas de décalage, cas exclu des statistiques")
+                limites[cle]["verite_mm"], limites[cle]["prediction_mm"] = mv.get(mesure), mp.get(mesure)
+                continue
+            limites[cle] = {"verite_mm": mv[mesure], "prediction_mm": mp[mesure],
+                            # même arrondi que 05g : niveaux au dixième de mm, puis différence au dixième
+                            "decalage_mm": round(mp[mesure] - mv[mesure], 1),
+                            "morceaux_verite": mv["morceaux"], "morceaux_prediction": mp["morceaux"],
+                            "signal": None}
+        l["limites"], l["remarques_geometrie"] = limites, remarques
+        del ver, pred                                       # un seul cas en mémoire à la fois
+
+
+def resumer_decalages(paires, total):
+    """Statistiques d'un décalage : celles de resumer() (n, moyenne, médiane, écart-type, min et max avec
+    le cas) + la médiane des valeurs absolues ; total = nombre de cas (ou de patients) possibles."""
+    r = resumer(paires) or {"n": 0}
+    if r["n"]:
+        r["mediane_valeurs_absolues"] = statistics.median(abs(x) for _, x in paires if x is not None)
+    r["n_total"] = total
+    return {k: (round(v, 2) if isinstance(v, float) else v) for k, v in r.items()}
+
+
+def statistiques_limites(lignes):
+    """Pour chaque limite : statistiques sur les cas, puis par patient (paires moyennées d'abord)."""
+    patients = {}
+    for l in lignes:
+        patients.setdefault(l["patient"], []).append(l)
+    stats = {}
+    for cle, *_ in LIMITES:
+        sur_les_cas = [(l["cas"][-4:], l["limites"][cle]["decalage_mm"]) for l in lignes]
+        par_patient = []
+        for p, ls in patients.items():
+            v = [l["limites"][cle]["decalage_mm"] for l in ls if l["limites"][cle]["decalage_mm"] is not None]
+            par_patient.append((p, statistics.fmean(v) if v else None))   # un seul cas défini : il compte seul
+        stats[cle] = {"sur_les_cas": resumer_decalages(sur_les_cas, len(lignes)),
+                      "par_patient": resumer_decalages(par_patient, len(patients))}
+    return stats
+
+
 # --- Affichage --------------------------------------------------------------------------------
 def f3(x):
     return "  —  " if x is None else f"{x:.3f}"
@@ -317,6 +442,59 @@ def afficher_stats(stats):
 
 def pct(x):
     return "—" if x is None else f"{100 * x:.0f} %"
+
+
+def mm1(x, signe=False):
+    """Nombre de mm au dixième (avec son signe + ou − si demandé), ou « — » s'il manque."""
+    return "—" if x is None else (f"{x:+.1f}" if signe else f"{x:.1f}")
+
+
+def afficher_limites(lignes, stats):
+    print("\n" + "=" * 110)
+    print("5. LIMITES AP / VD — décalage = niveau PRÉDIT − niveau ANNOTÉ, en mm le long de l'axe tête-pieds")
+    print("   + = la prédiction s'arrête plus HAUT (vers la tête) que l'annotation ; − = plus BAS.")
+    print("   Tous les morceaux comptent (fragment isolé compris). Validation hors pli seulement, pas le test.")
+    entete = "".join(f"| {libelle:<36}" for _, _, _, libelle in LIMITES)
+    print(f"\n{'pli':>3}  {'cas':<6}{'patient':<11}{'ép. mm':>7}  {entete}")
+    print(f"{'':>31}" + "".join(f"| {'annoté':>8}{'prédit':>9}{'décalage':>10}{'morc.':>7}  " for _ in LIMITES))
+    for l in lignes:
+        cellules = ""
+        for cle, *_ in LIMITES:
+            x = l["limites"][cle]
+            marque = "  " if x["signal"] is None else " !"
+            cellules += (f"| {mm1(x['verite_mm']):>8}{mm1(x['prediction_mm']):>9}{mm1(x['decalage_mm'], True):>10}"
+                         f"{(x['morceaux_prediction'] if x['morceaux_prediction'] is not None else '—'):>7}{marque}")
+        print(f"{l['pli']:>3}  {l['cas'][-4:]:<6}{l['patient']:<11}{str(l['epaisseur_mm']):>7}  {cellules}")
+    print("  annoté / prédit = niveau en mm dans le repère du scanner (plus grand = plus près de la tête) ;")
+    print("  morc. = nombre de morceaux de la PRÉDICTION ; ! = pas de décalage pour ce cas (voir ci-dessous).")
+
+    signales = [(l, cle, l["limites"][cle]["signal"]) for l in lignes for cle, *_ in LIMITES
+                if l["limites"][cle]["signal"]]
+    remarques = [(l, r) for l in lignes for r in l.get("remarques_geometrie", [])]
+    if signales or remarques:
+        print("\nCas signalés :")
+    for l, cle, s in signales:
+        print(f"  {l['cas']} (pli {l['pli']}) {cle} : {s}  <== ANOMALIE")
+    for l, r in remarques:
+        print(f"  {l['cas']} (pli {l['pli']}) géométrie : {r}  <== À VÉRIFIER")
+
+    for titre, rubrique, unite in (("SUR LES CAS", "sur_les_cas", "cas"),
+                                   ("PAR PATIENT (paires 1001/1020 et 1005/1012 moyennées d'abord)",
+                                    "par_patient", "patients")):
+        print(f"\nDispersion des décalages (mm), {titre} :")
+        print(f"  {'':<34}" + "".join(f"{libelle:>22}" for _, _, _, libelle in LIMITES))
+        lignes_stats = (
+            (f"{unite} utilisés / possibles", lambda s: f"{s['n']} / {s['n_total']}"),
+            ("minimum", lambda s: f"{mm1(s.get('min'), True)} ({s.get('cas_min', '—')})"),
+            ("maximum", lambda s: f"{mm1(s.get('max'), True)} ({s.get('cas_max', '—')})"),
+            ("médiane", lambda s: mm1(s.get("mediane"), True)),
+            ("écart-type", lambda s: mm1(s.get("ecart_type"))),
+            ("moyenne", lambda s: mm1(s.get("moyenne"), True)),
+            ("médiane des valeurs absolues", lambda s: mm1(s.get("mediane_valeurs_absolues"))))
+        for libelle, extraire in lignes_stats:
+            print(f"  {libelle:<34}" + "".join(f"{extraire(stats[cle][rubrique]):>22}" for cle, *_ in LIMITES))
+    print("\n  Ces chiffres DÉCRIVENT l'écart entre le modèle et UN annotateur ; le script ne fixe aucun seuil et "
+          "ne conclut pas (voir D31 : la variabilité peut venir de l'annotation).")
 
 
 # --- Programme principal ----------------------------------------------------------------------
@@ -396,18 +574,34 @@ def main():
         print("  (2e numéro = cas de comparaison proposé : même épaisseur de coupe, autre patient, meilleur Dice "
               "sur ces structures ; on peut en choisir un autre.)")
 
+    # --- 5. Limites AP / VD : lit la vérité et la prédiction des cas de validation des plis terminés ----
+    print(f"\nLimites AP / VD : lecture des {len(lignes)} cas de validation (labelsTr et fold_X/validation, "
+          "jamais le test)...")
+    mesurer_limites(lignes, raw, res, cas_test)
+    stats_limites = statistiques_limites(lignes)
+    afficher_limites(lignes, stats_limites)
+
     # --- Écriture -------------------------------------------------------------------------------------
     os.makedirs(sortie, exist_ok=True)                      # le seul dossier où le script écrit
     chemin_csv = os.path.join(sortie, NOM_CSV)
     with open(chemin_csv + ".tmp", "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
+        # Colonnes des limites : niveau annoté, niveau prédit, décalage (prédit − annoté, + = vers la tête),
+        # morceaux de la prédiction ; cellule vide = pas de valeur (voir « signaux_limites »).
+        champs_limites = (("verite_mm", "annote_mm"), ("prediction_mm", "predit_mm"),
+                          ("decalage_mm", "decalage_mm"), ("morceaux_prediction", "morceaux_predits"))
         w.writerow(["pli", "cas", "patient", "epaisseur_mm", *[f"dice_{e}_{n}" for e, n in STRUCTURES.items()],
-                    "moyenne_cas", "signaux"])
+                    "moyenne_cas", "signaux",
+                    *[f"{cle}_{nom}" for cle, *_ in LIMITES for _, nom in champs_limites], "signaux_limites"])
         for l in lignes:
             sig = "; ".join(f"{s['structure']} {s['niveau']}" for s in signaux if s["cas"] == l["cas"])
+            sig_lim = "; ".join([f"{cle} : {l['limites'][cle]['signal']}" for cle, *_ in LIMITES
+                                 if l["limites"][cle]["signal"]] + l.get("remarques_geometrie", []))
             w.writerow([l["pli"], l["cas"], l["patient"], l["epaisseur_mm"],
                         *[("" if l["dice"][e] is None else round(l["dice"][e], 4)) for e in STRUCTURES],
-                        "" if l["moyenne_cas"] is None else round(l["moyenne_cas"], 4), sig])
+                        "" if l["moyenne_cas"] is None else round(l["moyenne_cas"], 4), sig,
+                        *[("" if l["limites"][cle][champ] is None else l["limites"][cle][champ])
+                          for cle, *_ in LIMITES for champ, _ in champs_limites], sig_lim])
     os.replace(chemin_csv + ".tmp", chemin_csv)             # jamais de fichier à moitié écrit
     synthese = {"objet": "bilan de la validation croisée nnU-Net (validation hors pli, PAS le test), LECTURE SEULE",
                 "date_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
@@ -419,7 +613,20 @@ def main():
                 "structures": STRUCTURES,
                 "lignes": [{k: v for k, v in l.items()} for l in lignes],
                 "statistiques": stats, "signaux": signaux,
-                "plus_faibles": [l["cas"] for l in plus_faibles], "commandes_05g": commandes}
+                "plus_faibles": [l["cas"] for l in plus_faibles], "commandes_05g": commandes,
+                # Partie 5 ; les valeurs par cas sont dans « lignes » (rubriques « limites » et
+                # « remarques_geometrie »).
+                "limites_AP_VD": {
+                    "definition": {cle: f"{libelle} : {mesure} prédit − {mesure} annoté" for cle, _, mesure, libelle in LIMITES},
+                    "unite": "mm le long de l'axe tête-pieds (repère du scanner)",
+                    "convention_signe": "positif = la prédiction s'arrête plus haut (vers la tête) que l'annotation",
+                    "methode": "charger() et mesurer() de 05d, comme 05g ; tous les morceaux comptent, fragments "
+                               "isolés compris ; niveaux arrondis au dixième de mm avant la différence",
+                    "par_patient": "les deux cas d'une paire sont moyennés d'abord ; un seul cas défini compte seul",
+                    "seuil": None,
+                    "statistiques": stats_limites,
+                    "cas_sans_decalage": {cle: [l["cas"] for l in lignes if l["limites"][cle]["decalage_mm"] is None]
+                                          for cle, *_ in LIMITES}}}
     chemin = os.path.join(sortie, NOM_SYNTHESE)
     with open(chemin + ".tmp", "w", encoding="utf-8") as f:
         json.dump(synthese, f, indent=2, ensure_ascii=False)

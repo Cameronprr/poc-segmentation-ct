@@ -1,6 +1,6 @@
 # Spécification : contrôle de plausibilité des segmentations (décision D28)
 
-*Version 1.0 du 2026-11-11. Questions Q1 à Q9 tranchées par l'utilisateur (section 10, décision D29). Le contrôle lui-même n'est pas encore codé ; seul le script de mesure `05e_densites_vaisseaux.py` existe (pas encore exécuté).*
+*Version 1.0 du 2026-11-11. Questions Q1 à Q9 tranchées par l'utilisateur (section 10, décision D29). Le contrôle lui-même n'est pas encore codé. Scripts de mesure : `05e_densites_vaisseaux.py` (densités, R4 à R7, section 18 du notebook) et `05h_volumes_verite.py` (volumes et rapports, R2 et R3, section 21 ; ajouté le 2026-11-13, pas encore exécuté).*
 *Rédigée sans ouvrir le lot de test. Les seuls chiffres cités viennent du pli 0 (cas d'entraînement 1001, 1019 et 1020) et de D27.*
 
 ---
@@ -114,11 +114,11 @@ Seuls les **15 cas d'entraînement** du découpage figé (`splits/mmwhs_split.js
 
 | Source | Avantages | Limites | Usage retenu (Q9) |
 |---|---|---|---|
-| **Vérité terrain** des 15 cas | Densités (R4 à R7) mesurées par 05e ; volumes et rapports (R2, R3) **restent à mesurer** (05e ne les calcule pas). Elle décrit l'anatomie et les densités **plausibles** | Elle ne contient **aucune erreur typique du modèle** : morceaux égarés, bords baveux. Le myocarde y est fragmenté (îlots d'annotation) | Volumes (R2), rapports (R3), densités (R4 à R7), positions (R9, version 2) : ce sont des propriétés de l'anatomie et de l'examen |
+| **Vérité terrain** des 15 cas | Densités (R4 à R7) mesurées par 05e ; volumes et rapports (R2, R3) mesurés par 05h (`scripts/05h_volumes_verite.py`, section 21 du notebook), avec et sans 1019. Elle décrit l'anatomie et les densités **plausibles** | Elle ne contient **aucune erreur typique du modèle** : morceaux égarés, bords baveux. Le myocarde y est fragmenté (îlots d'annotation) | Volumes (R2), rapports (R3), densités (R4 à R7), positions (R9, version 2) : ce sont des propriétés de l'anatomie et de l'examen |
 | **Prédictions hors-pli** (*out-of-fold* : chaque cas est prédit par le pli qui ne l'a pas vu à l'entraînement) | Elles reflètent le comportement réel du modèle, et donc ce qu'est un « masque normal du modèle » | Elles n'existent que pour le pli 0 (3 cas). Il faut les **5 plis** pour en avoir 15. Elles contiennent l'échec de 1019 | Morceaux (R8). Vérification des faux positifs de toutes les règles |
 
 **Calendrier retenu (Q9) :**
-1. **Juste après la section 18 du notebook** : calibrer R2 à R7 sur la **vérité** des cas d'entraînement (1019 exclu des seuils). R4 à R7 viennent de 05e ; R2 et R3 demandent une mesure des volumes des étiquettes 1 à 7, **à prévoir** (05e ne la fait pas). Ces règles décrivent ce qui est anatomiquement plausible. La vérité est la bonne référence, et elle ne dépend pas du modèle.
+1. **Juste après la section 18 du notebook** : calibrer R2 à R7 sur la **vérité** des cas d'entraînement (1019 exclu des seuils). R4 à R7 viennent de 05e ; R2 et R3 viennent de 05h (volumes des étiquettes 1 à 7 et 5 rapports, section 21), qui ne fixe aucun seuil. Ces règles décrivent ce qui est anatomiquement plausible. La vérité est la bonne référence, et elle ne dépend pas du modèle.
 2. **Après les 5 plis** : calibrer R8 sur les **prédictions hors-pli**, puis vérifier toutes les règles sur ces 15 prédictions (critère de la section 7).
 3. **Geler** le fichier de seuils, puis le tracer dans le journal (date, empreinte SHA-256). Tout cela **avant** l'étape 6.
 
