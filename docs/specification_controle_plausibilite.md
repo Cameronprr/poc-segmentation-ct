@@ -1,6 +1,6 @@
 # Spécification : contrôle de plausibilité des segmentations (décision D28)
 
-*Version 1.0 du 2026-11-11. Questions Q1 à Q9 tranchées par l'utilisateur (section 10, décision D29). Le contrôle lui-même n'est pas encore codé. Scripts de mesure : `05e_densites_vaisseaux.py` (densités, R4 à R7, section 18 du notebook) et `05h_volumes_verite.py` (volumes et rapports, R2 et R3, section 21 ; ajouté le 2026-11-13, pas encore exécuté).*
+*Version 1.0 du 2026-11-11. Questions Q1 à Q9 tranchées par l'utilisateur (section 10, décision D29). Le contrôle lui-même n'est pas encore codé. Scripts de mesure : `05e_densites_vaisseaux.py` (densités, R4 à R7, section 18 du notebook) et `05h_volumes_verite.py` (volumes et rapports, R2 et R3, section 21) ; tous deux exécutés. Calendrier du calibrage (section 6.2) modifié par D32 : tout le calibrage attend la décision sur le post-traitement de nnU-Net (05i, section 22) ; R2 à R7 restent calibrés sur la vérité, R8 sur les prédictions hors pli retenues.*
 *Rédigée sans ouvrir le lot de test. Les seuls chiffres cités viennent du pli 0 (cas d'entraînement 1001, 1019 et 1020) et de D27.*
 
 ---

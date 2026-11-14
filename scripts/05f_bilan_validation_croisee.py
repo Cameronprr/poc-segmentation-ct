@@ -38,12 +38,30 @@ Ce que fait le script :
      TOUS les morceaux d'un masque comptent, y compris un fragment isolé : pour 1018, l'AP prédite est en
      3 morceaux, dont un isolé, et son niveau le plus bas est celui du morceau le plus bas (−69 mm dans 05g).
      Ce choix mesure ce que le modèle a réellement prédit ; le nombre de morceaux prédits est affiché à côté
-     pour repérer ces cas.
+     pour repérer ces cas (et la partie 5 bis recalcule le bas de l'AP sans les fragments).
      Si la structure est absente de la vérité OU de la prédiction d'un cas (ou si un fichier manque), ce
      cas n'a pas de décalage : sa ligne est SIGNALÉE et il est exclu des statistiques (le nombre de cas
      utilisés est affiché). Statistiques de chaque décalage : minimum et maximum (avec le cas), médiane,
      écart-type, moyenne et médiane des valeurs absolues, sur les cas puis PAR PATIENT (les deux cas d'une
      paire sont d'abord moyennés ; si un seul des deux a un décalage, il représente le patient).
+  5 bis. BAS DE L'AP SUR LE PLUS GRAND MORCEAU, À CÔTÉ du calcul de la partie 5 (qui reste inchangé, tous
+     morceaux comptés). But : séparer la variabilité de la limite elle-même de l'effet des fragments isolés
+     (un petit fragment loin sous l'AP suffit à tirer le niveau le plus bas vers le bas).
+       - on ne garde, dans la PRÉDICTION de l'AP (étiquette 7), que son plus grand morceau (plus grande
+         composante connexe, connexité 26 : la MÊME que le comptage des morceaux de mesurer() dans 05d) ;
+       - la VÉRITÉ n'est PAS modifiée : on compare toujours au niveau le plus bas de l'annotation ENTIÈRE
+         (celui de la partie 5). Raison : l'annotation est la référence ; en retirer des morceaux reviendrait à
+         changer la référence selon la prédiction, et le décalage ne mesurerait plus la même chose d'un cas à
+         l'autre. On ne « nettoie » que le côté dont on veut mesurer l'effet des fragments ;
+       - pour chaque cas : niveau le plus bas du plus grand morceau, décalage (prédit − annoté, même axe et même
+         signe que la partie 5 : positif = vers la tête), volume du plus grand morceau (mL) et part du volume
+         prédit de l'AP qu'il représente, nombre de morceaux. Le niveau est lu par mesurer() de 05d sur ce seul
+         morceau (donc au droit de SON centre de gravité ; ne change rien si les axes ne sont pas inclinés) ;
+       - statistiques comme en partie 5 (sur les cas puis par patient), et un tableau côte à côte : décalage
+         tous morceaux / décalage plus grand morceau / nombre de morceaux ;
+       - ce N'EST PAS le post-traitement de nnU-Net : aucune prédiction, aucun fichier n'est modifié ; le plus
+         grand morceau est calculé EN MÉMOIRE, pour la mesure seulement. Le haut du VD n'a pas cette variante
+         (son nombre de morceaux prédits est seulement rappelé dans le tableau côte à côte).
   Si des plis ne sont pas terminés, le bilan est PARTIEL (clairement marqué) et le code de sortie vaut 2.
   Le script NE CONCLUT PAS et ne fixe aucun seuil, ni pour le Dice (les repères ci-dessus sont indicatifs)
   ni pour les décalages, ni pour le contrôle de plausibilité (D28, D29).
@@ -62,8 +80,10 @@ Entrées :
   --sortie        dossier de sortie (défaut /content/drive/MyDrive/poc_ct/analyses/05f_bilan)
   --split         découpage figé (défaut : ../splits/mmwhs_split.json à côté du script)
 Sorties (uniquement dans --sortie) :
-  bilan_validation_croisee.csv (une ligne par cas : Dice, puis niveaux et décalages AP / VD) ;
-  synthese_05f.json (tableau, statistiques, signaux, et la rubrique « limites_AP_VD »)
+  bilan_validation_croisee.csv (une ligne par cas : Dice, puis niveaux et décalages AP / VD, puis les
+                  colonnes bas_AP_plus_grand_morceau_* : niveau, décalage, volume en mL, part du volume prédit) ;
+  synthese_05f.json (tableau, statistiques, signaux, et la rubrique « limites_AP_VD », qui contient la
+                  sous-rubrique « bas_AP_plus_grand_morceau » ; les valeurs par cas sont dans « lignes »)
 Codes de sortie :
   0 = les 5 plis sont rassemblés ; 1 = garde-fou (rien n'est écrit) ; 2 = bilan PARTIEL (plis non terminés,
   fichiers écrits quand même) ; 6 = un summary.json ne correspond pas aux plis, ou image, vérité et
@@ -86,7 +106,12 @@ Vocabulaire :
   - affine : petite matrice de l'en-tête NIfTI qui convertit un numéro de voxel en position en mm ;
   - médiane des valeurs absolues : médiane des décalages sans tenir compte de leur signe. Elle dit de
     combien la limite prédite s'écarte « typiquement » de l'annotation, quel que soit le sens ;
-  - fragment isolé : morceau d'un masque séparé du reste (voir « morceaux » dans 05d).
+  - fragment isolé : morceau d'un masque séparé du reste (voir « morceaux » dans 05d) ;
+  - composante connexe (ou « morceau ») : ensemble de voxels d'un masque qui se touchent de proche en
+    proche. Connexité 26 : deux voxels se touchent s'ils partagent une face, une arête ou un coin (les 26
+    voisins d'un voxel dans un cube 3 × 3 × 3) ;
+  - plus grand morceau : la composante connexe qui contient le plus de voxels. Les autres morceaux (souvent
+    de petits fragments isolés) sont ignorés pour cette mesure seulement.
 """
 import argparse, csv, datetime, importlib.util, json, math, os, re, statistics, sys
 
@@ -117,6 +142,8 @@ NOM_CSV, NOM_SYNTHESE = "bilan_validation_croisee.csv", "synthese_05f.json"
 # Limites mesurées (partie 5) : nom court, étiquette, mesure de mesurer() (05d), libellé lisible.
 LIMITES = (("bas_AP", 7, "niveau_bas_mm", "bas de l'AP (7)"),
            ("haut_VD", 5, "niveau_haut_mm", "haut du VD (5)"))
+# Partie 5 bis : la limite recalculée sur le plus grand morceau de la prédiction (bas de l'AP seulement).
+CLE_PGM, BASE_PGM = "bas_AP_plus_grand_morceau", "bas_AP"
 
 
 def arret(code, message):
@@ -334,14 +361,69 @@ def sans_decalage(raison):
             "morceaux_verite": None, "morceaux_prediction": None, "signal": raison}
 
 
+def plus_grand_morceau(m):
+    """Masque (même forme que m) du plus grand morceau de m, nombre de morceaux, et True si plusieurs
+    morceaux ont exactement la taille maximale (on garde alors le premier trouvé par ndimage.label).
+    Calcul EN MÉMOIRE seulement : rien n'est écrit, la prédiction lue n'est pas modifiée.
+    Connexité 26 (structure 3 × 3 × 3 pleine), la MÊME que le comptage des « morceaux » de mesurer()
+    dans 05d : le nombre de morceaux trouvé ici est donc celui affiché en partie 5.
+    Pour information, le post-traitement de nnU-Net (nnunetv2/postprocessing/remove_connected_components.py)
+    appelle remove_all_but_largest_component d'acvl_utils, qui utilise skimage.measure.label avec
+    connectivity=None, c'est-à-dire la connexité complète, soit 26 en 3D : même connexité. Vérifié dans le
+    code source de nnunetv2 2.8.1 et acvl_utils 0.2.7, PAS dans la version installée dans Colab. Autres
+    différences : nnU-Net le teste d'abord sur l'union de toutes les étiquettes, puis étiquette par
+    étiquette, et ne le garde que s'il améliore le Dice de la validation croisée ; ici on ne garde rien.
+    Ex aequo : nnU-Net garde TOUS les morceaux de taille maximale égale ; ici, seul le premier (cas signalé « = »)."""
+    import numpy as np
+    from scipy import ndimage
+    garde = np.zeros(m.shape, dtype=bool)
+    if not m.any():
+        return garde, 0, False
+    # Recadrage sur la boîte englobante, comme mesurer() de 05d : moins de mémoire.
+    bornes = [np.where(m.any(axis=tuple(x for x in range(3) if x != ax)))[0] for ax in range(3)]
+    boite = tuple(slice(int(b.min()), int(b.max()) + 1) for b in bornes)
+    etiq, nb = ndimage.label(m[boite], structure=np.ones((3, 3, 3)))   # connexité 26, comme 05d
+    tailles = np.bincount(etiq.ravel())[1:]                             # taille de chaque morceau (voxels)
+    i = int(np.argmax(tailles))                                         # 1er morceau de taille maximale
+    garde[boite] = etiq == i + 1
+    return garde, int(nb), bool((tailles == tailles[i]).sum() > 1)
+
+
+def sans_plus_grand_morceau(raison, verite_mm=None):
+    """Rubrique 5 bis d'un cas sans décalage (même exclusion que la partie 5)."""
+    return {"verite_mm": verite_mm, "prediction_mm": None, "decalage_mm": None, "volume_ml": None,
+            "volume_predit_total_ml": None, "part_volume_predit": None, "morceaux_prediction": None,
+            "ex_aequo": None, "signal": raison}
+
+
+def limite_plus_grand_morceau(pred, affine, esp, base):
+    """Partie 5 bis pour un cas. base = rubrique « bas_AP » de la partie 5 (vérité ENTIÈRE, inchangée) :
+    son niveau annoté est réutilisé tel quel. Seule la prédiction est réduite à son plus grand morceau."""
+    if base["decalage_mm"] is None:                     # structure absente : même exclusion qu'en partie 5
+        return sans_plus_grand_morceau(base["signal"], base["verite_mm"])
+    etiquette, mesure = next((e, ms) for cle, e, ms, _ in LIMITES if cle == BASE_PGM)
+    masque = pred == etiquette                          # copie booléenne : pred n'est pas modifié
+    garde, nb, ex_aequo = plus_grand_morceau(masque)
+    mg = ana.mesurer(garde, affine, esp)                # même mesure que la partie 5, sur ce seul morceau
+    total = ana.mesurer(masque, affine, esp)            # pour le volume prédit total (mêmes arrondis)
+    return {"verite_mm": base["verite_mm"], "prediction_mm": mg[mesure],
+            "decalage_mm": round(mg[mesure] - base["verite_mm"], 1),       # même arrondi que la partie 5
+            "volume_ml": mg["volume_ml"], "volume_predit_total_ml": total["volume_ml"],
+            "part_volume_predit": round(mg["voxels"] / total["voxels"], 4),
+            "morceaux_prediction": nb, "ex_aequo": ex_aequo,
+            "signal": None}
+
+
 def mesurer_limites(lignes, raw, res, cas_test):
     """Ajoute à chaque ligne (= un cas de validation) la rubrique « limites » : niveau annoté, niveau
-    prédit, décalage (prédit − annoté, en mm, + = vers la tête), nombre de morceaux, signal éventuel."""
+    prédit, décalage (prédit − annoté, en mm, + = vers la tête), nombre de morceaux, signal éventuel ;
+    et la rubrique CLE_PGM (partie 5 bis : bas de l'AP sur le plus grand morceau de la prédiction)."""
     for l in lignes:
         c = chemins_cas(raw, res, l["pli"], l["cas"], cas_test)
         manquants = [x for x in c.values() if not os.path.isfile(x)]
         if manquants:
             l["limites"] = {cle: sans_decalage(f"fichier absent : {manquants}") for cle, *_ in LIMITES}
+            l[CLE_PGM] = sans_plus_grand_morceau(f"fichier absent : {manquants}")
             l["remarques_geometrie"] = []
             continue
         print(f"  {l['cas']} (pli {l['pli']}) : lecture de la vérité et de la prédiction...", flush=True)
@@ -369,7 +451,10 @@ def mesurer_limites(lignes, raw, res, cas_test):
                             "morceaux_verite": mv["morceaux"], "morceaux_prediction": mp["morceaux"],
                             "signal": None}
         l["limites"], l["remarques_geometrie"] = limites, remarques
-        del ver, pred                                       # un seul cas en mémoire à la fois
+        # Partie 5 bis, À CÔTÉ de la partie 5 (qui n'est pas touchée) : vérité entière, prédiction réduite
+        # en mémoire à son plus grand morceau.
+        l[CLE_PGM] = limite_plus_grand_morceau(pred, affine, esp, limites[BASE_PGM])
+        del ver, pred                                      # un seul cas en mémoire à la fois
 
 
 def resumer_decalages(paires, total):
@@ -382,21 +467,30 @@ def resumer_decalages(paires, total):
     return {k: (round(v, 2) if isinstance(v, float) else v) for k, v in r.items()}
 
 
-def statistiques_limites(lignes):
-    """Pour chaque limite : statistiques sur les cas, puis par patient (paires moyennées d'abord)."""
+def statistiques_decalage(lignes, lire):
+    """Statistiques d'UN décalage (lire(ligne) -> décalage ou None) : sur les cas, puis par patient
+    (paires moyennées d'abord)."""
     patients = {}
     for l in lignes:
         patients.setdefault(l["patient"], []).append(l)
-    stats = {}
-    for cle, *_ in LIMITES:
-        sur_les_cas = [(l["cas"][-4:], l["limites"][cle]["decalage_mm"]) for l in lignes]
-        par_patient = []
-        for p, ls in patients.items():
-            v = [l["limites"][cle]["decalage_mm"] for l in ls if l["limites"][cle]["decalage_mm"] is not None]
-            par_patient.append((p, statistics.fmean(v) if v else None))   # un seul cas défini : il compte seul
-        stats[cle] = {"sur_les_cas": resumer_decalages(sur_les_cas, len(lignes)),
-                      "par_patient": resumer_decalages(par_patient, len(patients))}
-    return stats
+    sur_les_cas = [(l["cas"][-4:], lire(l)) for l in lignes]
+    par_patient = []
+    for p, ls in patients.items():
+        v = [lire(l) for l in ls if lire(l) is not None]
+        par_patient.append((p, statistics.fmean(v) if v else None))       # un seul cas défini : il compte seul
+    return {"sur_les_cas": resumer_decalages(sur_les_cas, len(lignes)),
+            "par_patient": resumer_decalages(par_patient, len(patients))}
+
+
+def statistiques_limites(lignes):
+    """Pour chaque limite de la partie 5 (tous morceaux) : statistiques sur les cas, puis par patient."""
+    return {cle: statistiques_decalage(lignes, lambda l, cle=cle: l["limites"][cle]["decalage_mm"])
+            for cle, *_ in LIMITES}
+
+
+def statistiques_plus_grand_morceau(lignes):
+    """Partie 5 bis : mêmes statistiques, sur le décalage du plus grand morceau."""
+    return statistiques_decalage(lignes, lambda l: l[CLE_PGM]["decalage_mm"])
 
 
 # --- Affichage --------------------------------------------------------------------------------
@@ -497,6 +591,51 @@ def afficher_limites(lignes, stats):
           "ne conclut pas (voir D31 : la variabilité peut venir de l'annotation).")
 
 
+def afficher_plus_grand_morceau(lignes, stats, stats_pgm):
+    """Partie 5 bis : tableau côte à côte (tous morceaux / plus grand morceau) et statistiques."""
+    print("\n" + "=" * 110)
+    print("5 bis. BAS DE L'AP : tous morceaux (partie 5) / PLUS GRAND MORCEAU de la prédiction seulement")
+    print("   Même décalage (prédit − annoté, mm, + = vers la tête). La VÉRITÉ reste ENTIÈRE (niveau annoté de la")
+    print("   partie 5). Plus grand morceau calculé en mémoire (connexité 26, comme 05d) : aucune prédiction ni")
+    print("   aucun fichier n'est modifié ; ce n'est PAS le post-traitement de nnU-Net.")
+    print(f"\n{'pli':>3}  {'cas':<6}{'patient':<11}{'annoté':>8} | {'tous morceaux':>22} | "
+          f"{'plus grand morceau':>34} | {'morceaux prédits':>16}")
+    print(f"{'':>30} | {'prédit':>9}{'décalage':>11}   | {'prédit':>9}{'décalage':>11}{'vol. mL':>8}{'part':>6} | "
+          f"{'AP':>6}{'VD':>6}")
+    for l in lignes:
+        t, g = l["limites"][BASE_PGM], l[CLE_PGM]
+        mvd = l["limites"].get("haut_VD", {}).get("morceaux_prediction")
+        marque = " !" if g["signal"] else (" =" if g["ex_aequo"] else "  ")
+        print(f"{l['pli']:>3}  {l['cas'][-4:]:<6}{l['patient']:<11}{mm1(t['verite_mm']):>8} | "
+              f"{mm1(t['prediction_mm']):>9}{mm1(t['decalage_mm'], True):>11}   | "
+              f"{mm1(g['prediction_mm']):>9}{mm1(g['decalage_mm'], True):>11}{mm1(g['volume_ml']):>8}"
+              f"{pct(g['part_volume_predit']):>6} | "
+              f"{(t['morceaux_prediction'] if t['morceaux_prediction'] is not None else '—'):>6}"
+              f"{(mvd if mvd is not None else '—'):>6}{marque}")
+    print("  vol. mL = volume du plus grand morceau ; part = part du volume prédit de l'AP qu'il représente ;")
+    print("  morceaux prédits AP / VD = nombre de morceaux de la prédiction (VD : rappel, pas de variante 5 bis) ;")
+    print("  ! = pas de décalage (voir « Cas signalés » de la partie 5) ; = = deux morceaux de taille maximale égale "
+          "(le premier trouvé est gardé).")
+
+    for titre, rubrique, unite in (("SUR LES CAS", "sur_les_cas", "cas"),
+                                   ("PAR PATIENT (paires 1001/1020 et 1005/1012 moyennées d'abord)",
+                                    "par_patient", "patients")):
+        print(f"\nDispersion du décalage du bas de l'AP (mm), {titre} :")
+        print(f"  {'':<34}{'tous morceaux':>22}{'plus grand morceau':>22}")
+        for libelle, extraire in (
+                (f"{unite} utilisés / possibles", lambda s: f"{s['n']} / {s['n_total']}"),
+                ("minimum", lambda s: f"{mm1(s.get('min'), True)} ({s.get('cas_min', '—')})"),
+                ("maximum", lambda s: f"{mm1(s.get('max'), True)} ({s.get('cas_max', '—')})"),
+                ("médiane", lambda s: mm1(s.get("mediane"), True)),
+                ("écart-type", lambda s: mm1(s.get("ecart_type"))),
+                ("moyenne", lambda s: mm1(s.get("moyenne"), True)),
+                ("médiane des valeurs absolues", lambda s: mm1(s.get("mediane_valeurs_absolues")))):
+            print(f"  {libelle:<34}{extraire(stats[BASE_PGM][rubrique]):>22}{extraire(stats_pgm[rubrique]):>22}")
+    print("\n  Lecture : si les deux colonnes sont proches pour un cas, les fragments ne changent pas sa limite ;")
+    print("  si elles diffèrent, c'est un fragment isolé qui fixait le niveau le plus bas. Aucun seuil, aucune "
+          "conclusion ici.")
+
+
 # --- Programme principal ----------------------------------------------------------------------
 def main():
     a = lire_arguments()
@@ -580,6 +719,8 @@ def main():
     mesurer_limites(lignes, raw, res, cas_test)
     stats_limites = statistiques_limites(lignes)
     afficher_limites(lignes, stats_limites)
+    stats_pgm = statistiques_plus_grand_morceau(lignes)       # partie 5 bis (calcul déjà fait en mémoire)
+    afficher_plus_grand_morceau(lignes, stats_limites, stats_pgm)
 
     # --- Écriture -------------------------------------------------------------------------------------
     os.makedirs(sortie, exist_ok=True)                      # le seul dossier où le script écrit
@@ -590,9 +731,14 @@ def main():
         # morceaux de la prédiction ; cellule vide = pas de valeur (voir « signaux_limites »).
         champs_limites = (("verite_mm", "annote_mm"), ("prediction_mm", "predit_mm"),
                           ("decalage_mm", "decalage_mm"), ("morceaux_prediction", "morceaux_predits"))
+        # Colonnes de la partie 5 bis, AJOUTÉES À LA FIN (les colonnes existantes ne bougent pas) : le niveau
+        # annoté et le nombre de morceaux sont déjà dans les colonnes bas_AP_* ; part = fraction (0 à 1).
+        champs_pgm = (("prediction_mm", "predit_mm"), ("decalage_mm", "decalage_mm"), ("volume_ml", "volume_ml"),
+                      ("part_volume_predit", "part_volume_predit"), ("ex_aequo", "ex_aequo"))
         w.writerow(["pli", "cas", "patient", "epaisseur_mm", *[f"dice_{e}_{n}" for e, n in STRUCTURES.items()],
                     "moyenne_cas", "signaux",
-                    *[f"{cle}_{nom}" for cle, *_ in LIMITES for _, nom in champs_limites], "signaux_limites"])
+                    *[f"{cle}_{nom}" for cle, *_ in LIMITES for _, nom in champs_limites], "signaux_limites",
+                    *[f"{CLE_PGM}_{nom}" for _, nom in champs_pgm]])
         for l in lignes:
             sig = "; ".join(f"{s['structure']} {s['niveau']}" for s in signaux if s["cas"] == l["cas"])
             sig_lim = "; ".join([f"{cle} : {l['limites'][cle]['signal']}" for cle, *_ in LIMITES
@@ -601,7 +747,8 @@ def main():
                         *[("" if l["dice"][e] is None else round(l["dice"][e], 4)) for e in STRUCTURES],
                         "" if l["moyenne_cas"] is None else round(l["moyenne_cas"], 4), sig,
                         *[("" if l["limites"][cle][champ] is None else l["limites"][cle][champ])
-                          for cle, *_ in LIMITES for champ, _ in champs_limites], sig_lim])
+                          for cle, *_ in LIMITES for champ, _ in champs_limites], sig_lim,
+                        *[("" if l[CLE_PGM][champ] is None else l[CLE_PGM][champ]) for champ, _ in champs_pgm]])
     os.replace(chemin_csv + ".tmp", chemin_csv)             # jamais de fichier à moitié écrit
     synthese = {"objet": "bilan de la validation croisée nnU-Net (validation hors pli, PAS le test), LECTURE SEULE",
                 "date_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
@@ -626,7 +773,25 @@ def main():
                     "seuil": None,
                     "statistiques": stats_limites,
                     "cas_sans_decalage": {cle: [l["cas"] for l in lignes if l["limites"][cle]["decalage_mm"] is None]
-                                          for cle, *_ in LIMITES}}}
+                                          for cle, *_ in LIMITES},
+                    # Partie 5 bis ; valeurs par cas dans « lignes », rubrique « bas_AP_plus_grand_morceau ».
+                    CLE_PGM: {
+                        "definition": "bas de l'AP (7) : niveau_bas_mm du PLUS GRAND MORCEAU de la prédiction − "
+                                      "niveau_bas_mm de la vérité ENTIÈRE",
+                        "unite": "mm le long de l'axe tête-pieds (repère du scanner)",
+                        "convention_signe": "positif = la prédiction s'arrête plus haut (vers la tête) que l'annotation",
+                        "connexite": "26 (face, arête ou coin ; structure 3 × 3 × 3), comme le comptage des morceaux "
+                                     "de mesurer() dans 05d",
+                        "verite": "non modifiée : annotation entière, même niveau annoté que bas_AP",
+                        "methode": "plus grande composante connexe de l'étiquette 7 prédite, calculée en mémoire ; "
+                                   "mesurer() de 05d sur ce seul morceau ; aucune prédiction ni aucun fichier modifié ; "
+                                   "ce n'est pas le post-traitement de nnU-Net",
+                        "part_volume_predit": "voxels du plus grand morceau / voxels prédits de l'AP (fraction de 0 à 1)",
+                        "par_patient": "les deux cas d'une paire sont moyennés d'abord ; un seul cas défini compte seul",
+                        "seuil": None,
+                        "statistiques": stats_pgm,
+                        "cas_sans_decalage": [l["cas"] for l in lignes if l[CLE_PGM]["decalage_mm"] is None],
+                        "cas_ex_aequo": [l["cas"] for l in lignes if l[CLE_PGM]["ex_aequo"]]}}}
     chemin = os.path.join(sortie, NOM_SYNTHESE)
     with open(chemin + ".tmp", "w", encoding="utf-8") as f:
         json.dump(synthese, f, indent=2, ensure_ascii=False)
