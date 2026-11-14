@@ -36,6 +36,75 @@ Boucle à chaque étape : l'agent écrit le script ici → le dépôt est mis à
 
 Phase 2 (plus tard) : jeu ImageCAS annoté (plus de cas), scanners d'autres hôpitaux, cœurs pathologiques, scanners sans contraste.
 
+## Stratégie face aux cas difficiles
+
+Un modèle peut avoir une bonne moyenne et échouer complètement sur un type d'examen : au pli 0, le Dice moyen de 0,850 cachait une aorte à 0,00 sur 1019 (D26). La stratégie du projet tient en quatre couches successives. Chacune rattrape ce que la précédente a laissé passer. Pour chaque couche : ce que le POC a fait (avec les décisions du journal) et ce qui reste pour la phase 2.
+
+Un **sous-groupe** est une famille d'examens qui partagent une caractéristique susceptible de changer le comportement du modèle (épaisseur de coupe, moment de l'injection, etc.).
+
+### 1. Connaître ses données : cartographier les sous-groupes
+
+**Ce que le POC a fait**
+- **Épaisseur de coupe** : deux familles repérées dans l'en-tête des fichiers, 0,45 mm (5 cas, probablement un autre scanner) et 0,625 mm (15 cas) (D20).
+- **Patients en double** : deux paires de cas qui sont très probablement le même patient (1001/1020 et 1005/1012), trouvées par la géométrie des fichiers et un examen visuel (D20).
+- **Phase d'injection** (moment où les images sont prises après l'injection du produit de contraste) : 1019 a une phase inversée, avec l'aorte moins dense que l'artère pulmonaire (D27). Un script mesure les densités des vaisseaux sur les cas d'entraînement (05e, section 18).
+- **Phase du cycle cardiaque** (systole : cœur contracté ; diastole : cœur relâché) : volumes de la vérité très variables, cavité VG de 30 à 150 mL (D32). 1001 et 1020 sont probablement le même patient à deux phases (D20).
+- **Annotations** : définitions comparées à celles de TotalSegmentator sur des cas d'entraînement (D22, D23) ; annotation atypique de l'OD (1002), définition floue de la valve pulmonaire et de l'étendue de l'AP (D31).
+
+**Ce qui reste pour la phase 2**
+- Ajouter les sous-groupes absents du POC : **scanners sans contraste**, **autres centres** (hôpitaux, constructeurs, protocoles), **cœurs pathologiques**.
+- Relever la phase d'injection et la phase cardiaque **pour chaque examen** (en-tête DICOM, mesure automatique), au lieu de les découvrir après un échec.
+- Écrire un protocole d'annotation avec des définitions précises des frontières (plans valvulaires, étendue des branches) (D31).
+
+### 2. Bien apprendre : chaque sous-groupe assez représenté
+
+**Ce que le POC a fait**
+- **Découpage par patient** : un même patient n'est jamais à la fois en test et en entraînement, ni dans deux plis de validation croisée (D20, D24).
+- **Découpage stratifié** par épaisseur de coupe (chaque famille a sa part, au lieu d'un tirage au hasard qui peut tout mettre du même côté) : dans le test, 1 cas à 0,45 mm et 4 à 0,625 mm (D20) ; dans les plis, les 3 patients d'entraînement à 0,45 mm répartis dans 3 plis différents (D24).
+- **Aucune donnée retirée ni corrigée d'après un résultat** : 1019, 1015 et les autres cas faibles sont gardés (D27, D30, D31).
+- Données d'entraînement prises uniquement dans le lot d'entraînement (D18). Jamais d'apprentissage sur des masques produits par TotalSegmentator (règle de licence, CLAUDE.md).
+
+**Limites constatées** : 1019 est le seul cas à phase d'injection inversée ; le modèle ne peut pas apprendre cette situation (D27). Seulement 3 patients d'entraînement à 0,45 mm (D24).
+
+**Ce qui reste pour la phase 2**
+- Assez de cas dans **chaque** sous-groupe : plusieurs phases d'injection (D27), avec et sans contraste, plusieurs centres, des cœurs pathologiques (jeu ImageCAS et autres sources).
+- Stratifier le découpage sur **tous** les sous-groupes connus, pas seulement l'épaisseur de coupe.
+- Étude de variabilité entre annotateurs, sur le principe d'un **Gage R&R** (mesure de la part de variation due à l'instrument et à l'opérateur), pour connaître le bruit d'annotation que le modèle ne peut pas réduire (D31).
+
+### 3. Bien évaluer : par cas et par sous-groupe, jamais seulement la moyenne
+
+**Ce que le POC a fait**
+- **Score par cas et par structure**, pas seulement la moyenne : l'échec de 1019 a été vu ainsi, et le pli 1 n'a été lancé qu'après son analyse (D26).
+- **Moyenne par patient** en plus de la moyenne par cas, pour ne pas compter deux fois les paires (D30) : Dice hors pli 0,906 sur les cas, 0,903 par patient, médiane 0,924 (D31).
+- **Examen des cas faibles** avec figures et indicateurs (05d, 05g) et **classement des causes d'échec** (D31) :
+  - hors domaine : vaisseaux de 1019 ;
+  - annotation atypique : OD de 1002 ;
+  - définition floue : AP et VD autour de la valve pulmonaire (1015) ;
+  - frontière ambiguë : myocarde VG de 1018 ;
+  - erreur du modèle : fragment isolé de l'AP de 1018.
+
+  Aucun échec majeur ne relève d'une erreur pure du modèle.
+- **Mesures en plus du Dice** : décalage en mm des limites de l'AP et du VD, et nombre de morceaux, qui ont révélé les fragments de l'AP (D32).
+- **Règles du verdict fixées avant de regarder le test** ; lot de test utilisé une seule fois, à l'étape 6 (D16, D18, D19, D22, D23 ; CLAUDE.md, règle 4) ; métriques principales sur tous les cas, alertes comprises (D29, Q5).
+
+**Ce qui reste**
+- **Étape 6 (phase 1)** : Dice, HD95 et volumes sur les 5 cas de test. Avec un seul cas à 0,45 mm, aucune conclusion propre à cette famille n'est possible (D20).
+- **Phase 2** : résultats rapportés **par sous-groupe**, avec assez de cas pour conclure ; erreur sur les **mesures dérivées** utiles au clinicien, comme la masse du VG, en plus du Dice (D31) ; comparaison à la variabilité entre annotateurs (D31).
+
+### 4. Se protéger en service : ne jamais rendre un résultat faux en silence
+
+**Ce que le POC a fait**
+- **Post-traitement** de nnU-Net (ne garder que le plus grand morceau) déterminé sur les 15 prédictions hors pli (05i, section 22) : préparé, décision à prendre après exécution (D32).
+- **Contrôle de plausibilité en sortie** (D28) : présence, volume, rapports de volumes, densités et nombre de morceaux de chaque structure, règles R0 à R8 (D29 ; spécification dans `docs/specification_controle_plausibilite.md`). Mesures de calibrage : volumes et rapports mesurés sur la vérité (05h, section 21, D32) ; densités mesurées par 05e (section 18 : 1019 seul cas à phase d'injection inversée ; résultats dans la spécification). 1019 est exclu du calibrage, et chaque règle est vérifiée en laissant chaque patient de côté à tour de rôle, pour éviter un raisonnement circulaire (D28). Le calibrage est reporté après la décision sur le post-traitement (D32), et les seuils seront figés avant l'étape 6 (D28 ; D29, Q9).
+- **Deux types d'alertes**, présentés séparément : « hors domaine », qui signale un examen inhabituel (limite du modèle), et « erreur probable » (D29, Q8).
+- **Revue humaine des alertes** : le POC signale et rapporte chaque alerte (nombre d'alertes publié à côté des métriques, D29, Q5) ; c'est un humain qui lit et tranche.
+
+**Ce qui reste pour la phase 2**
+- **Contrôle d'entrée**, avant la segmentation : lecture de l'en-tête DICOM, estimation de la phase d'injection, détection des scanners sans contraste (D28).
+- Règle **R9** (positions et contacts entre structures), reportée à une version 2 (D29, Q1).
+- **Circuit de revue humaine** organisé : qui revoit les alertes, dans quel délai, et ce que l'on fait d'un examen signalé.
+- Recalibrer le contrôle de plausibilité sur des données plus variées : avec 13 patients (12 pour le calibrage, 1019 exclu), les plages seront larges (D29, Q2) et R2/R3 ne détecteront que les erreurs grossières (D32).
+
 ## Organisation du dépôt
 
 ```
