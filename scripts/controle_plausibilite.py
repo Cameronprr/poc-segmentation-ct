@@ -1,6 +1,9 @@
 """
-Contrôle de plausibilité (décision D28, spécification docs/specification_controle_plausibilite.md v1.0) :
+Contrôle de plausibilité (décision D28, spécification docs/specification_controle_plausibilite.md v1.1) :
 MESURES d'un masque et APPLICATION des règles R0 à R8, avec des seuils donnés.
+Version 1.1 (D35, révision unique avant le gel) : R3 limitée au rapport AP / aorte ; R6 à seuil fixe de 0 HU
+(« INVERSÉ » : aorte moins dense que l'AP) ; R8 réduite au nombre de morceaux de plus de 0,5 mL (la part du
+plus gros morceau reste MESURÉE, pour information, mais ne déclenche plus rien).
 Module à importer (par 05j, et plus tard par l'étape 6) : il ne lit aucun argument, n'écrit aucun fichier,
 ne calibre aucun seuil. Il ne lit que les deux fichiers qu'on lui donne (image CT et masque).
 
@@ -10,13 +13,15 @@ concordent avec les sections 18, 21 et 22 du notebook :
     « cœur » de la structure (voxels à plus de 3 mm du bord), repli sur la structure entière si le cœur
     est vide ; écarts aorte − VG, AP − VD, aorte − AP calculés comme dans 05e (colonnes « _ref ») ;
   - volumes et rapports (R1 à R3) : mesurer_cas() de 05h (voxels × produit des 3 espacements de l'en-tête
-    de l'IMAGE / 1000 ; rapports = rapports des nombres de voxels) ;
+    de l'IMAGE / 1000 ; rapports = rapports des nombres de voxels). Les 5 rapports de 05h restent mesurés
+    (concordance avec la section 21), mais R3 n'en contrôle plus qu'un, AP / aorte (D35) ;
   - morceaux (R8) : morceaux() de 05i (connectivité 26, morceaux de plus de 0,5 mL, part du plus gros
     morceau dans le volume total de l'étiquette).
 Seule R0 (cohérence technique) est mesurée ici, car aucun script précédent ne la mesurait avec la tolérance
 de la spécification (0,01 mm).
-Toutes les règles, R8 comprise, s'appliquent indifféremment à une vérité ou à une prédiction : R0 et R1 sont
-fixées, R2 à R8 sont calibrées sur la vérité (D34), puis toutes sont appliquées aux prédictions.
+Toutes les règles, R8 comprise, s'appliquent indifféremment à une vérité ou à une prédiction : R0, R1 et R6
+sont fixées (R6 depuis D35), R2 à R5, R7 et R8 sont calibrées sur la vérité (D34), puis toutes sont appliquées
+aux prédictions.
 
 Vocabulaire :
   - règle « déclenchée » : la mesure sort de la plage autorisée par le seuil ; le cas passe en ALERTE ;
@@ -42,10 +47,15 @@ pp = _charger("postraitement05i", "05i_postraitement_nnunet.py") # comptage des 
 
 # --- Définitions fixes (spécification § 5 ; aucune n'est calibrée) ----------------------------
 STRUCTURES = vol.STRUCTURES                    # {1: "myocarde_VG", 2: "OG", ..., 6: "aorte", 7: "AP"}
-RAPPORTS = vol.RAPPORTS                        # 5 rapports de R3 : (nom, numérateur, dénominateur)
+RAPPORTS = vol.RAPPORTS                        # 5 rapports MESURÉS (comme 05h) : (nom, numérateur, dénominateur)
+# R3 ne contrôle que AP / aorte (D35) : les rapports divisés par la cavité VG dépendent de la phase du cycle
+# cardiaque (D32), le volume de la cavité VG variant de 30 à 150 mL sur la vérité.
+RAPPORTS_R3 = tuple(r for r in RAPPORTS if r[0] == "AP_sur_aorte")
+assert len(RAPPORTS_R3) == 1, "rapport AP_sur_aorte introuvable dans 05h"
 ETIQUETTES_AUTORISEES = tuple(range(8))        # R0 : fond 0 et étiquettes 1 à 7
 TOLERANCE_R0_MM = 0.01                         # R0 : forme et affine comparées à 0,01 mm près (spéc. § 5)
 VOLUME_MIN_R1_ML = 1.0                         # R1 : V min,abs = 1 mL (fixé, spéc. § 5)
+ECART_R6_MIN_HU = 0                            # R6 : alerte si aorte − AP < 0 HU (« INVERSÉ » de 05e, D35), fixé
 MORCEAU_ML = pp.MORCEAU_ML                     # R8 : on compte les morceaux de plus de 0,5 mL (définition)
 TOUTES = ("R0", "R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8")
 CATEGORIE = {r: ("hors_domaine" if r in ("R6", "R7") else "erreur_probable") for r in TOUTES}   # spéc. § 4, Q8
@@ -53,12 +63,12 @@ LIBELLE = {
     "R0": "masque techniquement incohérent avec l'image (forme, affine ou étiquettes)",
     "R1": "structure absente (volume ≤ 1 mL)",
     "R2": "volume de la structure hors de la plage observée",
-    "R3": "rapport de volumes hors de la plage observée",
+    "R3": "rapport de volumes AP / aorte hors de la plage observée",
     "R4": "densité de l'aorte prédite éloignée de celle de la cavité VG prédite",
     "R5": "densité de l'AP prédite éloignée de celle du VD prédit",
     "R6": "aorte moins dense que l'AP : phase d'injection hors du domaine validé",
     "R7": "cavité VG peu dense : contraste absent ou insuffisant, hors du domaine validé",
-    "R8": "masque éclaté : trop de morceaux, ou plus gros morceau trop petit"}
+    "R8": "masque éclaté : trop de morceaux de plus de 0,5 mL"}
 
 
 # --- Mesures ------------------------------------------------------------------------------------
@@ -141,7 +151,7 @@ def appliquer(m, seuils, regles=TOUTES):
         elif p and not p["bas"] <= v <= p["haut"]:
             dec.append(_alerte("R2", f"{e} {nom}", {"volume_ml": v}, p))
     if "R3" in regles:
-        for r, _, _ in RAPPORTS:
+        for r, _, _ in RAPPORTS_R3:                          # AP / aorte seulement (D35)
             x, p = m["rapports"][r], s["R3"]["plages"].get(r)
             if x is None or p is None:
                 non_eval.append(f"R3 {r} : {'rapport non calculable (structure absente)' if x is None else 'pas de seuil'}")
@@ -168,7 +178,8 @@ def appliquer(m, seuils, regles=TOUTES):
             mo, t = m["morceaux"][e], s["R8"]["par_etiquette"].get(str(e))
             if t is None or mo["n_gros"] == 0:
                 non_eval.append(f"R8 {e} {nom} : {'pas de seuil' if t is None else 'aucun morceau de plus de 0,5 mL'}")
-            elif mo["n_gros"] > t["morceaux_gros_max"] or mo["part_plus_gros"] < t["part_plus_gros_min"]:
+            elif mo["n_gros"] > t["morceaux_gros_max"]:       # nombre de morceaux > 0,5 mL seulement (D35)
+                # part_plus_gros : affichée pour information, elle ne déclenche plus rien (D35).
                 dec.append(_alerte("R8", f"{e} {nom}", {"morceaux_gros": mo["n_gros"], "morceaux_total": mo["n"],
                                                          "part_plus_gros": mo["part_plus_gros"]}, t))
     return {"statut": "ALERTE" if dec else "OK", "regles_declenchees": dec, "regles_verifiees": list(regles),
