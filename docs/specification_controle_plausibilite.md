@@ -1,6 +1,7 @@
 # Spécification : contrôle de plausibilité des segmentations (décision D28)
 
-*Version 1.1 du 2026-11-14 (D35 : révision unique avant le gel, décidée après la première exécution de la section 23 ; voir section 7.1). Version 1.0 du 2026-11-11. Questions Q1 à Q9 tranchées par l'utilisateur (section 10, décision D29). Le contrôle est codé dans `scripts/controle_plausibilite.py` ; calibrage et vérification par `scripts/05j_calibrer_controle.py` (section 23, seuils proposés, non figés). Scripts de mesure : `05e_densites_vaisseaux.py` (densités, R4 à R7, section 18 du notebook) et `05h_volumes_verite.py` (volumes et rapports, R2 et R3, section 21, D32), tous deux exécutés ; résultats en fin de section 5. Seuils proposés par 05j, non figés. Calendrier du calibrage (section 6.2) modifié par D32 : tout le calibrage attend la décision sur le post-traitement de nnU-Net (05i, section 22) ; R2 à R7 restent calibrés sur la vérité, sauf R6, fixée à 0 HU (D35) ; R8 aussi, sur la vérité (D34), puis toutes les règles sont appliquées aux prédictions hors pli post-traitées (D33).*
+***Statut : FIGÉ le 2026-11-14 (D36).** Seuils dans `config/seuils_plausibilite.json`, empreinte SHA-256 `c1b247070765d193a46e90b538cc655787dbb65f8fdd13f113a39efd3ef90672`. Aucune modification après le gel (section 7).*
+*Version 1.1 du 2026-11-14 (D35 : révision unique avant le gel, décidée après la première exécution de la section 23 ; voir section 7.1). Version 1.0 du 2026-11-11. Questions Q1 à Q9 tranchées par l'utilisateur (section 10, décision D29). Le contrôle est codé dans `scripts/controle_plausibilite.py` ; calibrage et vérification par `scripts/05j_calibrer_controle.py` (section 23, seuils proposés, figés depuis par D36). Scripts de mesure : `05e_densites_vaisseaux.py` (densités, R4 à R7, section 18 du notebook) et `05h_volumes_verite.py` (volumes et rapports, R2 et R3, section 21, D32), tous deux exécutés ; résultats en fin de section 5. Seuils proposés par 05j, validés et figés (D36, section 7.2). Calendrier du calibrage (section 6.2) modifié par D32 : tout le calibrage attend la décision sur le post-traitement de nnU-Net (05i, section 22) ; R2 à R7 restent calibrés sur la vérité, sauf R6, fixée à 0 HU (D35) ; R8 aussi, sur la vérité (D34), puis toutes les règles sont appliquées aux prédictions hors pli post-traitées (D33).*
 *Rédigée sans ouvrir le lot de test. Les seuls chiffres cités viennent du pli 0 (cas d'entraînement 1001, 1019 et 1020), de D27, et des mesures 05e et 05h sur la vérité des 15 cas d'entraînement (fin de la section 5).*
 
 ---
@@ -123,7 +124,7 @@ Seuls les **15 cas d'entraînement** du découpage figé (`splits/mmwhs_split.js
 **Calendrier retenu (Q9) :**
 1. **Juste après la section 18 du notebook** : calibrer R2 à R7 sur la **vérité** des cas d'entraînement (1019 exclu des seuils). R4 à R7 viennent de 05e ; R2 et R3 viennent de 05h (volumes des étiquettes 1 à 7 et 5 rapports, section 21), qui ne fixe aucun seuil. *Depuis D35 : R6 fixée à 0 HU, non calibrée ; R3 réduite au rapport AP / aorte.* Ces règles décrivent ce qui est anatomiquement plausible. La vérité est la bonne référence, et elle ne dépend pas du modèle.
 2. **Après les 5 plis** : calibrer R8 sur la **vérité** des 14 cas sans 1019 (D34 ; remplace « sur les prédictions hors-pli »), puis vérifier toutes les règles sur les 15 prédictions hors pli **post-traitées** (D33 ; critère de la section 7).
-3. **Geler** le fichier de seuils, puis le tracer dans le journal (date, empreinte SHA-256). Tout cela **avant** l'étape 6.
+3. **Geler** le fichier de seuils, puis le tracer dans le journal (date, empreinte SHA-256). Tout cela **avant** l'étape 6. **Fait le 2026-11-14 (D36)** : `config/seuils_plausibilite.json`, SHA-256 `c1b247070765d193a46e90b538cc655787dbb65f8fdd13f113a39efd3ef90672`.
 
 **Rangement (Q6) :** `config/seuils_plausibilite.json`, **dans le dépôt**. Il ne contient que des valeurs agrégées (plages, marges, version, date de gel), **aucune valeur par cas** et aucun identifiant de cas (pas de champ « cas du min / cas du max »). Le tableau cas par cas de 05e reste dans Drive. Git date le fichier, ce qui prouve qu'il a été figé avant l'étape 6.
 
@@ -172,6 +173,21 @@ Règle pour la suite : **si le critère n'est toujours pas atteint avec la versi
 
 Pour 1018 : une alerte par d'autres règles seulement reste une fausse alerte. Si R8 ne signale pas l'AP de 1018 (par exemple si *N*(AP) ≥ 2 sur la vérité), c'est une limite à consigner (D34), pas un échec du critère.
 
+### 7.2 Résultat et gel (D36)
+
+Section 23 relancée avec la version 1.1 : critère **ATTEINT SOUS RÉSERVE**.
+
+| Exigence | Résultat |
+|---|---|
+| 1019 → ALERTE | atteint : R2 (aorte), R3 (AP / aorte), R8 (AP) ; R6 (hors domaine) |
+| 1001 et 1020 → OK | atteint |
+| Fausses alertes sur les 14 cas autres que 1019 | **une**, consignée (Q3) : 1002, R8 sur l'AP, second morceau de 0,65 mL, à peine au-dessus du seuil de 0,5 mL ; cliniquement mineur, reste de la segmentation correct. 1018 : fragment de l'AP détecté par R8, vraie alerte (D35) |
+| Vérification par patient sur la vérité | atteint : aucune alerte ; vérité de 1019 : R6 seule |
+
+Autres résultats : *N*(AP) = 1, donc R8 peut détecter le fragment de 1018 ; concordance avec 05e et 05h : 240 valeurs, 0 écart. Vérification par patient sur les **prédictions** (information) : 2 fausses alertes sur 14 (1001 : R2 sur l'AP ; 1002 : R8 sur l'AP). C'est l'**estimation indicative** des fausses alertes sur des cas nouveaux : **environ 2 sur 14**.
+
+**Gel** : `config/seuils_plausibilite.json` est la copie de `seuils_proposes.json` (05j, code `f95bc7b`), avec trois changements seulement : statut « figé », date de gel 2026-11-14, champ `sha256_du_fichier_gele` retiré (un fichier ne peut pas contenir sa propre empreinte). Les 45 valeurs de seuil et de marge sont identiques. Empreinte SHA-256 du fichier : `c1b247070765d193a46e90b538cc655787dbb65f8fdd13f113a39efd3ef90672`. Le fichier est exempté de conversion des fins de ligne (`.gitattributes`), pour que l'empreinte soit la même partout.
+
 Interdits :
 - **jamais** de calibrage, de réglage ni d'essai sur le lot de test ;
 - **jamais** de modification des seuils après le gel.
@@ -196,7 +212,7 @@ Le test ne contient que 5 cas. S'ils sont tous en phase « normale », il ne dir
 - **15 cas, dont 13 patients** : les plages observées sont étroites et les seuils fragiles. Un patient normal mais plus grand, ou un cœur pathologique, peut sortir de la plage (fausse alerte).
 - **Un seul échec connu** (1019) : on ne peut pas estimer la sensibilité. Un autre type d'erreur (bord mal placé, structure de bon volume mais décalée) peut passer (faux négatif).
 - **Les règles ont été conçues après avoir vu 1019** : c'est un biais de conception, documenté en section 6.4.
-- **Les règles ont été révisées une fois après la vérification** (D35) : les fausses alertes mesurées sur les cas d'entraînement sont donc optimistes. Le test en donnera une estimation indépendante, sur 5 cas seulement.
+- **Les règles ont été révisées une fois après la vérification** (D35) : les fausses alertes mesurées sur les cas d'entraînement sont donc optimistes. Estimation indicative avant le test : environ 2 sur 14 (D36). Le test en donnera une estimation indépendante, sur 5 cas seulement.
 - **R3 réduite à AP / aorte, R8 sans critère de part** (D35) : moins de façons de détecter une erreur. Par exemple, une OG ou un VD grossièrement faux en proportion de la cavité VG n'est plus repéré que par R2, dont la plage est large (marge de 50 %).
 - **Le contrôle porte sur la vraisemblance, pas sur l'exactitude.** Un masque plausible peut être faux de quelques millimètres. Le contrôle ne remplace ni le Dice sur données annotées, ni la relecture d'un expert.
 - **Mesures dépendantes du masque.** R4 à R7 mesurent les densités dans le masque prédit. Si le modèle se trompe de façon cohérente (deux structures permutées ensemble), certaines règles peuvent rester muettes. C'est la raison d'être de R9, prévue en version 2.
