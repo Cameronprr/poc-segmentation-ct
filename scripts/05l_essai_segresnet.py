@@ -241,8 +241,9 @@ class SuiviGPU(threading.Thread):
 
 
 # --- Préparation : liste, copie locale, modèles d'algorithmes ----------------------------------
-def verifier_liste(a, nom_ds):
-    """Liste de 05k : même empreinte que sa fiche, et contrôles de 05k refaits contre splits_final.json."""
+def verifier_liste(a, nom_ds, pli=PLI):
+    """Liste de 05k : même empreinte que sa fiche, et contrôles de 05k refaits contre splits_final.json.
+    pli : pli dont la validation est affichée (0 pour cet essai ; 05m passe le pli qu'il entraîne)."""
     chemin_liste = os.path.join(a.travail, prep05k.NOM_LISTE)
     chemin_fiche = os.path.join(a.travail, prep05k.NOM_FICHE)
     if not (os.path.isfile(chemin_liste) and os.path.isfile(chemin_fiche)):
@@ -260,7 +261,7 @@ def verifier_liste(a, nom_ds):
     if problemes:
         sys.exit("ARRÊT : liste non conforme :\n  - " + "\n  - ".join(problemes))
     print(f"Liste de données vérifiée ({len(liste['training'])} cas, plis = splits_final.json, aucun cas de test). "
-          f"Pli {PLI} : validation = {plis[PLI]['val']}")
+          f"Pli {pli} : validation = {plis[pli]['val']}")
     return chemin_liste, fiche, liste, plis
 
 
@@ -315,16 +316,19 @@ def preparer_modeles(travail, local):
     return dossier
 
 
-def generer(travail_essai, chemin_liste, local, modeles, nb_epoques, uri_mlflow_interne):
+def generer(travail_essai, chemin_liste, local, modeles, nb_epoques, uri_mlflow_interne, nb_plis=1, options=None):
     """AutoRunner limité à l'analyse des données et à la génération de segresnet_0 (aucun entraînement,
-    aucun ensemble). Les étapes déjà faites (cache.yaml) ne sont pas refaites."""
+    aucun ensemble). Les étapes déjà faites (cache.yaml) ne sont pas refaites.
+    nb_plis : AutoRunner génère les plis 0 à nb_plis − 1 (1 pour cet essai). options : réglages ajoutés à
+    l'entrée, recopiés comme num_epochs dans hyper_parameters.yaml (05m : fréquence de validation...)."""
     from monai.apps.auto3dseg import AutoRunner
     entree = {"modality": "ct", "datalist": chemin_liste, "dataroot": local,
               "num_epochs": nb_epoques}          # recopié dans hyper_parameters.yaml (algo.py : config.update)
+    entree.update(options or {})
     runner = AutoRunner(work_dir=travail_essai, input=entree, algos=ALGO, train=False, ensemble=False,
                         templates_path_or_url=modeles, mlflow_tracking_uri=uri_mlflow_interne,
                         mlflow_experiment_name="auto3dseg_segresnet_interne")
-    runner.set_num_fold(1)                        # ne génère que le pli 0 (segresnet_0) ; les champs fold restent
+    runner.set_num_fold(nb_plis)                  # 1 : ne génère que le pli 0 (segresnet_0) ; les champs fold restent
     runner.run()
 
 
@@ -335,21 +339,23 @@ def _lire_yaml(chemin):
         return yaml.safe_load(f)
 
 
-def controler_generation(travail_essai, local, chemin_liste, nb_epoques, cas):
-    """Contrôles après AutoRunner. Renvoie (algo segresnet_0, hyper-paramètres, problèmes)."""
+def controler_generation(travail_essai, local, chemin_liste, nb_epoques, cas, pli=PLI, attendus_en_plus=None):
+    """Contrôles après AutoRunner. Renvoie (algo segresnet_<pli>, hyper-paramètres, problèmes).
+    pli : 0 pour cet essai ; attendus_en_plus : autres valeurs exigées dans hyper_parameters.yaml (05m)."""
     from monai.apps.auto3dseg.utils import import_bundle_algo_history
     from monai.utils.enums import AlgoKeys
     pb = []
+    nom_algo = f"{ALGO}_{pli}"                    # = NOM_ALGO pour le pli 0
     historique = import_bundle_algo_history(travail_essai, only_trained=False)
     noms = sorted(h[AlgoKeys.ID] for h in historique)
-    if noms != [NOM_ALGO]:
-        pb.append(f"dossiers d'algorithme générés {noms} ≠ [{NOM_ALGO}]")
-    algo = next((h[AlgoKeys.ALGO] for h in historique if h[AlgoKeys.ID] == NOM_ALGO), None)
-    hp_chemin = os.path.join(travail_essai, NOM_ALGO, "configs", "hyper_parameters.yaml")
+    if noms != [nom_algo]:
+        pb.append(f"dossiers d'algorithme générés {noms} ≠ [{nom_algo}]")
+    algo = next((h[AlgoKeys.ALGO] for h in historique if h[AlgoKeys.ID] == nom_algo), None)
+    hp_chemin = os.path.join(travail_essai, nom_algo, "configs", "hyper_parameters.yaml")
     hp = _lire_yaml(hp_chemin) if os.path.isfile(hp_chemin) else {}
     copie_liste = os.path.join(travail_essai, os.path.basename(chemin_liste))
-    attendu = {"fold": PLI, "num_epochs": nb_epoques, "data_file_base_dir": os.path.abspath(local),
-               "data_list_file_path": os.path.abspath(copie_liste)}
+    attendu = {"fold": pli, "num_epochs": nb_epoques, "data_file_base_dir": os.path.abspath(local),
+               "data_list_file_path": os.path.abspath(copie_liste), **(attendus_en_plus or {})}
     for cle, valeur in attendu.items():
         if hp.get(cle) != valeur:
             pb.append(f"hyper_parameters.yaml : {cle} = {hp.get(cle)!r}, attendu {valeur!r}")
@@ -374,14 +380,15 @@ def controler_generation(travail_essai, local, chemin_liste, nb_epoques, cas):
     return algo, hp, pb
 
 
-def controler_pli(chemin_liste_copie, local, plis):
-    """Cas d'entraînement / validation du pli 0 tels que les lira segmenter.py (même fonction datafold_read)."""
+def controler_pli(chemin_liste_copie, local, plis, pli=PLI):
+    """Cas d'entraînement / validation du pli (0 pour cet essai) tels que les lira segmenter.py (même
+    fonction datafold_read)."""
     from monai.auto3dseg.utils import datafold_read
-    tr, val = datafold_read(datalist=chemin_liste_copie, basedir=local, fold=PLI)
+    tr, val = datafold_read(datalist=chemin_liste_copie, basedir=local, fold=pli)
     tr = {prep05k._cas_du_chemin(d["image"]) for d in tr}
     val = {prep05k._cas_du_chemin(d["image"]) for d in val}
-    if tr != set(plis[PLI]["train"]) or val != set(plis[PLI]["val"]):
-        return [f"datafold_read(pli {PLI}) : validation {sorted(val)} ≠ splits_final.json {plis[PLI]['val']}"]
+    if tr != set(plis[pli]["train"]) or val != set(plis[pli]["val"]):
+        return [f"datafold_read(pli {pli}) : validation {sorted(val)} ≠ splits_final.json {plis[pli]['val']}"]
     return []
 
 
