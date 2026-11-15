@@ -1,20 +1,28 @@
 """
-Étape 5m — Entraînement d'UN pli de SegResNet (Auto3DSeg, MONAI 1.6.1, modèles 21ed8e5), décision D38 :
-300 époques, validation toutes les 10 époques (dernière comprise), reprise COMPLÈTE après coupure, puis
+Étape 5m — Entraînement d'UN pli de SegResNet (Auto3DSeg, MONAI 1.6.1, modèles 21ed8e5) :
+N époques, validation toutes les F époques (dernière comprise), reprise COMPLÈTE après coupure, puis
 évaluation finale des 3 cas de validation du pli avec model_final.pt (poids de la dernière époque).
+  - D38 : N = 300, F = 10 (valeurs par défaut du script, dossier entrainement_segresnet/, déjà fait pour le pli 0) ;
+  - D40 : N = 1 250 (réglage par défaut du modèle pour 15 cas), F = 50, en repartant de zéro dans un
+    dossier DISTINCT (entrainement_segresnet_1250/), sans toucher au résultat à 300 époques. La section 25
+    du notebook passe ces valeurs explicitement (--epoques 1250 --validation-toutes-les 50).
 
 Ce que fait le script (même style et mêmes garde-fous que 05c et 05l, dont il réutilise les fonctions) :
-  1. garde-fous : dossiers hors du dépôt et sans espace ; MONAI 1.6.1 exactement ; GPU présent (avertit si
-     ce n'est pas un L4) ; liste de 05k inchangée et TOUJOURS conforme à splits_final.json (05l) ;
+  1. garde-fous : dossiers hors du dépôt et sans espace ; --epoques et --validation-toutes-les entiers > 0,
+     fréquence ≤ nombre d'époques ; MONAI 1.6.1 exactement ; GPU présent (avertit si ce n'est pas un L4) ;
+     liste de 05k inchangée et TOUJOURS conforme à splits_final.json (05l) ;
      verrou (une seule session à la fois par pli), posé avant toute écriture, même avant --ecraser ;
-  2. chaque pli dans SON dossier neuf : <travail>/entrainement_segresnet/pli_<k>/, créé par ce script
-     avec une fiche (fiche_05m.json) qui porte un identifiant unique. Un dossier existant sans fiche est
-     refusé ; une fiche aux réglages différents arrête le script (code 2, --ecraser) ;
+  2. chaque pli dans SON dossier neuf : <travail>/<dossier>/pli_<k>/ (--dossier ; par défaut
+     entrainement_segresnet pour 300 époques, entrainement_segresnet_<N> sinon), créé par ce script avec une
+     fiche (fiche_05m.json) qui porte un identifiant unique et les réglages (dont N et F). Un dossier
+     existant sans fiche est refusé ; une fiche aux réglages différents (autre N, autre F...) arrête le
+     script (code 2) : deux réglages ne se mélangent JAMAIS dans un dossier. --ecraser est refusé si le
+     dossier contient un entraînement TERMINÉ (le résultat à 300 époques ne peut pas être effacé ainsi) ;
   3. copie locale des SEULS 30 fichiers de la liste, archive des modèles épinglée (SHA-256), comme 05l ;
   4. génération par AutoRunner SANS entraînement, seulement si l'entraînement du pli n'a jamais été lancé
      (MONAI efface le dossier de l'algorithme quand il le régénère : points de reprise compris). AutoRunner
      génère les plis 0 à k ; seul segresnet_<k> est gardé. Réglages écrits dans hyper_parameters.yaml et
-     contrôlés : fold = k, num_epochs = 300, num_epochs_per_validation = 10, num_epochs_per_saving = 10,
+     contrôlés : fold = k, num_epochs = N, num_epochs_per_validation = F, num_epochs_per_saving = 10,
      early_stopping_fraction = 0, validate_final_original_res = false, identifiant du pli ; aucune trace
      de « continue », « pretrained_ckpt_name » ou « start_epoch » ; cas de validation = les 3 du pli dans
      splits_final.json (datafold_read, la fonction que lit le modèle) ;
@@ -30,9 +38,18 @@ Ce que fait le script (même style et mêmes garde-fous que 05c et 05l, dont il 
      affine, étiquettes 0 à 7), la réécrit en mmwhs_XXXX.nii.gz (entiers, en-tête de l'image d'origine),
      calcule le Dice par structure avec MONAI et le compare à celui du modèle. AUCUN post-traitement ;
   8. MLflow : même base que 05b/05c/05l, expérience de l'essai (« etape5_auto3dseg_segresnet », comme nnU-Net
-     qui range essai et plis dans « etape5_nnunet »), un run par pli (tag type = entrainement).
+     qui range essai et plis dans « etape5_nnunet »), un run par pli et par dossier (tag type = entrainement,
+     tag decision = --decision). Nom du run : entrainement_segresnet_pli<k> (300 / 10, D38), sinon
+     entrainement_segresnet_<N>ep_val<F>_pli<k> (D40 : entrainement_segresnet_1250ep_val50_pli0).
   Tout l'affichage est recopié dans <dossier du pli>/sortie_05m_<SESSION>.txt (Drive), heures UTC et Paris.
   Le script ne lit jamais imagesTs ni labelsTs et ne prédit QUE les 3 cas de validation du pli.
+
+Calendrier (le modèle compte en « boucles » ; ici 1 morceau par image, donc 1 boucle = 1 époque) :
+  - validations aux époques F, 2F... (range(F, N, F) du modèle) PLUS la dernière N, ajoutée par le module de
+    reprise si elle n'est pas un multiple de F. D40 : 50, 100... 1 200 et 1 250, soit 25 validations ;
+  - point de reprise complet toutes les 10 époques et à la dernière, INDÉPENDAMMENT de F. Une validation
+    faite avant la coupure mais après le dernier point est refaite à la reprise ; aucune n'est sautée
+    (validations_restantes : valeurs > boucles faites).
 
 Reprise après une coupure : relancer la même cellule. Ce qui est REPRIS (point_reprise_complet.pt, écrit
   toutes les 10 époques et à la dernière, par fichier temporaire puis renommage) : poids du réseau ; état de
@@ -45,37 +62,48 @@ Reprise après une coupure : relancer la même cellule. Ce qui est REPRIS (point
   Le mécanisme « continue » du modèle n'est JAMAIS utilisé (il réécrirait « continue: true » dans la
   configuration, voir 05l) ; le point de reprise est refusé s'il ne porte pas l'identifiant du pli, le
   même pli, le même nombre d'époques, les mêmes batch / ROI / crops (un autre GPU peut les changer).
+  Refus de mélanger deux réglages : N et F sont écrits dans la fiche du pli (et N dans le point de reprise) ;
+  un relancement avec d'autres valeurs s'arrête AVANT tout calcul (code 2, message en clair). Le calendrier
+  du taux d'apprentissage dépend de N (descente en cosinus sur N boucles) : sa longueur (t_total) et sa
+  montée (warmup_steps) enregistrées dans le point doivent valoir celles de ce lancement, sinon refus (code 1).
 
 Choix justifiés (à valider, ligne proposée pour le journal) :
   - early_stopping_fraction = 0 (0,001 dans le modèle) : l'arrêt anticipé déciderait de la fin de
     l'entraînement d'après les 3 cas de validation du pli, ceux qui jugent ensuite le modèle (biais exclu
-    par D38) ; il empêcherait aussi d'atteindre les 300 époques de D38 ;
+    par D38) ; il empêcherait aussi d'atteindre les N époques demandées ;
   - validate_final_original_res = false : la validation finale du modèle porte sur model.pt (meilleur Dice
     de validation), contraire à D38 ; elle est remplacée par l'évaluation finale avec model_final.pt ;
   - num_epochs_per_saving = 10 (1 dans le modèle) : un fichier de poids fait 349 Mo et un point complet
     (poids + AdamW) 1,05 Go ; à chaque époque (21 s), ce serait plus de 400 Go écrits dans Drive par pli ;
-  - la dernière époque est ajoutée au calendrier des validations : range(10, 300, 10) s'arrête à 290.
+  - la dernière époque est ajoutée au calendrier des validations : range(10, 300, 10) s'arrête à 290,
+    range(50, 1250, 50) à 1 200.
 
 Entrées :
   --pli           pli à entraîner, OBLIGATOIRE (0 à 4)
   --raw / --preprocessed / --split / --travail / --mlflow / --local   comme 05l
-  --epoques       époques du pli (défaut 300, D38 ; toute autre valeur est signalée)
+  --epoques       époques du pli, entier > 0 (défaut 300, D38, pour relire le dossier existant ; D40 : 1250)
+  --validation-toutes-les  fréquence de validation en époques, entier > 0 et ≤ --epoques (défaut 10, D38 ;
+                  D40 : 50). La dernière époque est toujours validée
+  --dossier       sous-dossier de --travail où ranger les plis (défaut : entrainement_segresnet pour
+                  300 époques, entrainement_segresnet_<N> sinon ; D40 : entrainement_segresnet_1250)
+  --decision      décision du journal notée dans la fiche et MLflow (défaut D38 ; D40 pour la section 25)
   --unites-par-heure  défaut 1,94 (L4, D25)
   --suivi-toutes-les  minutes entre deux bilans d'étape (progression, estimation, MLflow), défaut 15
-  --ecraser       efface le dossier du pli et repart de zéro (explicite)
+  --ecraser       efface le dossier du pli et repart de zéro (explicite ; refusé si l'entraînement du
+                  dossier est terminé)
   --tracer-seulement  ne lance rien : relit le journal, le bilan, et met à jour MLflow
   --ignorer-verrou    comme 05c
-Sorties (dans <travail>/entrainement_segresnet/pli_<k>/, Drive) :
+Sorties (dans <travail>/<dossier>/pli_<k>/, Drive) :
   fiche_05m.json (réglages, identifiant du pli) ; segresnet_<k>/ (scripts corrigés, configs, model/ :
   training.log, model_final.pt, model.pt, point_reprise_complet.pt et .json, accuracy_history.csv,
   progress.yaml) ; validation_finale_brute/ (sortie du modèle) ; predictions_validation_finale/
   mmwhs_XXXX.nii.gz (les 3 cas du pli, géométrie de l'image d'origine) ; bilan_05m.json (contrôles, Dice) ;
   sessions_05m.json (GPU, durée, pic mémoire de chaque session) ; mlflow_run_id.txt ; sortie_05m_<SESSION>.txt.
-  Verrou : <travail>/entrainement_segresnet/verrou_pli_<k>.
+  Verrou : <travail>/<dossier>/verrou_pli_<k>.
 Codes de sortie :
   0 = pli terminé (entraînement, évaluation finale conforme, MLflow) ; 1 = garde-fou (rien n'est lancé, ou
-  reprise refusée, ou réglage effectif non conforme) ; 2 = le dossier du pli a d'autres réglages
-  (--ecraser, après en avoir parlé) ; 3 = interrompu ou en erreur : RELANCER LA MÊME CELLULE ; 5 = pas de
+  reprise refusée, ou réglage effectif non conforme) ; 2 = le dossier du pli a d'autres réglages (autre
+  --dossier, ou --ecraser après en avoir parlé) ; 3 = interrompu ou en erreur : RELANCER LA MÊME CELLULE ; 5 = pas de
   GPU ; 6 = validation ou prédictions sur d'autres cas que les 3 du pli : ne pas utiliser ; 7 = prédictions
   finales non conformes (forme, affine, étiquettes, Dice différent de celui du modèle) : ne pas utiliser.
 
@@ -106,12 +134,11 @@ rs = _charger("reprise_segresnet", "reprise_segresnet.py")
 suivi05c, essai, prep, prep05k = l05.suivi05c, l05.essai, l05.prep, l05.prep05k
 
 ALGO = l05.ALGO
-NB_EPOQUES_D38 = 300
-VALIDATION_TOUTES_LES = 10                        # D38
-SAUVEGARDE_TOUTES_LES = 10                        # model_final.pt et point de reprise complet
-OPTIONS_D38 = {"num_epochs_per_validation": VALIDATION_TOUTES_LES, "num_epochs_per_saving": SAUVEGARDE_TOUTES_LES,
-               "early_stopping_fraction": 0, "validate_final_original_res": False}
-DOSSIER_PLIS = "entrainement_segresnet"
+NB_EPOQUES_D38 = 300                              # défaut de --epoques (D38) : relit le dossier à 300 époques
+VALIDATION_D38 = 10                               # défaut de --validation-toutes-les (D38)
+SAUVEGARDE_TOUTES_LES = 10                        # model_final.pt et point de reprise complet, quel que soit F
+DOSSIER_D38 = "entrainement_segresnet"            # dossier des plis à 300 époques (D38) : jamais écrasé par D40
+WARMUP_DEFAUT = 3                                 # num_warmup_epochs par défaut de segmenter.py (l. 872)
 NOM_FICHE, NOM_SESSIONS, NOM_BILAN = "fiche_05m.json", "sessions_05m.json", "bilan_05m.json"
 DOSSIER_BRUT, DOSSIER_PRED = "validation_finale_brute", "predictions_validation_finale"
 STRUCTURES = {1: "myo_VG", 2: "OG", 3: "VG", 4: "OD", 5: "VD", 6: "aorte", 7: "AP"}   # comme 05f et 05i
@@ -190,11 +217,78 @@ def nombres(texte):
     return [float(x) for x in texte.replace(",", " ").split()]
 
 
-def calendrier_attendu(nb_boucles, crops):
+def options_modele(validation_toutes_les):
+    """Réglages ajoutés à hyper_parameters.yaml (et contrôlés) : D38 / D39, fréquence de validation en paramètre."""
+    return {"num_epochs_per_validation": int(validation_toutes_les), "num_epochs_per_saving": SAUVEGARDE_TOUTES_LES,
+            "early_stopping_fraction": 0, "validate_final_original_res": False}
+
+
+def controler_valeurs(epoques, validation_toutes_les):
+    """Problèmes de --epoques / --validation-toutes-les (liste vide = valeurs acceptées)."""
+    pb = []
+    for nom, v in (("--epoques", epoques), ("--validation-toutes-les", validation_toutes_les)):
+        if isinstance(v, bool) or not isinstance(v, int) or v < 1:
+            pb.append(f"{nom} doit être un entier strictement positif (reçu {v!r})")
+    if not pb and validation_toutes_les > epoques:
+        pb.append(f"--validation-toutes-les ({validation_toutes_les}) doit être inférieur ou égal à --epoques ({epoques})")
+    return pb
+
+
+def dossier_par_defaut(epoques):
+    """entrainement_segresnet pour 300 époques (D38, rétrocompatible), entrainement_segresnet_<N> sinon."""
+    return DOSSIER_D38 if epoques == NB_EPOQUES_D38 else f"{DOSSIER_D38}_{epoques}"
+
+
+def nom_run(pli, epoques, validation_toutes_les):
+    """Nom du run MLflow : inchangé pour 300 / 10 (D38), distinct sinon."""
+    if (epoques, validation_toutes_les) == (NB_EPOQUES_D38, VALIDATION_D38):
+        return f"entrainement_{ALGO}_pli{pli}"
+    return f"entrainement_{ALGO}_{epoques}ep_val{validation_toutes_les}_pli{pli}"
+
+
+def nb_boucles_attendu(epoques, crops):
+    """Comme segmenter.py l. 1215 : num_epochs = max(1, num_epochs // min(3, crops))."""
+    return max(1, int(epoques) // min(3, max(1, int(crops))))
+
+
+def calendrier_attendu(nb_boucles, crops, validation_toutes_les):
     """Validations que doit faire le modèle corrigé : celles de schedule_validation_epochs (copie 05l) avec
-    num_epochs_per_validation = 10 // crops (segmenter.py l. 1221), plus la dernière boucle (module de reprise)."""
-    par = max(1, VALIDATION_TOUTES_LES // max(1, crops))
+    num_epochs_per_validation = F // crops (segmenter.py l. 1222), plus la dernière boucle (module de reprise)."""
+    par = max(1, int(validation_toutes_les) // max(1, crops))
     return rs.calendrier_avec_derniere(l05.calendrier_validation(nb_boucles, par), nb_boucles)
+
+
+def ecarts_epoques_validation(reglages_fiche, epoques, validation_toutes_les):
+    """{nom: (valeur du dossier, valeur demandée)} pour le nombre d'époques et la fréquence de validation."""
+    r = reglages_fiche or {}
+    paires = (("nombre d'époques", r.get("num_epochs"), epoques),
+              ("validation toutes les", r.get("num_epochs_per_validation"), validation_toutes_les))
+    return {nom: (ancien, nouveau) for nom, ancien, nouveau in paires if ancien != nouveau}
+
+
+def ecarts_calendrier_lr(meta, epoques, crops, warmup_config):
+    """Le calendrier du taux d'apprentissage (WarmupCosineSchedule, segmenter.py l. 1318) dépend du nombre
+    total de boucles (t_total) et de la montée (warmup_steps). Son état enregistré dans le point de reprise
+    contient ces deux valeurs, et load_state_dict les RECOPIE : un point d'un autre réglage imposerait donc
+    en silence l'ancien calendrier. Renvoie {réglage: (point, attendu)} pour chaque écart."""
+    boucles = nb_boucles_attendu(epoques, crops)
+    warmup = min(max(max(3, int(warmup_config) // max(1, crops)), 0), boucles)   # l. 1213 et MONAI
+    attendu = {"num_epochs (boucles)": boucles, "calendrier_lr.t_total": boucles, "calendrier_lr.warmup_steps": warmup}
+    lu = {"num_epochs (boucles)": meta.get("num_epochs"), "calendrier_lr.t_total": meta.get("calendrier_lr_t_total"),
+          "calendrier_lr.warmup_steps": meta.get("calendrier_lr_warmup_steps")}
+    return {c: (lu[c], v) for c, v in attendu.items() if lu[c] is None or int(lu[c]) != v}
+
+
+def entrainement_termine(dossier_pli):
+    """Vrai si le dossier contient un entraînement fini : bilan d'évaluation finale, ou résumé de point de
+    reprise qui couvre toutes les boucles (lecture des seuls fichiers JSON, sans torch)."""
+    if os.path.isfile(os.path.join(dossier_pli, NOM_BILAN)):
+        return True
+    for resume in glob.glob(os.path.join(dossier_pli, f"{ALGO}_*", "model", rs.NOM_RESUME)):
+        r = lire_json(resume) or {}
+        if r.get("prochaine_epoque") is not None and int(r["prochaine_epoque"]) >= int(r.get("num_epochs", 10 ** 9)):
+            return True
+    return False
 
 
 def lire_lignes_05m(texte):
@@ -292,7 +386,9 @@ def lire_meta_point(dossier_modele):
         etat = torch.load(chemin, map_location="cpu", weights_only=False, mmap=True)   # lecture paresseuse
     except Exception:
         etat = torch.load(chemin, map_location="cpu", weights_only=False)
-    return dict(etat.get("meta", {}), format=etat.get("format"))
+    cal = etat.get("calendrier_lr") or {}                           # état du WarmupCosineSchedule (LambdaLR)
+    return dict(etat.get("meta", {}), format=etat.get("format"),
+                calendrier_lr_t_total=cal.get("t_total"), calendrier_lr_warmup_steps=cal.get("warmup_steps"))
 
 
 def lire_depuis(chemin, position=0):
@@ -520,6 +616,11 @@ def lire_arguments():
     p.add_argument("--local", default="/content/auto3dseg_donnees_local")
     p.add_argument("--id-dataset", type=int, default=101)
     p.add_argument("--epoques", type=int, default=NB_EPOQUES_D38)
+    p.add_argument("--validation-toutes-les", "--validation_toutes_les", "--validation_tous_les",
+                   dest="validation_toutes_les", type=int,
+                   default=VALIDATION_D38)
+    p.add_argument("--dossier", default=None, help="sous-dossier de --travail (défaut : selon --epoques)")
+    p.add_argument("--decision", default="D38")
     p.add_argument("--unites-par-heure", type=float, default=1.94)
     p.add_argument("--suivi-toutes-les", type=float, default=15.0)
     p.add_argument("--ignorer-verrou", action="store_true")
@@ -538,7 +639,19 @@ def main():
     for nom in ("raw", "preprocessed", "split", "travail", "mlflow", "local"):
         setattr(a, nom, os.path.abspath(getattr(a, nom)))
     k, nom_ds = a.pli, f"Dataset{a.id_dataset:03d}_MMWHS"
-    racine = os.path.join(a.travail, DOSSIER_PLIS)
+    pb_valeurs = controler_valeurs(a.epoques, a.validation_toutes_les)
+    if pb_valeurs:
+        sys.exit("ARRÊT : " + " ; ".join(pb_valeurs) + ".")
+    a.dossier = a.dossier or dossier_par_defaut(a.epoques)
+    if not re.fullmatch(r"[A-Za-z0-9_\-]+", a.dossier):
+        sys.exit(f"ARRÊT : --dossier {a.dossier!r} doit être un simple nom (lettres, chiffres, _ ou -), sans / ni espace.")
+    if a.dossier == DOSSIER_D38 and (a.epoques, a.validation_toutes_les) != (NB_EPOQUES_D38, VALIDATION_D38):
+        sys.exit(f"ARRÊT : {DOSSIER_D38}/ est réservé à l'entraînement à {NB_EPOQUES_D38} époques validées toutes les "
+                 f"{VALIDATION_D38} (D38). Pour {a.epoques} époques / {a.validation_toutes_les}, choisir un autre --dossier "
+                 f"(par ex. {dossier_par_defaut(a.epoques) if a.epoques != NB_EPOQUES_D38 else DOSSIER_D38 + '_autre'}).")
+    reglage_d38 = (a.epoques, a.validation_toutes_les) == (NB_EPOQUES_D38, VALIDATION_D38)
+    OPTIONS = options_modele(a.validation_toutes_les)
+    racine = os.path.join(a.travail, a.dossier)
     dossier_pli = os.path.join(racine, f"pli_{k}")
     nom_algo = f"{ALGO}_{k}"
     dossier_algo = os.path.join(dossier_pli, nom_algo)
@@ -554,15 +667,19 @@ def main():
             sys.exit(f"ARRÊT : --{nom} est dans le dépôt. Les données et résultats restent hors du dépôt.")
         if " " in d:
             sys.exit(f"ARRÊT : --{nom} contient un espace ({d}) : MONAI découpe ses commandes aux espaces.")
-    if a.epoques < 1:
-        sys.exit("ARRÊT : --epoques doit valoir au moins 1.")
-    if a.epoques != NB_EPOQUES_D38:
-        print(f"ATTENTION : --epoques {a.epoques} ≠ {NB_EPOQUES_D38} fixées par D38. Ce pli ne sera pas comparable aux autres.")
+    print(f"Réglage demandé : {a.epoques} époques, validation toutes les {a.validation_toutes_les} (et à la dernière), "
+          f"point de reprise toutes les {SAUVEGARDE_TOUTES_LES} ; dossier {racine} ; décision {a.decision}")
+    if not reglage_d38:
+        print(f"  (réglage différent de D38, {NB_EPOQUES_D38} / {VALIDATION_D38} : rangé à part, run MLflow "
+              f"« {nom_run(k, a.epoques, a.validation_toutes_les)} »)")
     if not a.tracer_seulement:                    # verrou AVANT toute écriture (y compris --ecraser)
         os.makedirs(racine, exist_ok=True)
         l05.Verrou(os.path.join(racine, f"verrou_pli_{k}"), a.ignorer_verrou)
     if a.ecraser and os.path.isdir(dossier_pli):
-        shutil.rmtree(dossier_pli)                # --ecraser demandé explicitement
+        if entrainement_termine(dossier_pli):
+            sys.exit(f"ARRÊT : --ecraser REFUSÉ : {dossier_pli} contient un entraînement TERMINÉ (bilan_05m.json ou point de "
+                     "reprise final). Ce résultat n'est jamais effacé par le script : choisir un autre --dossier.")
+        shutil.rmtree(dossier_pli)                # --ecraser demandé explicitement, entraînement non terminé
         print(f"Pli précédent effacé : {dossier_pli}")
     import monai
     if monai.__version__ != l05.VERSION_MONAI:
@@ -573,7 +690,7 @@ def main():
 
     # --- 2. Dossier du pli : neuf, ou créé par 05m avec les mêmes réglages ----------------------------
     reglages = {"monai": l05.VERSION_MONAI, "modeles": l05.HASH_MODELES, "sha256_modeles": l05.SHA256_MODELES,
-                "pli": k, "num_epochs": a.epoques, **OPTIONS_D38,
+                "pli": k, "num_epochs": a.epoques, **OPTIONS,       # mêmes clés que D38 : fiches à 300 époques relues
                 "sha256_segmenter_origine": SHA256_SEGMENTER_ORIGINE, "sha256_segmenter_corrige": SHA256_SEGMENTER_CORRIGE,
                 "sha256_module_reprise": prep.sha256_fichier(module_depot),
                 "sha256_liste": fiche05k["sha256_liste"], "sha256_splits_final": fiche05k["sha256_splits_final"],
@@ -584,8 +701,16 @@ def main():
         if fiche.get("reglages") != reglages:
             ecarts = {c: (fiche.get("reglages", {}).get(c), v) for c, v in reglages.items()
                       if fiche.get("reglages", {}).get(c) != v}
+            ev = ecarts_epoques_validation(fiche.get("reglages"), a.epoques, a.validation_toutes_les)
+            if ev:
+                print(f"ARRÊT : MÉLANGE DE RÉGLAGES REFUSÉ. Le pli {k} de {dossier_pli} a été commencé avec "
+                      + " et ".join(f"{nom} = {ancien}" for nom, (ancien, _) in ev.items()) + " ; ce lancement demande "
+                      + " et ".join(f"{nom} = {nouveau}" for nom, (_, nouveau) in ev.items()) + ".")
+                print("  Le calendrier du taux d'apprentissage et celui des validations dépendent de ces valeurs : un même "
+                      "entraînement ne peut pas changer en cours de route. Relancer avec les valeurs d'origine pour reprendre, "
+                      "ou choisir un autre --dossier pour un nouvel entraînement.")
             print(f"ARRÊT : le pli {k} existe dans {dossier_pli} avec d'autres réglages (ancien, demandé) : {ecarts}.")
-            print("  Relancer avec --ecraser pour l'effacer et recommencer (après en avoir parlé).")
+            print("  Rien n'est lancé. --ecraser l'effacerait (refusé si l'entraînement y est terminé) : en parler d'abord.")
             sys.exit(2)
         identifiant = fiche["identifiant_05m"]
     elif a.tracer_seulement:
@@ -598,7 +723,8 @@ def main():
         os.makedirs(dossier_pli, exist_ok=True)
         rs.ecrire_json_atomique({"reglages": reglages, "identifiant_05m": identifiant, "val_pli": val_pli,
                                  "cree_le_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
-                                 "commit": prep.commit_git(), "decision": "D38"}, chemin_fiche)
+                                 "commit": prep.commit_git(), "decision": a.decision, "dossier": a.dossier,
+                                 "validation_toutes_les": a.validation_toutes_les}, chemin_fiche)
         print(f"Dossier NEUF du pli {k} : {dossier_pli} (identifiant {identifiant})")
     journal_sortie.ouvrir(os.path.join(dossier_pli, f"sortie_05m_{suivi05c.SESSION}.txt"))
     print(f"Copie de cet affichage : {journal_sortie.chemin}")
@@ -624,14 +750,14 @@ def main():
             t0 = time.time()
             os.chdir(dossier_pli)               # MONAI écrit runner.log... dans le dossier courant
             l05.generer(dossier_pli, chemin_liste, a.local, modeles, a.epoques, uri_interne, nb_plis=k + 1,
-                        options={**OPTIONS_D38, "identifiant_05m": identifiant})
+                        options={**OPTIONS, "identifiant_05m": identifiant})
             supprimer_plis_inutiles(dossier_pli, k)
             print(f"Analyse des données et génération : {time.time() - t0:.0f} s (moins si déjà faites)")
         else:
             print("Entraînement déjà lancé dans ce pli : génération NON relancée (MONAI effacerait le dossier "
                   f"{nom_algo}, points de reprise compris).")
     algo, hp, problemes = l05.controler_generation(dossier_pli, a.local, chemin_liste, a.epoques, cas, pli=k,
-                                                   attendus_en_plus={**OPTIONS_D38, "identifiant_05m": identifiant})
+                                                   attendus_en_plus={**OPTIONS, "identifiant_05m": identifiant})
     problemes += l05.controler_pli(os.path.join(dossier_pli, os.path.basename(chemin_liste)), a.local, plis, pli=k)
     problemes += controler_config(hp, k, identifiant)
     if algo is not None and (int(algo.device_setting.get("n_devices", 1)) > 1 or int(algo.device_setting.get("NUM_NODES", 1)) > 1):
@@ -642,7 +768,7 @@ def main():
     if problemes:
         sys.exit("ARRÊT : pli non conforme (rien n'est lancé) :\n  - " + "\n  - ".join(problemes))
     print(f"Génération conforme : un seul algorithme ({nom_algo}), fold = {k}, num_epochs = {a.epoques}, validation "
-          f"toutes les {VALIDATION_TOUTES_LES} époques, arrêt anticipé désactivé, validation du pli {k} = {val_pli}")
+          f"toutes les {a.validation_toutes_les} époques, arrêt anticipé désactivé, validation du pli {k} = {val_pli}")
 
     # --- 6. Où en est le pli ? ------------------------------------------------------------------
     meta = lire_meta_point(dossier_modele)
@@ -651,6 +777,12 @@ def main():
                                                    ("num_epochs_config", a.epoques), ("format", rs.FORMAT)) if meta.get(c) != v}
         if ecarts:
             sys.exit(f"ARRÊT : le point de reprise de {dossier_modele} n'appartient pas à ce pli (point, attendu) : {ecarts}.")
+        ecarts_lr = ecarts_calendrier_lr(meta, a.epoques, int(meta["num_crops_per_image"]),
+                                         hp.get("num_warmup_epochs", WARMUP_DEFAUT))
+        if ecarts_lr:
+            sys.exit(f"ARRÊT : REPRISE REFUSÉE. Le calendrier du taux d'apprentissage enregistré dans le point de reprise ne "
+                     f"correspond pas à {a.epoques} époques (point, attendu) : {ecarts_lr}. Reprendre l'ancien calendrier "
+                     "mélangerait deux réglages : rien n'est lancé ; en parler.")
     etat = etat_du_pli(meta)
     resume = lire_json(os.path.join(dossier_modele, rs.NOM_RESUME))
     remplacer_depuis = None
@@ -660,7 +792,7 @@ def main():
     if etat == "neuf":
         if os.path.isfile(os.path.join(dossier_modele, "model_final.pt")):
             print("  model_final.pt présent sans point de reprise complet (coupure avant l'époque 10) : redémarrage à zéro.")
-        print(f"NOUVEL ENTRAÎNEMENT du pli {k} : {a.epoques} époques, validation toutes les {VALIDATION_TOUTES_LES} (dernière "
+        print(f"NOUVEL ENTRAÎNEMENT du pli {k} : {a.epoques} époques, validation toutes les {a.validation_toutes_les} (dernière "
               f"comprise), point de reprise complet toutes les {SAUVEGARDE_TOUTES_LES}")
     else:
         crops = int(meta["num_crops_per_image"])
@@ -679,7 +811,7 @@ def main():
             t_e = l05.moyenne([x["train_time_s"] for x in ep.values()])
             t_v = l05.moyenne([x["val_time_s"] for x in ep.values() if "val_time_s" in x]) or 0
             nb_b, fait = int(meta["num_epochs"]), int(meta["prochaine_epoque"])
-            n_val = len(rs.validations_restantes(calendrier_attendu(nb_b, crops), fait))
+            n_val = len(rs.validations_restantes(calendrier_attendu(nb_b, crops, a.validation_toutes_les), fait))
             if t_e:
                 h = ((nb_b - fait) * t_e + n_val * t_v) / 3600
                 print(f"  Reste {nb_b - fait} boucles et {n_val} validations : au moins ≈ {h:.1f} h et ≈ "
@@ -720,7 +852,8 @@ def main():
                      "meilleur_dice_validation": res.get("best_metric"), "epoque_meilleur_dice": res.get("best_metric_epoch"),
                      "dice_validation_derniere_epoque": ep[derniere].get("val_dice_moyen") if derniere is not None else None}
         metriques.update(metriques_en_plus or {})
-        params = {"algorithme": ALGO, "pli": k, "num_epochs": a.epoques, "num_epochs_per_validation": VALIDATION_TOUTES_LES,
+        params = {"algorithme": ALGO, "pli": k, "num_epochs": a.epoques, "num_epochs_per_validation": a.validation_toutes_les,
+                  "dossier_plis": a.dossier,
                   "num_epochs_per_saving": SAUVEGARDE_TOUTES_LES, "early_stopping_fraction": 0,
                   "validate_final_original_res": False, "modele_evalue": "model_final.pt", "post_traitement": "aucun",
                   "monai": monai.__version__, "torch": torch.__version__, "modeles_auto3dseg": l05.HASH_MODELES,
@@ -730,7 +863,7 @@ def main():
                   "identifiant_05m": identifiant, "batch_size": r.get("batch_size"),
                   "num_crops_per_image": r.get("num_crops_per_image"), "num_steps_per_image": r.get("num_steps_per_image"),
                   "roi_size": r.get("roi"), "resample": hp.get("resample"), "resample_resolution": hp.get("resample_resolution")}
-        tags = {"etape": "5", "type": "entrainement", "decision": "D38", "pli": str(k), "statut": statut,
+        tags = {"etape": "5", "type": "entrainement", "decision": a.decision, "pli": str(k), "statut": statut,
                 "mlflow.source.git.commit": prep.commit_git()}
         if gpu != "non utilisé":
             tags.update({f"session_{suivi05c.SESSION}.gpu": gpu, f"session_{suivi05c.SESSION}.commande": " ".join(sys.argv)[:500]})
@@ -740,7 +873,8 @@ def main():
             [os.path.join(dossier_algo, "configs", "hyper_parameters.yaml")]
         essai.EXPERIENCE_MLFLOW = l05.EXPERIENCE_MLFLOW       # tracer_mlflow (05b) lit ce nom au moment de l'appel
         try:
-            id_run = essai.tracer_mlflow(a.mlflow, f"entrainement_{ALGO}_pli{k}", {c: v for c, v in params.items() if v is not None},
+            id_run = essai.tracer_mlflow(a.mlflow, nom_run(k, a.epoques, a.validation_toutes_les),
+                                         {c: v for c, v in params.items() if v is not None},
                                          tags, series, metriques, artefacts, id_run=suivi05c.lire_id_run(dossier_pli),
                                          remplacer_depuis=remplacer_depuis)
             suivi05c.ecrire_id_run(dossier_pli, id_run)
@@ -770,7 +904,7 @@ def main():
             if reelle is None:
                 t_e = l05.moyenne([x["train_time_s"] for x in ep.values()]) or 0
                 t_v = l05.moyenne([x["val_time_s"] for x in ep.values() if "val_time_s" in x]) or 0
-                reelle = t_e + t_v / VALIDATION_TOUTES_LES or None
+                reelle = t_e + t_v / a.validation_toutes_les or None
             h, u = estimer_reste(fait, a.epoques, reelle, a.unites_par_heure)
             vals = [(e, x["val_dice_moyen"]) for e, x in sorted(ep.items()) if "val_dice_moyen" in x]
             print(f"[{suivi05c.heure()}] Pli {k} : {fait} époques faites sur {a.epoques}"
@@ -822,9 +956,13 @@ def main():
         nb_boucles = int(r["num_epochs"]) if r.get("num_epochs") else None
         # Calendrier écrit juste avant la 1re boucle : contrôlé seulement si la session a fait au moins une époque
         # (une coupure pendant la mise en cache des images n'est pas une anomalie).
-        if nb_boucles and session["epoques"] and (not calendriers or calendriers[-1] != calendrier_attendu(nb_boucles, crops)):
+        cal_attendu = calendrier_attendu(nb_boucles, crops, a.validation_toutes_les) if nb_boucles else None
+        if nb_boucles and session["epoques"] and (not calendriers or calendriers[-1] != cal_attendu):
             anomalies.append(f"calendrier des validations {calendriers[-1] if calendriers else 'absent'} ≠ attendu "
-                             f"{calendrier_attendu(nb_boucles, crops)} (toutes les {VALIDATION_TOUTES_LES}, dernière comprise)")
+                             f"{cal_attendu} (toutes les {a.validation_toutes_les}, dernière comprise)")
+        if nb_boucles and nb_boucles != nb_boucles_attendu(a.epoques, crops):
+            anomalies.append(f"le modèle a compté {nb_boucles} boucles, attendu {nb_boucles_attendu(a.epoques, crops)} "
+                             f"pour {a.epoques} époques")
     if etat == "entraine":
         derniere = int(meta["derniere_epoque_faite"])
         if "val_dice_moyen" not in j["epoques"].get(derniere, {}):
