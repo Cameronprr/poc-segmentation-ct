@@ -1,3 +1,5 @@
 # Seuils figés (D36) : fichier gardé octet pour octet (pas de conversion des fins de ligne), pour que son
 # empreinte SHA-256 soit la même sur Windows, dans Colab et sur GitHub.
 config/seuils_plausibilite.json -text
+# Protocole de l'étape 6 figé (D42) : même règle, pour que son empreinte SHA-256 soit stable.
+docs/protocole_etape6.md -text

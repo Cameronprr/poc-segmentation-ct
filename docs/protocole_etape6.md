@@ -1,11 +1,11 @@
 # Protocole de test de l'étape 6 : évaluation sur le lot de test
 
-> **Statut : PROPOSÉ, À VALIDER.** Ce document n'est pas encore figé.
-> Une fois validé par l'utilisateur (questions P1 à P10 tranchées, section 13), il sera **figé** comme les seuils du contrôle de plausibilité (D36) : statut passé à « figé », date de gel, commit Git, empreinte SHA-256 du fichier inscrite au journal des décisions. Après le gel, plus aucune modification ; un écart devient une **déviation** consignée (section 11).
+> **Statut : FIGÉ.** Date de gel : 2026-11-16 (D42). Questions P1 à P10 tranchées par l'utilisateur le 2026-11-16 (section 13).
+> Le commit de gel et l'empreinte SHA-256 de ce fichier sont inscrits au journal des décisions (D42) : un fichier ne peut pas contenir sa propre empreinte. Le fichier est exempté de conversion des fins de ligne (`.gitattributes`), pour que son empreinte soit la même sous Windows, dans Colab et sur GitHub. Après le gel, plus aucune modification ; un écart devient une **déviation** consignée (section 11).
 >
-> Rédigé le 2026-11-16, **sans ouvrir le lot de test** : aucun masque de `labelsTs` n'a été lu. Les seuls chiffres cités viennent des cas d'entraînement (étape 5) et du journal.
+> Rédigé et figé **sans ouvrir le lot de test** : aucun masque de `labelsTs` n'a été lu. Les seuls chiffres cités viennent des cas d'entraînement (étape 5), du journal et de la littérature (section 14).
 
-Documents qui font foi, dans cet ordre : `docs/fiche_projet.pdf`, `docs/journal_decisions.md` (D16 à D41), `docs/specification_controle_plausibilite.md` (figée, D36), `docs/correspondance_etiquettes.md`, `config/seuils_plausibilite.json` (figé, D36). En cas de contradiction, le journal l'emporte sur ce protocole.
+Documents qui font foi, dans cet ordre : `docs/fiche_projet.pdf`, `docs/journal_decisions.md` (D16 à D42), `docs/specification_controle_plausibilite.md` (figée, D36), `docs/correspondance_etiquettes.md`, `config/seuils_plausibilite.json` (figé, D36). En cas de contradiction, le journal l'emporte sur ce protocole.
 
 ---
 
@@ -34,7 +34,8 @@ Ce protocole fixe **avant l'ouverture** :
 | Structures comparées pour TotalSegmentator | étiquettes 1 à 5 seulement | D23 |
 | Métriques, règles de calcul, cas dégénérés, agrégats | sections 5 et 6 de ce protocole | ce protocole |
 | Règle de classement des alertes (vraie / fausse) | section 7.3 | ce protocole (prolonge D35, D36) |
-| Critères du verdict | section 8.4 (**selon la réponse à P1**) | fiche projet, D10 |
+| Critères du verdict | section 8.4 (P1) | fiche projet, D10 ; Zhuang et al. 2019 |
+| Empreintes des 5 prédictions de TotalSegmentator | calculées avant toute autre opération de l'étape 6, inscrites au journal (section 10.2, phase 0 bis) | D19, ce protocole |
 | Présentation des résultats | section 8 | D29 (Q5, Q8) |
 
 **Aucune métrique, aucun agrégat, aucun seuil, aucun post-traitement et aucun choix de modèle ne peut être ajouté ou modifié après l'ouverture** (section 10).
@@ -115,7 +116,7 @@ Un *ensemble* combine les prédictions de plusieurs modèles (ici les 5 modèles
 |---|---|
 | En segmentation, « l'utilisateur a typiquement un intérêt pour les **frontières**, les **centres** ou les **volumes** des structures » (éléments d'empreinte FP2.1 à FP2.3) ; il faut combiner des métriques aux forces complémentaires | trois familles : recouvrement (Dice), contour (HD95), volume (écart de volume) |
 | Sous-processus S6 : métrique de **recouvrement** ; le DSC (Dice) et l'IoU sont mathématiquement liés, le choix relève de la préférence de la communauté | **Dice**, déjà utilisé à l'étape 5 (D26 à D41) |
-| Sous-processus S7 : métrique de **contour**, à ajouter quand la frontière compte. La famille comprend la NSD, la distance de Hausdorff et sa variante au 95e percentile (HD95), et les distances de surface moyennes (*contenu de la figure S7 cité de mémoire : à relire dans l'Extended Data Fig. 7 avant le gel*) | **HD95** (exigée par la fiche projet) ; NSD en option (P2) |
+| Sous-processus S7 (Extended Data Fig. 7) : choix d'une métrique de **contour** (*boundary-based*) pour la segmentation sémantique, en complément du recouvrement. Le contenu détaillé du diagramme n'a pas pu être relu dans le texte disponible : le protocole s'appuie seulement sur l'existence de ce sous-processus | **HD95** (exigée par la fiche projet) ; **NSD à 2 mm** en métrique secondaire (P2) ; toutes deux calculées par MONAI |
 | « Les valeurs de métrique doivent d'abord être calculées **par image**, puis agrégées sur l'ensemble des images », pour respecter la structure hiérarchique des données ; et, en cas de cas non indépendants, « respecter la structure hiérarchique lors de l'agrégation » (Extended Data Tab. 1, FP4.5) | calcul par cas et par structure, puis agrégation sur les 5 cas ; ici cas = patient (section 3.1) |
 | « Utiliser les **implémentations de référence** » (définitions non standardisées, cas limites non définis) ; toutes les métriques du guide sont implémentées dans **MONAI** | calcul avec MONAI 1.6.1 (CLAUDE.md, règle 3) ; cas limites fixés en section 6 |
 | « Inclure une visualisation des **valeurs brutes** » des métriques | toutes les valeurs par cas sont publiées, pas seulement les moyennes (section 8) |
@@ -137,6 +138,7 @@ Toutes les métriques sont calculées **par cas et par structure**, sur des masq
 | **HD95** (distance de Hausdorff à 95 %) | On prend les voxels de **bord** de P et de V. Pour chaque point du bord de P, distance euclidienne au bord de V le plus proche ; on garde le **95e percentile** de ces distances. Même chose de V vers P. **HD95 = le plus grand des deux** (version *symétrique*). Distances calculées **en mm**, avec l'espacement réel des voxels | MONAI 1.6.1, `compute_hausdorff_distance(percentile=95, directed=False, spacing=espacement de l'image)` | mm ; plus bas = mieux |
 | **Volume** | nombre de voxels × produit des 3 espacements / 1000, comme 05h et le contrôle de plausibilité | calcul direct (numpy) | mL |
 | **Écart de volume** | **signé** : V_pred − V_ref en mL ; et 100 × (V_pred − V_ref) / V_ref en %. Positif = sur-segmentation | calcul direct | mL et % ; plus proche de 0 = mieux |
+| **NSD à 2 mm** (distance de surface normalisée ; *métrique secondaire, hors verdict*, P2) | part des points du bord de P situés à au plus τ = 2 mm du bord de V, et des points du bord de V situés à au plus 2 mm du bord de P, rapportée au nombre total de points des deux bords. τ = 2 mm est le repère « erreur proche » de D30, fixé avant de voir le test | MONAI 1.6.1, `compute_surface_dice(class_thresholds=[2.0], spacing=espacement de l'image)` | 0 à 1 ; plus haut = mieux |
 
 Précisions :
 - **HD95** : d'autres logiciels prennent le 95e percentile de l'union des deux ensembles de distances ; les valeurs ne sont pas directement comparables à celles d'autres publications. C'est le piège « définition non standardisée » de Reinke et al. : on fixe la définition MONAI ci-dessus et on l'écrit dans le rapport.
@@ -150,6 +152,7 @@ Pour chaque comparaison, chaque modèle et chaque structure, sur les 5 cas :
 | Métrique | Agrégats | « Pire cas » |
 |---|---|---|
 | Dice | médiane, moyenne, **minimum** | le minimum |
+| NSD à 2 mm (secondaire) | médiane, moyenne, **minimum** | le minimum |
 | HD95 | médiane, moyenne, **maximum** | le maximum |
 | Écart de volume (mL et %) | médiane et moyenne **des valeurs signées** (biais : tendance à sur- ou sous-segmenter) ; médiane des **valeurs absolues** (taille typique de l'erreur) | l'écart de plus grande **valeur absolue**, affiché avec son signe |
 
@@ -165,10 +168,12 @@ Un cas est *dégénéré* pour une structure quand la métrique n'est pas défin
 
 | Situation (structure *k*, cas *c*) | Dice | HD95 | Écart de volume | Dans les agrégats |
 |---|---|---|---|---|
-| **D1. Prédiction vide**, vérité présente (structure oubliée) | **0** | **non calculable → valeur plafond** = diagonale physique du volume de l'image, en mm (la plus grande distance possible dans ce scanner), marquée « plafond » | −V_ref mL, **−100 %** | **compté**, avec ces valeurs (c'est un échec, il doit peser) |
+| **D1. Prédiction vide**, vérité présente (structure oubliée) | **0** | **non calculable → valeur plafond** = diagonale physique du volume de l'image, √(Σᵢ (nᵢ × sᵢ)²) en mm, où nᵢ est le nombre de voxels et sᵢ l'espacement selon l'axe i (la plus grande distance possible dans ce scanner), marquée « plafond » | −V_ref mL, **−100 %** | **compté**, avec ces valeurs (c'est un échec, il doit peser) |
 | **D2. Vérité vide**, prédiction présente | non défini | non défini | +V_pred mL ; % non défini | **exclu**, n diminué, cas signalé comme **anomalie de la vérité** |
 | **D3. Les deux vides** | non défini (jamais compté comme 1) | non défini | 0 mL ; % non défini | **exclu**, n diminué, anomalie signalée |
 | **D4. Prédiction minuscule** (quelques voxels) | calculé normalement | calculé normalement | calculé normalement | compté (ce n'est pas un cas dégénéré) |
+
+Pour la **NSD** : D1 → **0** (compté) ; D2 et D3 → non définie (exclue, n diminué), comme le Dice.
 
 Remarques :
 - La valeur plafond (P3) suit la recommandation générale de donner à un échec la **pire valeur possible**, plutôt que de l'écarter : l'écarter embellirait le résultat (même logique que D29, Q5).
@@ -194,23 +199,25 @@ Chaque alerte est nommée : **cas, règle, structure (ou rapport), mesure, seuil
 
 ### 7.3 Vraie ou fausse alerte : règle fixée d'avance
 
-D36 annonce que le test donnera l'**estimation indépendante des fausses alertes**. Il faut donc décider, avant de voir la vérité, ce qui rend une alerte « vraie ». Règle proposée (à valider, P8) ; le repère de 0,85 est le seuil « Dice faible » de D30, fixé avant de voir les plis 2 à 4 :
+D36 annonce que le test donnera l'**estimation indépendante des fausses alertes**. Il faut donc décider, avant de voir la vérité, ce qui rend une alerte « vraie ». Règle retenue (P8) ; le repère de 0,85 est le seuil « Dice faible » de D30, fixé avant de voir les plis 2 à 4 :
 
 | Règle déclenchée | L'alerte est **vraie** si… | sinon |
 |---|---|---|
 | R0 | toujours vraie (masque techniquement inutilisable) | — |
 | R1 (structure *k* absente) | la vérité de *k* fait plus de 1 mL | fausse |
-| R2 (volume de *k*) | Dice(*k*) < 0,85 **ou** \|écart de volume de *k*\| > 30 % | fausse |
+| R2 (volume de *k*) | Dice(*k*) < 0,85 **ou** \|écart de volume de *k*\| > 30 % (marge initiale des volumes, D29 Q2 ; repère de classement, distinct de la marge de 50 % de R2, D35) | fausse |
 | R3 (rapport AP / aorte) | Dice(AP) < 0,85 **ou** Dice(aorte) < 0,85 | fausse |
 | R4 (densité aorte / cavité VG) | Dice(aorte) < 0,85 **ou** Dice(cavité VG) < 0,85 | fausse |
 | R5 (densité AP / VD) | Dice(AP) < 0,85 **ou** Dice(VD) < 0,85 | fausse |
-| R8 (morceaux de *k*) | au moins un morceau de plus de 0,5 mL de la prédiction de *k* recouvre **moins de la moitié** de ses voxels avec la vérité de *k* (morceau égaré), **ou** Dice(*k*) < 0,85 | fausse |
+| R8 (morceaux de *k*) | au moins un morceau (connexité 26, comme R8) de plus de 0,5 mL de la prédiction de *k* recouvre **moins de la moitié** de ses voxels avec la vérité de *k* (morceau égaré), **ou** Dice(*k*) < 0,85 | fausse |
 | R6 (hors domaine : aorte moins dense que l'AP) | la même mesure, faite **sur la vérité** (densités médianes au cœur des structures, fonction du module figé), donne aussi aorte − AP < 0 HU | fausse |
 | R7 (hors domaine : contraste faible) | la même mesure **sur la vérité** donne une densité de la cavité VG < 245 HU (seuil figé) | fausse |
 
 Principe : une alerte « erreur probable » est vraie si la structure en cause est **réellement mal segmentée** ; une alerte « hors domaine » est vraie si **l'examen** est réellement hors domaine, ce qu'on vérifie en appliquant la même règle à la vérité.
 
-On rapporte aussi l'inverse, les **échecs silencieux** : tout couple (cas, structure) avec un **Dice < 0,50** (repère « échec » de D30) **sans aucune alerte** sur ce cas. C'est exactement ce que D28 veut éviter.
+**Estimation officielle des fausses alertes (D36)**, sur la comparaison (a) seulement : nombre de cas, sur 5, ayant au moins une alerte « erreur probable » classée fausse, écrit « x sur 5 », comme le « 2 sur 14 » de D36. Les alertes hors domaine (R6, R7) classées fausses sont comptées à part. La liste complète des alertes, avec leur classement, est publiée à côté.
+
+On rapporte aussi l'inverse, les **échecs silencieux** : tout couple (cas, structure) avec un **Dice < 0,50** (repère « échec » de D30) **sans aucune alerte** sur ce cas (quelle que soit la règle ou la catégorie, « erreur probable » ou « hors domaine », parmi les alertes de la comparaison concernée). C'est exactement ce que D28 veut éviter.
 
 Un examen visuel des cas en alerte (coupes avec contours superposés, comme 05g) est **permis et documenté**, mais il **ne change pas** le classement issu de la règle ; un désaccord entre l'œil et la règle est noté comme tel.
 
@@ -219,7 +226,7 @@ Un examen visuel des cas en alerte (coupes avec contours superposés, comme 05g)
 ### 8.1 Tableaux
 
 Pour chaque comparaison :
-1. **Tableau par cas et par structure** : Dice, HD95, volume prédit, volume de la vérité, écart de volume (mL, %), pour chaque modèle. Le cas **1014** est marqué « seul cas à 0,45 mm » (D20).
+1. **Tableau par cas et par structure** : Dice, HD95, volume prédit, volume de la vérité, écart de volume (mL, %), NSD à 2 mm (secondaire), pour chaque modèle. Le cas **1014** est marqué « seul cas à 0,45 mm » (D20).
 2. **Tableau des agrégats** (section 5.3), avec n.
 3. **Alertes du contrôle** (section 7.2), avec leur classement vrai / faux (section 7.3) et les échecs silencieux.
 
@@ -231,22 +238,29 @@ Pour (a) : les métriques **principales** portent sur **les 5 cas, alertes compr
 
 ### 8.3 Pas de test statistique
 
-Aucun test de significativité (valeur *p*), aucun intervalle de confiance : 5 patients ne le permettent pas. Pour (b), le rapport **décrit** : médianes, pires cas, et pour chaque structure le nombre de cas (sur 5) où N0 fait mieux que S0. Il ne déclare un « meilleur » que selon la règle descriptive de P6, si elle est retenue.
+Aucun test de significativité (valeur *p*), aucun intervalle de confiance : 5 patients ne le permettent pas. Pour (b), le rapport **décrit** : médianes, pires cas, et pour chaque structure le nombre de cas (sur 5) où N0 fait mieux que S0. Il ne déclare un « meilleur » que selon la règle descriptive de P6.
 
-### 8.4 Verdict (selon P1)
+### 8.4 Verdict (P1)
 
-La fiche projet demande « un verdict clair : acceptable ou non, et pourquoi », avec des seuils « fixés avant d'ouvrir le lot de test » (D10). **Proposition** (P1), pour le pipeline A seulement :
+La fiche projet demande « un verdict clair : acceptable ou non, et pourquoi », avec des seuils « fixés avant d'ouvrir le lot de test » et tirés de la littérature (D10). Critères retenus, pour le **pipeline A seulement** :
 
-- **C1, performance** : pour chaque structure, **médiane du Dice sur les 5 cas ≥ 0,85** (structures 1 à 6) et **≥ 0,75 pour l'AP** (définition floue de son étendue, D31 ; Dice hors pli 0,827 après post-traitement, D33) ;
-- **C2, sécurité** (D28) : **aucun échec silencieux** (aucun Dice < 0,50 sur un cas sans alerte du contrôle) ;
-- **HD95 et volumes** : **décrits, sans seuil** (aucune référence vérifiée pour ces valeurs sur MM-WHS, variabilité entre annotateurs inconnue) ;
-- **verdict** : « acceptable » si C1 et C2 sont remplis ; sinon « non acceptable », avec le critère manqué et la structure en cause. (b) et (c) n'entrent pas dans le verdict.
+- **C1, performance** : pour chaque structure, **médiane du Dice sur les cas pris en compte (n = 5 sauf cas dégénéré, section 6), calculée et comparée au seuil sur les valeurs non arrondies, ≥ 0,85** pour les structures 1 à 6 (myocarde VG, OG, cavité VG, OD, VD, aorte) et **≥ 0,80 pour l'AP** ;
+- **C2, sécurité** (D28) : **aucun échec silencieux**, c'est-à-dire aucun Dice < 0,50 sur un couple (cas, structure) sans alerte du contrôle de plausibilité sur ce cas (section 7.3) ;
+- **HD95, volumes et NSD** : **décrits, sans seuil** (pas de référence retenue pour ces valeurs, variabilité entre annotateurs inconnue) ;
+- **verdict** : « acceptable » si C1 et C2 sont remplis ; sinon « non acceptable », avec le critère manqué et la structure en cause. (b) et (c) n'entrent pas dans le verdict. Les arrondis de la section 8.1 ne servent qu'à l'affichage.
+
+**Ancrage dans la littérature** (D10) : défi MM-WHS (Zhuang et al., *Medical Image Analysis* 2019), évaluation en aveugle de 10 méthodes sur le CT. Meilleur Dice du cœur entier : **0,908 ± 0,086** (méthode GUT). L'**AP** est la structure la plus variable en forme et en aspect ; les meilleures méthodes y ont un Dice moyen **supérieur à 0,80**. Les auteurs notent aussi que les observateurs humains s'accordent moins bien sur l'AP et le myocarde que sur les ventricules. D'où un seuil de 0,85 pour les structures 1 à 6, un peu sous le meilleur résultat publié, et de 0,80 pour l'AP, au niveau des meilleures méthodes.
+
+**Limites du verdict** (reprises en section 12) :
+- les seuils sont fixés **après la validation croisée** (Dice hors pli 0,906 ; AP 0,827, que le post-traitement retenu ne modifie pas ; D31, D33) : ils ne sont donc **pas totalement indépendants de nos résultats** ;
+- avec **5 patients**, le verdict est **indicatif** : un seul cas peut faire basculer une médiane ;
+- les chiffres de Zhuang et al. ne sont pas directement comparables : autre lot de test (40 scanners CT), Dice moyen et non médian, Dice du cœur entier et non par structure.
 
 ## 9. Vérifications au démarrage (avant toute lecture du test)
 
 Le script de l'étape 6 s'**arrête**, sans lire ni `imagesTs` ni `labelsTs`, si l'une de ces vérifications échoue :
 
-1. **Protocole figé** : empreinte SHA-256 de `docs/protocole_etape6.md` égale à celle inscrite au journal lors du gel.
+1. **Protocole figé** : empreinte SHA-256 de `docs/protocole_etape6.md` égale à celle inscrite au journal lors du gel (valeur de référence passée en paramètre ou écrite en constante dans le code relu en phase A, et identique à celle du journal).
 2. **Fichier de seuils** : SHA-256 de `config/seuils_plausibilite.json` = `c1b247070765d193a46e90b538cc655787dbb65f8fdd13f113a39efd3ef90672` (D36) ; champ `statut` = « figé ».
 3. **Les quatre valeurs non relues par le code** (README, « À faire avant l'étape 6 ») identiques entre le fichier figé et le code :
    - R0 : `tolerance_affine_mm` = 0,01 et `TOLERANCE_R0_MM` de `scripts/controle_plausibilite.py` ;
@@ -256,6 +270,7 @@ Le script de l'étape 6 s'**arrête**, sans lire ni `imagesTs` ni `labelsTs`, si
 4. **Découpage** : SHA-256 de `splits/mmwhs_split.json` = `25881b214823758ddb708b6b46616c2422671c872035683852b1f045f4c4a05c` ; lot de test = exactement 1004, 1010, 1011, 1013, 1014.
 5. **Versions** : MONAI 1.6.1 ; nnU-Net v2 2.8.1 pour les prédictions A et N0 ; archive des modèles Auto3DSeg `21ed8e5` (SHA-256 de D37) pour S0.
 6. **Modèles terminés** : `checkpoint_final.pth` des 5 plis de nnU-Net, `postprocessing.pkl` de 05i, `model_final.pt` de `entrainement_segresnet_1250/pli_0` présents ; leurs empreintes sont relevées.
+7. **Prédictions de TotalSegmentator** : empreintes SHA-256 des 5 fichiers `mmwhs_XXXX.nii.gz` de l'étape 4 identiques à celles inscrites au journal (phase 0 bis ; valeurs de référence passées en paramètres ou écrites en constantes dans le code relu en phase A, et identiques à celles du journal).
 
 ## 10. Règles d'ouverture et déroulé dans l'ordre
 
@@ -268,14 +283,16 @@ Le script de l'étape 6 s'**arrête**, sans lire ni `imagesTs` ni `labelsTs`, si
 
 ### 10.2 Déroulé
 
-**Phase 0 — Gel du protocole.** Questions P1 à P10 tranchées par l'utilisateur ; document passé au statut « figé » ; commit ; SHA-256 du fichier inscrite au journal (nouvelle décision).
+**Phase 0 — Gel du protocole.** Fait le 2026-11-16 : questions P1 à P10 tranchées par l'utilisateur ; statut « figé » ; commit et SHA-256 du fichier inscrits au journal (D42).
+
+**Phase 0 bis — Empreintes des prédictions de TotalSegmentator, avant toute autre opération de l'étape 6.** Une cellule courte calcule la SHA-256 des 5 fichiers de prédiction de l'étape 4 (`mmwhs_1004.nii.gz` à `mmwhs_1014.nii.gz`). Elle lit **ces seuls fichiers**, octet par octet, sans les décoder ; elle ne lit ni `labelsTs`, ni `imagesTs`, ni aucune vérité. Les 5 empreintes, avec la date de modification de chaque fichier dans Drive, sont inscrites au journal (complément de D42) **avant** la phase A.
 
 **Phase A — Écriture et essai à blanc du code (sans le test).** Scripts de l'étape 6 écrits, relus par l'agent qa-reviewer. Le script d'évaluation est d'abord exécuté sur des **cas d'entraînement** : prédictions hors pli de nnU-Net contre `labelsTr` (P9). Les Dice doivent concorder avec ceux de nnU-Net (`summary.json`, D31, D33) et ceux de 05m pour S0 sur 1001, 1019 et 1020. C'est la qualification opérationnelle (*OQ*) de l'outil de mesure : on vérifie que la règle mesure juste avant de mesurer la pièce.
 
 **Phase B — Prédictions et contrôle (lecture de `imagesTs` seulement).**
 1. Vérifications de la section 9.
 2. Prédictions A (puis post-traitement D33), N0, S0 sur les 5 scanners de test. T existe déjà (étape 4).
-3. Contrôle de forme, d'affine et d'étiquettes de chaque prédiction (R0). Un défaut technique se corrige **ici**, puisqu'aucune vérité n'a été vue ; la correction est consignée.
+3. Contrôle de forme, d'affine et d'étiquettes de chaque prédiction (R0). Un défaut technique se corrige **ici**, puisqu'aucune vérité n'a été vue ; la correction est consignée. Pour T, toute correction produit un nouveau fichier, dont l'empreinte est ajoutée au manifeste à côté de l'empreinte de la phase 0 bis ; l'original est conservé.
 4. Contrôle de plausibilité (section 7.1) sur A, N0, S0 et T.
 5. **Manifeste** (`manifeste_etape6.json`, dans Drive) : SHA-256 de chaque prédiction (20 fichiers), de chaque résultat du contrôle, des poids des modèles, du fichier de seuils, du protocole ; versions ; date. Son empreinte est inscrite au journal **avant** la phase C.
 
@@ -311,44 +328,47 @@ Interdits absolus : relancer une prédiction pour améliorer un score ; changer 
 - **Contrôle de plausibilité** : sur 5 cas, l'estimation des fausses alertes est très imprécise ; si aucun cas de test n'est hors domaine, le test ne dit rien de la **sensibilité** (part des échecs attrapés) (spécification, § 7.2).
 - **Qualité de la référence inconnue** : une seule annotation par cas, sans mesure de la variabilité entre annotateurs ; une partie de l'écart sur les frontières floues (valve pulmonaire, étendue de l'AP) est du bruit d'annotation (D31).
 - **Un seul passage** par modèle sur le test : la variabilité due au caractère non déterministe des calculs n'est pas mesurée.
-- **Prédictions de TotalSegmentator** : l'étape 4 a enregistré les empreintes des scanners, pas celles des prédictions. Leur intégrité depuis l'étape 4 repose sur les dates de Drive ; elles sont figées par empreinte à la phase B seulement.
+- **Prédictions de TotalSegmentator** : l'étape 4 a enregistré les empreintes des scanners, pas celles des prédictions. Leur intégrité entre l'étape 4 et la phase 0 bis repose sur les dates de modification de Drive ; à partir de la phase 0 bis, elles sont figées par empreinte.
+- **Verdict** : seuils fixés après la validation croisée, donc pas totalement indépendants de nos résultats ; avec 5 patients, verdict indicatif ; repères de la littérature non directement comparables (section 8.4).
 
-## 13. Questions ouvertes (à trancher avant le gel)
+## 13. Décisions sur les questions ouvertes (tranchées par l'utilisateur le 2026-11-16, D42)
+
+Chaque question est rappelée ; la **décision** suit.
 
 **P1. Seuils d'acceptation et verdict.** La fiche projet exige un verdict « acceptable ou non », avec des seuils fixés avant le test (D10 : tirés de la littérature et de Metrics Reloaded). Les consignes de rédaction ne parlent que de description. Sans seuils fixés maintenant, le verdict de l'étape 7 serait posé après avoir vu les chiffres : c'est le biais que tout le projet cherche à éviter.
-*Recommandation* : **fixer un verdict maintenant**, sur le pipeline A seulement, avec les critères C1 et C2 de la section 8.4. Ce n'est pas un test statistique : c'est un critère d'acceptation, comme en qualification. Les valeurs proposées (0,85 ; 0,75 pour l'AP ; 0,50) viennent des repères internes de D30 et des résultats hors pli de l'étape 5. Elles ne sont **pas encore justifiées par la littérature** comme le demande D10. Avant le gel, il faudrait les comparer aux résultats publiés du défi MM-WHS en CT (Zhuang et al., *Medical Image Analysis* 2019), à vérifier, ou les assumer explicitement comme repères internes. HD95 et volumes restent sans seuil, faute de référence.
+*Décision* : **verdict fixé maintenant**, sur le pipeline A seulement, ancré dans Zhuang et al. 2019 : médiane du Dice ≥ 0,85 pour les structures 1 à 6, **≥ 0,80 pour l'AP**, aucun échec silencieux (section 8.4). Ce n'est pas un test statistique : c'est un critère d'acceptation, comme en qualification. Deux limites écrites : seuils fixés après la validation croisée, donc pas totalement indépendants de nos résultats ; verdict indicatif avec 5 patients. HD95, volumes et NSD restent sans seuil.
 
 **P2. Ajouter la NSD ?** La *NSD* (distance de surface normalisée) mesure la part du contour prédit située à moins d'une tolérance τ (en mm) du contour de référence. Elle figure dans la famille des métriques de contour de Metrics Reloaded (S7), et MONAI la calcule (`compute_surface_dice`). Mais τ doit refléter la variabilité entre annotateurs, inconnue ici.
-*Recommandation* : l'ajouter **maintenant**, comme métrique **secondaire, hors verdict**, avec **τ = 2 mm** (repère « erreur proche ≤ 2 mm » de D30), mêmes règles de cas dégénérés que le Dice (D1 : 0). Après l'ouverture, ce ne sera plus possible. Si l'utilisateur préfère rester simple, ne pas l'ajouter est défendable : HD95 et Dice couvrent déjà contour et recouvrement.
+*Décision* : **ajoutée**, métrique **secondaire, hors verdict**, τ = 2 mm (repère « erreur proche ≤ 2 mm » de D30), mêmes règles de cas dégénérés que le Dice (sections 5.2, 5.3, 6).
 
 **P3. Valeur plafond de la HD95 (structure oubliée).**
-*Recommandation* : **diagonale physique du volume de l'image** (section 6, D1), marquée « plafond » dans les tableaux. Alternative écartée : exclure le cas, ce qui embellirait le résultat.
+*Décision (recommandation suivie)* : **diagonale physique du volume de l'image** (section 6, D1), marquée « plafond » dans les tableaux. Alternative écartée : exclure le cas, ce qui embellirait le résultat.
 
 **P4. Contrôle de plausibilité sur (b).** Les seuils ont été vérifiés sur des prédictions post-traitées (D33 à D36). Sur des prédictions brutes, R8 sonnerait souvent à cause des fragments que le post-traitement aurait retirés (D32).
-*Recommandation* : l'appliquer **à titre informatif**, rapporté à part, **hors** de l'estimation des fausses alertes et hors verdict. Cela montre, pour la phase 2, comment le contrôle se comporte sur une autre méthode, sans brouiller le résultat officiel.
+*Décision (recommandation suivie)* : l'appliquer **à titre informatif**, rapporté à part, **hors** de l'estimation des fausses alertes et hors verdict. Cela montre, pour la phase 2, comment le contrôle se comporte sur une autre méthode, sans brouiller le résultat officiel.
 
 **P5. Contre quoi comparer TotalSegmentator ?**
-*Recommandation* : contre **A seulement** (le pipeline livré face à la référence externe), sur les structures 1 à 5. Les valeurs de N0 et S0 sur ces structures restent visibles dans les tableaux de (b), mais ne sont pas commentées face à TotalSegmentator : trois comparaisons distinctes, trois questions distinctes.
+*Décision (recommandation suivie)* : contre **A seulement** (le pipeline livré face à la référence externe), sur les structures 1 à 5. Les valeurs de N0 et S0 sur ces structures restent visibles dans les tableaux de (b), mais ne sont pas commentées face à TotalSegmentator : trois comparaisons distinctes, trois questions distinctes.
 
 **P6. Désigner une « meilleure approche » en (b) ?** La fiche projet demande « la meilleure approche parmi les candidates, sur le même lot de test ».
-*Recommandation* : une **règle descriptive** fixée maintenant, sans valeur statistique : une méthode est dite « meilleure sur la structure *k* » si sa médiane de Dice est supérieure de plus de 0,02 **et** si elle fait mieux sur au moins 4 cas sur 5 ; sinon « pas de différence établie sur 5 cas ». Le rapport dit explicitement qu'il ne s'agit pas d'une preuve.
+*Décision (recommandation suivie)* : une **règle descriptive** fixée maintenant, sans valeur statistique : une méthode est dite « meilleure sur la structure *k* » si sa médiane de Dice est supérieure de plus de 0,02 (valeurs non arrondies ; une égalité ne compte pas comme « mieux ») **et** si elle fait mieux sur au moins 4 cas sur 5 ; sinon « pas de différence établie sur 5 cas ». Le rapport dit explicitement qu'il ne s'agit pas d'une preuve.
 
 **P7. Réglages d'inférence.** nnU-Net applique par défaut une augmentation au moment de la prédiction (il moyenne l'image et ses symétriques, *mirroring*). Le réglage équivalent de SegResNet n'est pas documenté dans nos scripts.
-*Recommandation* : **réglages par défaut de chaque outil**, identiques à ceux de l'évaluation hors pli de l'étape 5 (05c pour nnU-Net, 05m pour SegResNet), **relevés et écrits** dans le manifeste avant l'ouverture. Si l'un utilise l'augmentation et l'autre non, le signaler comme limite de (b), sans l'aligner après coup.
+*Décision (recommandation suivie)* : **réglages par défaut de chaque outil**, identiques à ceux de l'évaluation hors pli de l'étape 5 (05c pour nnU-Net, 05m pour SegResNet), **relevés et écrits** dans le manifeste avant l'ouverture. Si l'un utilise l'augmentation et l'autre non, le signaler comme limite de (b), sans l'aligner après coup.
 
 **P8. Règle de classement des alertes (section 7.3).**
-*Recommandation* : adopter la règle telle quelle, avec le repère 0,85 (D30) et 30 % d'écart de volume pour R2. Un examen visuel reste permis, documenté, sans changer le classement.
+*Décision (recommandation suivie)* : adopter la règle telle quelle, avec le repère 0,85 (D30) et 30 % d'écart de volume pour R2. Un examen visuel reste permis, documenté, sans changer le classement.
 
 **P9. Essai à blanc du code d'évaluation sur l'entraînement (phase A).**
-*Recommandation* : **oui, obligatoire** avant l'ouverture. C'est le meilleur moyen d'éviter la déviation « défaut du code après l'ouverture » (section 11). Critère : Dice identiques à ceux de nnU-Net et de 05m (à l'arrondi près) ; HD95 et volumes plausibles ; volumes identiques à ceux de 05h sur la vérité.
+*Décision (recommandation suivie)* : **oui, obligatoire** avant l'ouverture. C'est le meilleur moyen d'éviter la déviation « défaut du code après l'ouverture » (section 11). Critère : Dice identiques à ceux de nnU-Net et de 05m (à l'arrondi près) ; HD95 et volumes plausibles ; volumes identiques à ceux de 05h sur la vérité.
 
 **P10. Gel du protocole.**
-*Recommandation* : même procédure que D36 : statut « figé », date, commit, SHA-256 du fichier au journal ; le fichier exempté de conversion des fins de ligne dans `.gitattributes`, pour que l'empreinte soit la même sous Windows et dans Colab. La vérification de cette empreinte est la première du script (section 9, point 1).
+*Décision (recommandation suivie)* : fait (D42), même procédure que D36 : statut « figé », date, commit, SHA-256 du fichier au journal ; le fichier exempté de conversion des fins de ligne dans `.gitattributes`, pour que l'empreinte soit la même sous Windows et dans Colab. La vérification de cette empreinte est la première du script (section 9, point 1).
 
 ## 14. Références
 
-- L. Maier-Hein, A. Reinke et al., « Metrics reloaded: recommendations for image analysis validation », *Nature Methods* 21(2):195-212, 2024. doi:[10.1038/s41592-023-02151-z](https://doi.org/10.1038/s41592-023-02151-z) (texte consulté via PubMed Central, PMC11182665 : section « Semantic segmentation », Extended Data Tab. 1, Extended Data Fig. 6 et 7).
+- L. Maier-Hein, A. Reinke et al., « Metrics reloaded: recommendations for image analysis validation », *Nature Methods* 21(2):195-212, 2024. doi:[10.1038/s41592-023-02151-z](https://doi.org/10.1038/s41592-023-02151-z) (texte consulté via PubMed Central, PMC11182665 : section « Semantic segmentation », Extended Data Tab. 1 ; existence des sous-processus S6 et S7, Extended Data Fig. 6 et 7, contenu des diagrammes non relu).
 - A. Reinke, M. D. Tizabi et al., « Understanding metric-related pitfalls in image analysis validation », *Nature Methods* 21(2):182-194, 2024. doi:[10.1038/s41592-023-02150-0](https://doi.org/10.1038/s41592-023-02150-0).
-- X. Zhuang et al., « Evaluation of algorithms for multi-modality whole heart segmentation: an open-access grand challenge », *Medical Image Analysis*, 2019 (défi MM-WHS) : **à vérifier** avant de s'en servir pour P1.
-- MONAI 1.6.1, `monai.metrics` : `compute_dice`, `compute_hausdorff_distance`, `compute_surface_dice`.
-- Projet : `docs/fiche_projet.pdf` (« Critères de réussite », « Livrables ») ; `docs/journal_decisions.md` (D16 à D41) ; `docs/specification_controle_plausibilite.md` (v1.1, figée) ; `docs/correspondance_etiquettes.md` ; `config/seuils_plausibilite.json` ; `README.md` (« À faire avant l'étape 6 »).
+- X. Zhuang, L. Li et al., « Evaluation of algorithms for Multi-Modality Whole Heart Segmentation: An open-access grand challenge », *Medical Image Analysis* 58:101537, 2019. doi:[10.1016/j.media.2019.101537](https://doi.org/10.1016/j.media.2019.101537) (texte consulté via PubMed Central, PMC6839613 : résultats CT, Dice du cœur entier 0,908 ± 0,086 pour GUT ; AP la plus variable, Dice moyen supérieur à 0,80 pour GUT, KTH, CUHK1, UB1* et CUHK2 ; accord entre observateurs plus faible pour l'AP et le myocarde).
+- MONAI 1.6.1, `monai.metrics` : `compute_dice`, `compute_hausdorff_distance`, `compute_surface_dice` (NSD).
+- Projet : `docs/fiche_projet.pdf` (« Critères de réussite », « Livrables ») ; `docs/journal_decisions.md` (D16 à D42) ; `docs/specification_controle_plausibilite.md` (v1.1, figée) ; `docs/correspondance_etiquettes.md` ; `config/seuils_plausibilite.json` ; `README.md` (« À faire avant l'étape 6 »).
