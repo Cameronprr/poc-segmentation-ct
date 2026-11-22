@@ -3,3 +3,5 @@
 config/seuils_plausibilite.json -text
 # Protocole de l'étape 6 figé (D42) : même règle, pour que son empreinte SHA-256 soit stable.
 docs/protocole_etape6.md -text
+# Empreintes de référence de TotalSegmentator (phase 0 bis, D43 déviation 9, D44) : même règle.
+config/empreintes_totalseg_etape4.json -text

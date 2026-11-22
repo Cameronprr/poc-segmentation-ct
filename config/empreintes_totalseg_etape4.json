@@ -1,0 +1,45 @@
+{
+  "objet": "référence des empreintes des prédictions de TotalSegmentator (étape 4, refaites selon D44), relevées en phase 0 bis ; vérifiées au démarrage des phases B et C (protocole § 9, point 7)",
+  "algorithme": "SHA-256 des octets du fichier .nii.gz (lecture binaire, sans décompression)",
+  "dossier_predictions": "/content/drive/MyDrive/poc_ct/predictions/totalsegmentator_d44",
+  "date_releve_utc": "2026-11-22T00:35:25+00:00",
+  "commit_releve": "231646034f7ad3e4914bfbf02f923bed99c373ff",
+  "fichiers": {
+    "1004": {
+      "nom": "mmwhs_1004.nii.gz",
+      "sha256": "c3e0180d7963ae88b236ab93a391a6de36cda719bd43e8856870db4eee4ac376",
+      "taille_octets": 729120,
+      "date_modification_utc": "2026-11-22T00:20:17+00:00"
+    },
+    "1010": {
+      "nom": "mmwhs_1010.nii.gz",
+      "sha256": "48e62cbb53b87bcb0b08d5c2fbf492f2dd4113341e672383a84a1496c825f8fa",
+      "taille_octets": 699646,
+      "date_modification_utc": "2026-11-22T00:21:12+00:00"
+    },
+    "1011": {
+      "nom": "mmwhs_1011.nii.gz",
+      "sha256": "254e2358f6d0477393cf5d5186460fcca507a0d018a03fcdd49c0c90daefc838",
+      "taille_octets": 882429,
+      "date_modification_utc": "2026-11-22T00:22:22+00:00"
+    },
+    "1013": {
+      "nom": "mmwhs_1013.nii.gz",
+      "sha256": "2c3f8036d0d21bb7a8b0db7c8320bdd4111cef96947809ccf95fd32af2652221",
+      "taille_octets": 733194,
+      "date_modification_utc": "2026-11-22T00:23:19+00:00"
+    },
+    "1014": {
+      "nom": "mmwhs_1014.nii.gz",
+      "sha256": "006205f36ff986d8e1e796caf9550f38aa330e18a33dd2ca6df940f92d5fe911",
+      "taille_octets": 1493468,
+      "date_modification_utc": "2026-11-22T00:25:02+00:00"
+    }
+  },
+  "tracabilite_etape4": {
+    "nom": "tracabilite_etape4.json",
+    "sha256": "0fbdc66eca7f630633d80441d3a1152c302544b4750de28f32a5dbdfd9a6596d",
+    "taille_octets": 5611,
+    "date_modification_utc": "2026-11-22T00:25:06+00:00"
+  }
+}
