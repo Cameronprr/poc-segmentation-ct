@@ -20,7 +20,7 @@ propre trace, et reprend proprement après une coupure. Le manifeste n'est écri
           Aucun post-traitement.
   controle   (sans GPU ; n'importe quelle session, une session « processeur » suffit) : après les deux autres.
           R0 (forme, affine à 0,01 mm, étiquettes 0 à 7) sur les 20 prédictions (A, N0, S0 et T, celle de
-          l'étape 4, jamais refaite) ; un défaut = ARRÊT (code 20), rien n'est écrit. Puis contrôle de
+          l'étape 4 refaite selon D44 par 04c, jamais par ce script) ; un défaut = ARRÊT (code 20), rien n'est écrit. Puis contrôle de
           plausibilité (module figé controle_plausibilite : mesurer, appliquer, resume ; seuils figés),
           règles R0 à R8 sur les 4 modèles (pour T, la restriction de Q7 aux structures 1 à 5 se fait À LA
           LECTURE, en phase C, § 4 (c)). Enfin le MANIFESTE (ecrire_manifeste), sa SHA-256 et le bloc à
@@ -60,7 +60,7 @@ Entrées (paramètres ; défauts = Drive /content/drive/MyDrive/poc_ct/...) :
   --preprocessed  nnunet_preprocessed (variable d'environnement de nnU-Net, rien n'y est lu)
   --results       nnunet_results (modèles nnU-Net, lus)
   --travail       auto3dseg (SegResNet pli 0, archive des modèles 21ed8e5, lus)
-  --predictions-ts prédictions de TotalSegmentator de l'étape 4 (lues)
+  --predictions-ts prédictions de TotalSegmentator refaites selon D44 (lues ; défaut .../predictions/totalsegmentator_d44)
   --sortie        dossier de la phase B (défaut .../etape6/phaseB)
   --local         copie locale des 5 scanners de test pour nnU-Net et SegResNet (défaut /content/etape6_images_test)
   --processus     processus du post-traitement de nnU-Net (-np, défaut 2)
@@ -815,7 +815,7 @@ def sous_commande_controle(a, journal, verifs):
     # Même commit dans les deux traces et le dépôt courant : vérifié au démarrage (verifier_commit, arrêt 24).
     ouvrir(a, journal)
 
-    # Prédictions : A, N0, S0 (phase B), T (étape 4, empreintes vérifiées au point 7)
+    # Prédictions : A, N0, S0 (phase B), T (étape 4 refaite selon D44, empreintes vérifiées au point 7)
     predictions = {"A": tn["etapes"]["A"]["fichiers"], "N0": tn["etapes"]["N0"]["fichiers"], "S0": ts["etapes"]["S0"]["fichiers"],
                    "T": verifs["totalsegmentator"]}
     for m in ("A", "N0", "S0"):
@@ -861,15 +861,17 @@ def sous_commande_controle(a, journal, verifs):
 
     # Manifeste
     reglages = {**tn["reglages_inference"], **ts["reglages_inference"],
-                "T": {"source": "TotalSegmentator 2.18.0, tâche heartchambers_highres, prédit à l'étape 4 (D19) ; pas de "
-                                "nouvelle prédiction", "tracabilite_etape4": e6.lire_json(os.path.join(a.predictions_ts, e6.NOM_TRACE_ETAPE4), PHASE)}}
+                "T": {"source": "TotalSegmentator 2.18.0, tâche heartchambers_highres, prédit à l'étape 4 (D19), puis "
+                                "refait selon D44 (fichiers de l'étape 4 perdus) avec les mêmes version, tâche et "
+                                "réglages, par 04c (GPU noté dans tracabilite_etape4) ; pas de nouvelle prédiction "
+                                "dans l'étape 6", "tracabilite_etape4": e6.lire_json(os.path.join(a.predictions_ts, e6.NOM_TRACE_ETAPE4), PHASE)}}
     reglages["differences_N0_S0"] = differences(reglages["N0"], reglages["S0"])
     if reglages["differences_N0_S0"]:
         print("\nLIMITE de la comparaison (b) (P7, § 12) : réglages d'inférence différents entre N0 et S0, NON alignés :")
         for d in reglages["differences_N0_S0"]:
             print(f"  - {d['reglage']} : N0 {d['N0']} ; S0 {d['S0']}")
     versions = {"A_N0": tn["versions"], "S0": ts["versions"], "controle": e6.versions_bibliotheques(),
-                "T": "TotalSegmentator 2.18.0 (étape 4, voir reglages_inference.T)"}
+                "T": "TotalSegmentator 2.18.0 (étape 4 refaite selon D44, voir reglages_inference.T)"}
     extra = {"A_brut": tn["etapes"]["A_brut"]["fichiers"], "images_test": images_releve,
              "traces_06c": {n: {"chemin": c, "sha256": e6.sha256(c, PHASE)} for n, c in (("nnunet", chemin_tn), ("segresnet", chemin_ts))},
              "statut_alertes": STATUT_ALERTES, "format_controle": SERIALISATION,

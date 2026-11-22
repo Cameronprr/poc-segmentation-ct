@@ -1,9 +1,12 @@
 """
-Étape 6, phase 0 bis — Empreintes des 5 prédictions de TotalSegmentator de l'étape 4 (protocole § 10.2, D42).
+Étape 6, phase 0 bis — Empreintes des 5 prédictions de TotalSegmentator (protocole § 10.2, D42 ; dossier D44).
 
 Pourquoi : à l'étape 4, on a relevé l'empreinte des SCANNERS, pas celle des PRÉDICTIONS (protocole § 12). On la
 relève maintenant, avant toute autre opération de l'étape 6. Ensuite, les phases B et C vérifient que ces
 fichiers n'ont pas changé (protocole § 9, point 7).
+D44 : les prédictions de l'étape 4 ont été perdues (Drive plein ; seul mmwhs_1004 a survécu). Elles sont
+refaites par 04c (mêmes version, tâche et réglages ; section 26 bis) dans predictions/totalsegmentator_d44,
+avec un nouveau tracabilite_etape4.json (même nom, contenu marqué D44). C'est CE dossier qui est relevé ici.
 
 Ce que fait le script :
   1. vérifications au démarrage, points 1 à 4 du § 9 (protocole figé, seuils figés, quatre valeurs du fichier
@@ -20,7 +23,7 @@ Ce que fait le script :
   etape6_commun (phase « 0bis »), qui refuserait ces chemins.
 
 Entrées :
-  --predictions  dossier des prédictions de l'étape 4 (défaut : /content/drive/MyDrive/poc_ct/predictions/totalsegmentator)
+  --predictions  dossier des prédictions refaites selon D44 (défaut : /content/drive/MyDrive/poc_ct/predictions/totalsegmentator_d44)
   --sortie       dossier de la phase 0 bis (défaut : /content/drive/MyDrive/poc_ct/etape6/phase0bis)
   --ignorer-verrou  comme 05c (seulement si tu es SÛR qu'aucune autre session ne tourne)
 Sorties (dans --sortie, Drive) :
@@ -40,8 +43,9 @@ Codes de sortie :
 Vocabulaire :
   - SHA-256 (empreinte) : 64 caractères calculés sur tous les octets du fichier ; un seul octet changé
     donne une empreinte différente ;
-  - date de modification : date à laquelle Drive a enregistré le fichier pour la dernière fois ; elle doit
-    dater de l'étape 4 (seule preuve d'intégrité avant cette phase, protocole § 12).
+  - date de modification : date à laquelle Drive a enregistré le fichier pour la dernière fois ; depuis D44,
+    elle doit dater de la nouvelle prédiction (04c, section 26 bis), et non plus de l'étape 4 (seule preuve
+    d'intégrité avant cette phase, protocole § 12).
 """
 import argparse, datetime, json, os, re, sys
 
@@ -126,8 +130,8 @@ def main():
         print(f"{c:<6}{f['nom']:<20}{f['sha256']:<66}{f['taille_octets']:>10}  {f['date_modification_utc']}")
     print(f"{'':<6}{trace['nom']:<20}{trace['sha256']:<66}{trace['taille_octets']:>10}  {trace['date_modification_utc']}")
 
-    contenu = {"objet": "empreintes SHA-256 des 5 prédictions de TotalSegmentator de l'étape 4 (protocole § 10.2, "
-                        "phase 0 bis ; complément de D42)",
+    contenu = {"objet": "empreintes SHA-256 des 5 prédictions de TotalSegmentator, refaites selon D44 (protocole "
+                        "§ 10.2, phase 0 bis ; complément de D42 et D44)",
                "algorithme": "SHA-256 des octets du fichier .nii.gz (lecture binaire, sans décompression)",
                "dossier_predictions": predictions, "fichiers": fichiers, "tracabilite_etape4": trace,
                "verifications_demarrage": verifs, "tracabilite": e6.tracabilite(PHASE, SCRIPT)}
@@ -149,8 +153,8 @@ def main():
         print(f"\nÉcrit : {chemin}")
 
     # 6. Bloc à recopier dans le dépôt et ligne pour le journal
-    reference = {"objet": "référence des empreintes des prédictions de TotalSegmentator (étape 4), relevées en "
-                          "phase 0 bis ; vérifiées au démarrage des phases B et C (protocole § 9, point 7)",
+    reference = {"objet": "référence des empreintes des prédictions de TotalSegmentator (étape 4, refaites selon "
+                          "D44), relevées en phase 0 bis ; vérifiées au démarrage des phases B et C (protocole § 9, point 7)",
                  "algorithme": contenu["algorithme"], "dossier_predictions": contenu["dossier_predictions"],
                  "date_releve_utc": contenu["tracabilite"]["heure_utc"], "commit_releve": contenu["tracabilite"]["commit"],
                  "fichiers": {c: {k: f[k] for k in ("nom", "sha256", "taille_octets", "date_modification_utc")}
@@ -160,8 +164,8 @@ def main():
     print(f"\n===== DÉBUT du contenu de {e6.REF_EMPREINTES_TOTALSEG} (à recopier tel quel) =====")
     print(json.dumps(reference, ensure_ascii=False, indent=2))
     print(f"===== FIN du contenu de {e6.REF_EMPREINTES_TOTALSEG} =====")
-    print("\nLigne proposée pour le journal (complément de D42) : empreintes SHA-256 des 5 prédictions de "
-          "TotalSegmentator (phase 0 bis, " + contenu["tracabilite"]["heure_utc"][:10] + ") : "
+    print("\nLigne proposée pour le journal (complément de D42 et D44) : empreintes SHA-256 des 5 prédictions de "
+          "TotalSegmentator refaites selon D44 (phase 0 bis, " + contenu["tracabilite"]["heure_utc"][:10] + ") : "
           + " ; ".join(f"{c} {f['sha256']} (modifié le {f['date_modification_utc']})" for c, f in contenu["fichiers"].items()))
     print(f"\nRésultat : phase 0 bis TERMINÉE ; fin : {e6.heure()}")
 

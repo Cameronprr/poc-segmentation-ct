@@ -125,6 +125,8 @@ DEPOT = prep.DEPOT
 FICHIER_PROTOCOLE = os.path.join("docs", "protocole_etape6.md")
 FICHIER_SEUILS = os.path.join("config", "seuils_plausibilite.json")
 FICHIER_SPLIT = os.path.join("splits", "mmwhs_split.json")
+# Nom gardé (« etape4 ») même après D44 : il désigne la prédiction T de l'étape 4 ; son contenu portera sur les
+# prédictions refaites selon D44 (dossier PREDICTIONS_TOTALSEG ci-dessous).
 REF_EMPREINTES_TOTALSEG = os.path.join("config", "empreintes_totalseg_etape4.json")     # écrit à la main après 0 bis
 REF_MANIFESTE = os.path.join("config", "empreinte_manifeste_etape6.json")               # écrit à la main après B
 
@@ -133,9 +135,12 @@ DRIVE = prep.DRIVE                                                     # /conten
 DOSSIER_ETAPE6 = f"{DRIVE}/etape6"
 DOSSIERS_PHASES = {"0bis": f"{DOSSIER_ETAPE6}/phase0bis", "A": f"{DOSSIER_ETAPE6}/phaseA",
                    "B": f"{DOSSIER_ETAPE6}/phaseB", "C": f"{DOSSIER_ETAPE6}/phaseC"}
-PREDICTIONS_TOTALSEG = f"{DRIVE}/predictions/totalsegmentator"         # --sortie de l'étape 4 (section 10)
-NOM_PREDICTION = "mmwhs_{cas}.nii.gz"                                  # nom des prédictions (04, nnU-Net, 05m)
-NOM_TRACE_ETAPE4 = "tracabilite_etape4.json"
+# D44 : les prédictions de l'étape 4 (predictions/totalsegmentator, section 10) ont été perdues (Drive plein,
+# seul mmwhs_1004 a survécu). Elles sont refaites, mêmes version, tâche et réglages, par 04c (section 26 bis) dans
+# ce NOUVEAU dossier ; l'ancien dossier n'est plus lu par l'étape 6 (il garde l'ancien 1004, conservé à part).
+PREDICTIONS_TOTALSEG = f"{DRIVE}/predictions/totalsegmentator_d44"     # --sortie de 04c (D44)
+NOM_PREDICTION = "mmwhs_{cas}.nii.gz"                                  # nom des prédictions (04, 04c, nnU-Net, 05m)
+NOM_TRACE_ETAPE4 = "tracabilite_etape4.json"                           # même nom écrit par 04c (D44)
 NOM_EMPREINTES_0BIS = "empreintes_totalseg.json"
 NOM_MANIFESTE = "manifeste_etape6.json"
 NOM_REGISTRE = "registre_ouverture.json"
@@ -417,7 +422,8 @@ def verifier_modeles(chemins, phase):
 def verifier_empreintes_totalseg(dossier_predictions, phase, depot=DEPOT):
     """Point 7 : les 5 prédictions de TotalSegmentator ET leur fichier de traçabilité (tracabilite_etape4.json)
     doivent avoir l'empreinte inscrite dans le dépôt (config/empreintes_totalseg_etape4.json, recopié depuis la
-    phase 0 bis). Fichier de référence absent, entrée absente ou empreinte différente = arrêt (code 16).
+    phase 0 bis). Depuis D44, ce sont les prédictions refaites par 04c (dossier PREDICTIONS_TOTALSEG).
+    Fichier de référence absent, entrée absente ou empreinte différente = arrêt (code 16).
     Renvoie {cas: {"chemin", "sha256"}} pour les 5 cas."""
     ref_chemin = os.path.join(depot, REF_EMPREINTES_TOTALSEG)
     if not os.path.isfile(ref_chemin):

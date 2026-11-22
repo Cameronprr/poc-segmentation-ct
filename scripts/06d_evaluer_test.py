@@ -14,7 +14,8 @@ Ce que fait le script, dans cet ordre (tout ce qui précède l'étape 7 ne lit A
      listé (20 prédictions, 4 résultats du contrôle, modèles) modifié = arrêt (code 17) ;
   4. le code de calcul n'a pas changé depuis la phase B : « git diff --name-only <commit du manifeste> HEAD
      -- scripts/ » doit être vide (code 22 sinon) ;
-     point 7 : les 5 prédictions de TotalSegmentator et tracabilite_etape4.json ont toujours l'empreinte de
+     point 7 : les 5 prédictions de TotalSegmentator (refaites selon D44, dossier predictions/totalsegmentator_d44)
+     et tracabilite_etape4.json ont toujours l'empreinte de
      la phase 0 bis (config/empreintes_totalseg_etape4.json) ; point 6 : les empreintes des modèles sont
      contrôlées par le manifeste ;
   5. lit les 4 résultats du contrôle de plausibilité (contrat dans etape6_metriques.py) et vérifie, sur les
@@ -40,7 +41,7 @@ Entrées (chemins Drive par défaut) :
   --commit                OBLIGATOIRE : commit noté au journal pour la phase C (7 caractères ou plus)
   --raw                   nnUNet_raw (imagesTs et labelsTs de Dataset101_MMWHS)   défaut /content/drive/MyDrive/poc_ct/nnunet_raw
   --manifeste             manifeste de la phase B             défaut .../poc_ct/etape6/phaseB/manifeste_etape6.json
-  --predictions-totalseg  prédictions de l'étape 4            défaut .../poc_ct/predictions/totalsegmentator
+  --predictions-totalseg  prédictions refaites selon D44      défaut .../poc_ct/predictions/totalsegmentator_d44
   --sortie                dossier de la phase C               défaut .../poc_ct/etape6/phaseC
   --relance-apres-panne   "CAUSE" : relance après une panne EXTÉRIEURE au code (§ 11), cause notée au registre
   --ignorer-verrou        comme 05c
