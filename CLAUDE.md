@@ -23,3 +23,11 @@ Réponds toujours en français, avec des explications accessibles à un débutan
 - `data-engineer` : téléchargement, contrôle qualité, conversion des données.
 - `ml-engineer` : TotalSegmentator, nnU-Net, Auto3DSeg, suivi MLflow.
 - `qa-reviewer` : relit chaque script avant exécution et vérifie les résultats.
+
+## Délégation aux agents (règle permanente)
+1. Toute modification du journal (`docs/journal_decisions.md`), d'un fichier figé (tout fichier au statut « figé » ou cité comme figé dans le journal, notamment `docs/protocole_etape6.md`, `docs/specification_controle_plausibilite.md`, `docs/correspondance_etiquettes.md`, `config/seuils_plausibilite.json`, `config/empreintes_totalseg_etape4.json`, `config/empreinte_manifeste_etape6.json`, `splits/mmwhs_split.json`) ou d'une empreinte (y compris les empreintes de référence écrites en constantes dans les scripts) est relue par l'agent `qa-reviewer`, en lecture seule, **avant** de montrer le diff à l'utilisateur.
+2. Toute analyse de résultats de modèles est faite par l'agent `ml-engineer`, puis relue par l'agent `qa-reviewer`.
+3. Toute manipulation de données, de découpage ou de format passe par l'agent `data-engineer` (la règle 4 reste prioritaire : le découpage figé n'est jamais modifié).
+4. Chaque réponse indique quel agent a fait quoi (et ce qui a été fait directement, sans agent).
+
+Ces règles s'adressent à l'agent principal ; un agent n'en délègue pas un autre.
