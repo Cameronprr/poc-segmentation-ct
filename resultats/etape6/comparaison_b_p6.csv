@@ -1,0 +1,8 @@
+etiquette,structure,mediane_N0,mediane_S0,n_N0,n_S0,cas_compares,cas_N0_mieux,cas_S0_mieux,regle_appliquee,raison,conclusion
+1,myocarde VG,0.9215458035469055,0.9175984263420105,5,5,5,3,2,True,,pas de différence démontrée
+2,OG,0.931577742099762,0.9100931286811829,5,5,5,3,2,True,,pas de différence démontrée
+3,cavité VG,0.963851273059845,0.9558577537536621,5,5,5,5,0,True,,pas de différence démontrée
+4,OD,0.8790530562400818,0.8744478821754456,5,5,5,3,2,True,,pas de différence démontrée
+5,VD,0.894790530204773,0.8985874056816101,5,5,5,3,2,True,,pas de différence démontrée
+6,aorte,0.9809824824333191,0.9756304025650024,5,5,5,5,0,True,,pas de différence démontrée
+7,AP,0.8777783513069153,0.8686425089836121,5,5,5,3,2,True,,pas de différence démontrée

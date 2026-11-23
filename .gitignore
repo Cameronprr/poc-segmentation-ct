@@ -5,7 +5,10 @@ data/
 *.dcm
 # Résultats d'entraînement et suivi MLflow
 mlruns/
-resultats/
+resultats/*
+# Exception : résultats finaux de l'étape 6 (CSV, JSON, Markdown, aucune image ; D46).
+# Dossier figé : n'y ajouter aucun autre fichier (il serait versionné).
+!resultats/etape6/
 nnUNet_raw/
 nnUNet_preprocessed/
 nnUNet_results/

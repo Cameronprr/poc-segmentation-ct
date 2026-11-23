@@ -7,3 +7,5 @@ docs/protocole_etape6.md -text
 config/empreintes_totalseg_etape4.json -text
 # Empreinte du manifeste de l'étape 6 (phase B, D43 déviation 9) : même règle.
 config/empreinte_manifeste_etape6.json -text
+# Résultats de l'étape 6 (phase C, D46) : gardés octet pour octet, pour que leurs empreintes restent vérifiables.
+resultats/etape6/* -text

@@ -1,0 +1,5097 @@
+{
+ "cas": [
+  "1004",
+  "1010",
+  "1011",
+  "1013",
+  "1014"
+ ],
+ "remarques_cas": {
+  "1014": "seul cas à 0,45 mm (D20)"
+ },
+ "comparaisons": {
+  "a": {
+   "A": {
+    "modele": "A",
+    "etiquettes": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "statut_alertes": "officielles",
+    "cas": [
+     "1004",
+     "1010",
+     "1011",
+     "1013",
+     "1014"
+    ],
+    "par_cas": {
+     "1004": {
+      "1": {
+       "n_pred": 1183970,
+       "n_ref": 1096766,
+       "vol_pred_ml": 75.92190834129073,
+       "vol_ref_ml": 70.32996420842088,
+       "dice": 0.9215323328971863,
+       "hd95_mm": 1.313172459602356,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9893198013305664,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 5.591944132869855,
+       "ecart_pct": 7.9510123399157235
+      },
+      "2": {
+       "n_pred": 552706,
+       "n_ref": 442110,
+       "vol_pred_ml": 35.44219386612957,
+       "vol_ref_ml": 28.350241050675308,
+       "dice": 0.8569846153259277,
+       "hd95_mm": 8.393928527832031,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7399840354919434,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 7.091952815454263,
+       "ecart_pct": 25.015493881613153
+      },
+      "3": {
+       "n_pred": 1324659,
+       "n_ref": 1367889,
+       "vol_pred_ml": 84.94357051400443,
+       "vol_ref_ml": 87.7156881331958,
+       "dice": 0.9786328673362732,
+       "hd95_mm": 1.146308422088623,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.992608368396759,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.772117619191363,
+       "ecart_pct": -3.1603441507315284
+      },
+      "4": {
+       "n_pred": 521990,
+       "n_ref": 512639,
+       "vol_pred_ml": 33.47253472222298,
+       "vol_ref_ml": 32.87290317336667,
+       "dice": 0.9058513045310974,
+       "hd95_mm": 3.26352596282959,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8485075831413269,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.5996315488563084,
+       "ecart_pct": 1.8240906368809082
+      },
+      "5": {
+       "n_pred": 1439836,
+       "n_ref": 1643541,
+       "vol_pred_ml": 92.3292793047887,
+       "vol_ref_ml": 105.39183354067526,
+       "dice": 0.9243962168693542,
+       "hd95_mm": 5.962934494018555,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9109722971916199,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -13.062554235886566,
+       "ecart_pct": -12.39427553069865
+      },
+      "6": {
+       "n_pred": 600691,
+       "n_ref": 591080,
+       "vol_pred_ml": 38.519225185974534,
+       "vol_ref_ml": 37.902921173991,
+       "dice": 0.982938826084137,
+       "hd95_mm": 0.7162393927574158,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9967789649963379,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.6163040119835372,
+       "ecart_pct": 1.626006631928004
+      },
+      "7": {
+       "n_pred": 455994,
+       "n_ref": 453836,
+       "vol_pred_ml": 29.240550581668895,
+       "vol_ref_ml": 29.102169137712963,
+       "dice": 0.8376510143280029,
+       "hd95_mm": 17.615249633789062,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8279852867126465,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.13838144395593233,
+       "ecart_pct": 0.47550216377722293
+      }
+     },
+     "1010": {
+      "1": {
+       "n_pred": 685439,
+       "n_ref": 615865,
+       "vol_pred_ml": 109.62454926030863,
+       "vol_ref_ml": 98.49734699980593,
+       "dice": 0.9109923839569092,
+       "hd95_mm": 2.0234360694885254,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9495766758918762,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 11.127202260502699,
+       "ecart_pct": 11.296956313477788
+      },
+      "2": {
+       "n_pred": 465080,
+       "n_ref": 480528,
+       "vol_pred_ml": 74.38179819062577,
+       "vol_ref_ml": 76.8524484410102,
+       "dice": 0.9619567394256592,
+       "hd95_mm": 2.347017765045166,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9475288391113281,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.4706502503844234,
+       "ecart_pct": -3.2147970565711073
+      },
+      "3": {
+       "n_pred": 610079,
+       "n_ref": 626125,
+       "vol_pred_ml": 97.57197268929815,
+       "vol_ref_ml": 100.13826307754701,
+       "dice": 0.9642567038536072,
+       "hd95_mm": 1.599666714668274,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9742228388786316,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.5662903882488592,
+       "ecart_pct": -2.5627470553004557
+      },
+      "4": {
+       "n_pred": 400255,
+       "n_ref": 343429,
+       "vol_pred_ml": 64.01411936610673,
+       "vol_ref_ml": 54.92574733553027,
+       "dice": 0.8813151717185974,
+       "hd95_mm": 8.413816452026367,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.801084578037262,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 9.088372030576458,
+       "ecart_pct": 16.546651564078743
+      },
+      "5": {
+       "n_pred": 745648,
+       "n_ref": 862108,
+       "vol_pred_ml": 119.2539757831851,
+       "vol_ref_ml": 137.87981266561454,
+       "dice": 0.915107786655426,
+       "hd95_mm": 2.6540255546569824,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8004276752471924,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -18.62583688242944,
+       "ecart_pct": -13.508748323875903
+      },
+      "6": {
+       "n_pred": 402196,
+       "n_ref": 391705,
+       "vol_pred_ml": 64.32454998081388,
+       "vol_ref_ml": 62.6466893013225,
+       "dice": 0.9838833808898926,
+       "hd95_mm": 0.625,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.994407594203949,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.6778606794913813,
+       "ecart_pct": 2.6782910608748813
+      },
+      "7": {
+       "n_pred": 349739,
+       "n_ref": 329556,
+       "vol_pred_ml": 55.93492671667512,
+       "vol_ref_ml": 52.706992097079784,
+       "dice": 0.9469611644744873,
+       "hd95_mm": 2.6053709983825684,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9409875273704529,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 3.227934619595338,
+       "ecart_pct": 6.124300574105766
+      }
+     },
+     "1011": {
+      "1": {
+       "n_pred": 1085042,
+       "n_ref": 1095500,
+       "vol_pred_ml": 102.44554185828169,
+       "vol_ref_ml": 103.4329464718855,
+       "dice": 0.9200363755226135,
+       "hd95_mm": 1.5344321727752686,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9699793457984924,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -0.9874046136038146,
+       "ecart_pct": -0.9546325878594252
+      },
+      "2": {
+       "n_pred": 1144043,
+       "n_ref": 1035241,
+       "vol_pred_ml": 108.01619204065294,
+       "vol_ref_ml": 97.74352071063552,
+       "dice": 0.944981038570404,
+       "hd95_mm": 3.5321238040924072,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8913207054138184,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 10.272671330017417,
+       "ecart_pct": 10.509823316503109
+      },
+      "3": {
+       "n_pred": 1205711,
+       "n_ref": 1188796,
+       "vol_pred_ml": 113.83865022689506,
+       "vol_ref_ml": 112.24160021359341,
+       "dice": 0.9728549718856812,
+       "hd95_mm": 1.2645759582519531,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9879783987998962,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.59705001330164,
+       "ecart_pct": 1.4228681792334459
+      },
+      "4": {
+       "n_pred": 805004,
+       "n_ref": 697075,
+       "vol_pred_ml": 76.00541820324392,
+       "vol_ref_ml": 65.81517221532596,
+       "dice": 0.8940808176994324,
+       "hd95_mm": 5.013306140899658,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.743783712387085,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 10.190245987917962,
+       "ecart_pct": 15.483125919018752
+      },
+      "5": {
+       "n_pred": 1379413,
+       "n_ref": 1422804,
+       "vol_pred_ml": 130.2389328997015,
+       "vol_ref_ml": 134.3357462090229,
+       "dice": 0.9024218916893005,
+       "hd95_mm": 11.089310646057129,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8481964468955994,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -4.096813309321391,
+       "ecart_pct": -3.0496821768845184
+      },
+      "6": {
+       "n_pred": 673600,
+       "n_ref": 696602,
+       "vol_pred_ml": 63.59875193378555,
+       "vol_ref_ml": 65.77051335299716,
+       "dice": 0.9655686020851135,
+       "hd95_mm": 1.2645759582519531,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9749769568443298,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.171761419211606,
+       "ecart_pct": -3.3020289921648285
+      },
+      "7": {
+       "n_pred": 950696,
+       "n_ref": 781252,
+       "vol_pred_ml": 89.76110313011013,
+       "vol_ref_ml": 73.76284463446234,
+       "dice": 0.882614254951477,
+       "hd95_mm": 8.861510276794434,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8749702572822571,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 15.99825849564779,
+       "ecart_pct": 21.688776476732205
+      }
+     },
+     "1013": {
+      "1": {
+       "n_pred": 1432357,
+       "n_ref": 1514586,
+       "vol_pred_ml": 172.8845448115953,
+       "vol_ref_ml": 182.80953085579566,
+       "dice": 0.9498242735862732,
+       "hd95_mm": 1.875,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9576219916343689,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -9.924986044200352,
+       "ecart_pct": -5.429140372352582
+      },
+      "2": {
+       "n_pred": 815667,
+       "n_ref": 744018,
+       "vol_pred_ml": 98.45046871194788,
+       "vol_ref_ml": 89.8024816869213,
+       "dice": 0.8999009132385254,
+       "hd95_mm": 10.984919548034668,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8114446401596069,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 8.64798702502658,
+       "ecart_pct": 9.63000895139634
+      },
+      "3": {
+       "n_pred": 524307,
+       "n_ref": 492182,
+       "vol_pred_ml": 63.28350895519281,
+       "vol_ref_ml": 59.406042651699686,
+       "dice": 0.9268413186073303,
+       "hd95_mm": 2.9217662811279297,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9022995829582214,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 3.8774663034931223,
+       "ecart_pct": 6.5270570642567165
+      },
+      "4": {
+       "n_pred": 705612,
+       "n_ref": 610019,
+       "vol_pred_ml": 85.16690282771641,
+       "vol_ref_ml": 73.62889080126293,
+       "dice": 0.8798576593399048,
+       "hd95_mm": 9.732211112976074,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7824298143386841,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 11.538012026453487,
+       "ecart_pct": 15.670495509156279
+      },
+      "5": {
+       "n_pred": 833184,
+       "n_ref": 909724,
+       "vol_pred_ml": 100.56475905399577,
+       "vol_ref_ml": 109.8030865518748,
+       "dice": 0.8959439992904663,
+       "hd95_mm": 5.012286186218262,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7910708785057068,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -9.238327497879027,
+       "ecart_pct": -8.413540810179793
+      },
+      "6": {
+       "n_pred": 463430,
+       "n_ref": 469702,
+       "vol_pred_ml": 55.935695222655816,
+       "vol_ref_ml": 56.6927214843059,
+       "dice": 0.9799342155456543,
+       "hd95_mm": 1.0784715414047241,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9890478849411011,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -0.7570262616500827,
+       "ecart_pct": -1.3353147314680391
+      },
+      "7": {
+       "n_pred": 693832,
+       "n_ref": 721319,
+       "vol_pred_ml": 83.74506460031877,
+       "vol_ref_ml": 87.06272736402666,
+       "dice": 0.9010741710662842,
+       "hd95_mm": 14.509044647216797,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8664312362670898,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -3.3176627637078866,
+       "ecart_pct": -3.8106579751815906
+      }
+     },
+     "1014": {
+      "1": {
+       "n_pred": 3166118,
+       "n_ref": 3161080,
+       "vol_pred_ml": 112.70019340118311,
+       "vol_ref_ml": 112.52086225359002,
+       "dice": 0.9349645972251892,
+       "hd95_mm": 1.9067007303237915,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9663996696472168,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.1793311475930892,
+       "ecart_pct": 0.15937590949927827
+      },
+      "2": {
+       "n_pred": 1788582,
+       "n_ref": 1819419,
+       "vol_pred_ml": 63.66583220015012,
+       "vol_ref_ml": 64.76349686833755,
+       "dice": 0.9282763600349426,
+       "hd95_mm": 6.321657180786133,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8419942855834961,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.0976646681874342,
+       "ecart_pct": -1.6948817177351572
+      },
+      "3": {
+       "n_pred": 2314640,
+       "n_ref": 2401057,
+       "vol_pred_ml": 82.39123609862756,
+       "vol_ref_ml": 85.46730989409255,
+       "dice": 0.9623553156852722,
+       "hd95_mm": 1.96875,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9599097371101379,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -3.0760737954649926,
+       "ecart_pct": -3.599123219482083
+      },
+      "4": {
+       "n_pred": 1448987,
+       "n_ref": 1358313,
+       "vol_pred_ml": 51.57770971764164,
+       "vol_ref_ml": 48.350105017987715,
+       "dice": 0.8635386228561401,
+       "hd95_mm": 11.35226058959961,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7272942066192627,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 3.2276046996539236,
+       "ecart_pct": 6.675486430594424
+      },
+      "5": {
+       "n_pred": 2781334,
+       "n_ref": 2628796,
+       "vol_pred_ml": 99.00353673277061,
+       "vol_ref_ml": 93.57383951332723,
+       "dice": 0.8930661678314209,
+       "hd95_mm": 8.177751541137695,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7848092317581177,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 5.4296972194433835,
+       "ecart_pct": 5.802580344766188
+      },
+      "6": {
+       "n_pred": 1545223,
+       "n_ref": 1497612,
+       "vol_pred_ml": 55.003297712832044,
+       "vol_ref_ml": 53.308550736243134,
+       "dice": 0.9819454550743103,
+       "hd95_mm": 0.9139543175697327,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9926791787147522,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.6947469765889096,
+       "ecart_pct": 3.179127838185055
+      },
+      "7": {
+       "n_pred": 1485296,
+       "n_ref": 1661670,
+       "vol_pred_ml": 52.870154068169185,
+       "vol_ref_ml": 59.14831044482358,
+       "dice": 0.8961717486381531,
+       "hd95_mm": 15.614511489868164,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.860116183757782,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -6.278156376654394,
+       "ecart_pct": -10.614261556145317
+      }
+     }
+    },
+    "dice_moyen_par_cas": {
+     "1004": {
+      "valeur": 0.9154267396245684,
+      "n": 7
+     },
+     "1010": {
+      "valeur": 0.9377819044249398,
+      "n": 7
+     },
+     "1011": {
+      "valeur": 0.9260797074862889,
+      "n": 7
+     },
+     "1013": {
+      "valeur": 0.9190537929534912,
+      "n": 7
+     },
+     "1014": {
+      "valeur": 0.9229026096207755,
+      "n": 7
+     }
+    },
+    "agregats": {
+     "1": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9215323328971863,
+       "moyenne": 0.9274699926376343,
+       "minimum": 0.9109923839569092
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9663996696472168,
+       "moyenne": 0.9665794968605042,
+       "minimum": 0.9495766758918762
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.875,
+       "moyenne": 1.7305482864379882,
+       "maximum": 2.0234360694885254
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 0.1793311475930892,
+       "moyenne_signee": 1.1972173766322953,
+       "mediane_absolue": 5.591944132869855,
+       "pire": 11.127202260502699
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 0.15937590949927827,
+       "moyenne_signee": 2.6047143205361563,
+       "mediane_absolue": 5.429140372352582,
+       "pire": 11.296956313477788
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "2": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9282763600349426,
+       "moyenne": 0.9184199333190918,
+       "minimum": 0.8569846153259277
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8419942855834961,
+       "moyenne": 0.8464545011520386,
+       "minimum": 0.7399840354919434
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 6.321657180786133,
+       "moyenne": 6.315929365158081,
+       "maximum": 10.984919548034668
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 7.091952815454263,
+       "moyenne_signee": 4.48885925038528,
+       "mediane_absolue": 7.091952815454263,
+       "pire": 10.272671330017417
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 9.63000895139634,
+       "moyenne_signee": 8.049129475041267,
+       "mediane_absolue": 9.63000895139634,
+       "pire": 25.015493881613153
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "3": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9642567038536072,
+       "moyenne": 0.9609882354736328,
+       "minimum": 0.9268413186073303
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9742228388786316,
+       "moyenne": 0.9634037852287293,
+       "minimum": 0.9022995829582214
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.599666714668274,
+       "moyenne": 1.780213475227356,
+       "maximum": 2.9217662811279297
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -2.5662903882488592,
+       "moyenne_signee": -0.5879930972220905,
+       "mediane_absolue": 2.772117619191363,
+       "pire": 3.8774663034931223
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -2.5627470553004557,
+       "moyenne_signee": -0.2744578364047809,
+       "mediane_absolue": 3.1603441507315284,
+       "pire": 6.5270570642567165
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "4": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8813151717185974,
+       "moyenne": 0.8849287152290344,
+       "minimum": 0.8635386228561401
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.7824298143386841,
+       "moyenne": 0.7806199789047241,
+       "minimum": 0.7272942066192627
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 8.413816452026367,
+       "moyenne": 7.55502405166626,
+       "maximum": 11.35226058959961
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 9.088372030576458,
+       "moyenne_signee": 6.928773258691628,
+       "mediane_absolue": 9.088372030576458,
+       "pire": 11.538012026453487
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 15.483125919018752,
+       "moyenne_signee": 11.239970011945822,
+       "mediane_absolue": 15.483125919018752,
+       "pire": 16.546651564078743
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "5": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9024218916893005,
+       "moyenne": 0.9061872124671936,
+       "minimum": 0.8930661678314209
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8004276752471924,
+       "moyenne": 0.8270953059196472,
+       "minimum": 0.7848092317581177
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 5.962934494018555,
+       "moyenne": 6.579261684417725,
+       "maximum": 11.089310646057129
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -9.238327497879027,
+       "moyenne_signee": -7.918766941214608,
+       "mediane_absolue": 9.238327497879027,
+       "pire": -18.62583688242944
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -8.413540810179793,
+       "moyenne_signee": -6.3127332993745355,
+       "mediane_absolue": 8.413540810179793,
+       "pire": -13.508748323875903
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "6": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9819454550743103,
+       "moyenne": 0.9788540959358215,
+       "minimum": 0.9655686020851135
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9926791787147522,
+       "moyenne": 0.989578115940094,
+       "minimum": 0.9749769568443298
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 0.9139543175697327,
+       "moyenne": 0.9196482419967651,
+       "maximum": 1.2645759582519531
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 0.6163040119835372,
+       "moyenne_signee": 0.2120247974404279,
+       "mediane_absolue": 1.6778606794913813,
+       "pire": -2.171761419211606
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 1.626006631928004,
+       "moyenne_signee": 0.5692163614710145,
+       "mediane_absolue": 2.6782910608748813,
+       "pire": -3.3020289921648285
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "7": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8961717486381531,
+       "moyenne": 0.8928944706916809,
+       "minimum": 0.8376510143280029
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8664312362670898,
+       "moyenne": 0.8740980982780456,
+       "minimum": 0.8279852867126465
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 14.509044647216797,
+       "moyenne": 11.841137409210205,
+       "maximum": 17.615249633789062
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 0.13838144395593233,
+       "moyenne_signee": 1.9537510837673557,
+       "mediane_absolue": 3.3176627637078866,
+       "pire": 15.99825849564779
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 0.47550216377722293,
+       "moyenne_signee": 2.7727319366576575,
+       "mediane_absolue": 6.124300574105766,
+       "pire": 21.688776476732205
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     }
+    },
+    "controle": {
+     "1004": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 284,
+         "hu_AP": 536,
+         "hu_VD": 252
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1010": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 182,
+         "hu_AP": 379,
+         "hu_VD": 197
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1011": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     },
+     "1013": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     },
+     "1014": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     }
+    },
+    "alertes": [
+     {
+      "comparaison": "a",
+      "modele": "A",
+      "statut_alertes": "officielles",
+      "cas": "1004",
+      "regle": "R5",
+      "categorie": "erreur_probable",
+      "objet": "AP_moins_VD",
+      "mesure": {
+       "ecart_hu": 284,
+       "hu_AP": 536,
+       "hu_VD": 252
+      },
+      "seuil": {
+       "ecart_hu_max": 176
+      },
+      "classement": "vraie",
+      "justification": "Dice AP 0.8376510143280029 ; Dice VD 0.9243962168693542 (vraie si l'un < 0,85)",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "a",
+      "modele": "A",
+      "statut_alertes": "officielles",
+      "cas": "1010",
+      "regle": "R5",
+      "categorie": "erreur_probable",
+      "objet": "AP_moins_VD",
+      "mesure": {
+       "ecart_hu": 182,
+       "hu_AP": 379,
+       "hu_VD": 197
+      },
+      "seuil": {
+       "ecart_hu_max": 176
+      },
+      "classement": "fausse",
+      "justification": "Dice AP 0.9469611644744873 ; Dice VD 0.915107786655426 (vraie si l'un < 0,85)",
+      "raison_non_classable": null
+     }
+    ],
+    "echecs_silencieux": [],
+    "cas_en_alerte": [
+     "1004",
+     "1010"
+    ],
+    "agregats_sans_cas_en_alerte": {
+     "cas": [
+      "1011",
+      "1013",
+      "1014"
+     ],
+     "agregats": {
+      "1": {
+       "dice": {
+        "n": 3,
+        "mediane": 0.9349645972251892,
+        "moyenne": 0.9349417487780253,
+        "minimum": 0.9200363755226135
+       },
+       "nsd_2mm": {
+        "n": 3,
+        "mediane": 0.9663996696472168,
+        "moyenne": 0.964667002360026,
+        "minimum": 0.9576219916343689
+       },
+       "hd95_mm": {
+        "n": 3,
+        "mediane": 1.875,
+        "moyenne": 1.77204430103302,
+        "maximum": 1.9067007303237915
+       },
+       "ecart_ml": {
+        "n": 3,
+        "mediane_signee": -0.9874046136038146,
+        "moyenne_signee": -3.5776865034036924,
+        "mediane_absolue": 0.9874046136038146,
+        "pire": -9.924986044200352
+       },
+       "ecart_pct": {
+        "n": 3,
+        "mediane_signee": -0.9546325878594252,
+        "moyenne_signee": -2.074799016904243,
+        "mediane_absolue": 0.9546325878594252,
+        "pire": -5.429140372352582
+       },
+       "hd95_plafonds": 0,
+       "exclus": []
+      },
+      "2": {
+       "dice": {
+        "n": 3,
+        "mediane": 0.9282763600349426,
+        "moyenne": 0.9243861039479574,
+        "minimum": 0.8999009132385254
+       },
+       "nsd_2mm": {
+        "n": 3,
+        "mediane": 0.8419942855834961,
+        "moyenne": 0.8482532103856405,
+        "minimum": 0.8114446401596069
+       },
+       "hd95_mm": {
+        "n": 3,
+        "mediane": 6.321657180786133,
+        "moyenne": 6.946233510971069,
+        "maximum": 10.984919548034668
+       },
+       "ecart_ml": {
+        "n": 3,
+        "mediane_signee": 8.64798702502658,
+        "moyenne_signee": 5.940997895618854,
+        "mediane_absolue": 8.64798702502658,
+        "pire": 10.272671330017417
+       },
+       "ecart_pct": {
+        "n": 3,
+        "mediane_signee": 9.63000895139634,
+        "moyenne_signee": 6.148316850054765,
+        "mediane_absolue": 9.63000895139634,
+        "pire": 10.509823316503109
+       },
+       "hd95_plafonds": 0,
+       "exclus": []
+      },
+      "3": {
+       "dice": {
+        "n": 3,
+        "mediane": 0.9623553156852722,
+        "moyenne": 0.9540172020594279,
+        "minimum": 0.9268413186073303
+       },
+       "nsd_2mm": {
+        "n": 3,
+        "mediane": 0.9599097371101379,
+        "moyenne": 0.9500625729560852,
+        "minimum": 0.9022995829582214
+       },
+       "hd95_mm": {
+        "n": 3,
+        "mediane": 1.96875,
+        "moyenne": 2.0516974131266275,
+        "maximum": 2.9217662811279297
+       },
+       "ecart_ml": {
+        "n": 3,
+        "mediane_signee": 1.59705001330164,
+        "moyenne_signee": 0.7994808404432566,
+        "mediane_absolue": 3.0760737954649926,
+        "pire": 3.8774663034931223
+       },
+       "ecart_pct": {
+        "n": 3,
+        "mediane_signee": 1.4228681792334459,
+        "moyenne_signee": 1.4502673413360265,
+        "mediane_absolue": 3.599123219482083,
+        "pire": 6.5270570642567165
+       },
+       "hd95_plafonds": 0,
+       "exclus": []
+      },
+      "4": {
+       "dice": {
+        "n": 3,
+        "mediane": 0.8798576593399048,
+        "moyenne": 0.8791590332984924,
+        "minimum": 0.8635386228561401
+       },
+       "nsd_2mm": {
+        "n": 3,
+        "mediane": 0.743783712387085,
+        "moyenne": 0.7511692444483439,
+        "minimum": 0.7272942066192627
+       },
+       "hd95_mm": {
+        "n": 3,
+        "mediane": 9.732211112976074,
+        "moyenne": 8.699259281158447,
+        "maximum": 11.35226058959961
+       },
+       "ecart_ml": {
+        "n": 3,
+        "mediane_signee": 10.190245987917962,
+        "moyenne_signee": 8.318620904675123,
+        "mediane_absolue": 10.190245987917962,
+        "pire": 11.538012026453487
+       },
+       "ecart_pct": {
+        "n": 3,
+        "mediane_signee": 15.483125919018752,
+        "moyenne_signee": 12.609702619589818,
+        "mediane_absolue": 15.483125919018752,
+        "pire": 15.670495509156279
+       },
+       "hd95_plafonds": 0,
+       "exclus": []
+      },
+      "5": {
+       "dice": {
+        "n": 3,
+        "mediane": 0.8959439992904663,
+        "moyenne": 0.8971440196037292,
+        "minimum": 0.8930661678314209
+       },
+       "nsd_2mm": {
+        "n": 3,
+        "mediane": 0.7910708785057068,
+        "moyenne": 0.8080255190531412,
+        "minimum": 0.7848092317581177
+       },
+       "hd95_mm": {
+        "n": 3,
+        "mediane": 8.177751541137695,
+        "moyenne": 8.09311612447103,
+        "maximum": 11.089310646057129
+       },
+       "ecart_ml": {
+        "n": 3,
+        "mediane_signee": -4.096813309321391,
+        "moyenne_signee": -2.635147862585678,
+        "mediane_absolue": 5.4296972194433835,
+        "pire": -9.238327497879027
+       },
+       "ecart_pct": {
+        "n": 3,
+        "mediane_signee": -3.0496821768845184,
+        "moyenne_signee": -1.886880880766041,
+        "mediane_absolue": 5.802580344766188,
+        "pire": -8.413540810179793
+       },
+       "hd95_plafonds": 0,
+       "exclus": []
+      },
+      "6": {
+       "dice": {
+        "n": 3,
+        "mediane": 0.9799342155456543,
+        "moyenne": 0.9758160909016927,
+        "minimum": 0.9655686020851135
+       },
+       "nsd_2mm": {
+        "n": 3,
+        "mediane": 0.9890478849411011,
+        "moyenne": 0.9855680068333944,
+        "minimum": 0.9749769568443298
+       },
+       "hd95_mm": {
+        "n": 3,
+        "mediane": 1.0784715414047241,
+        "moyenne": 1.0856672724088032,
+        "maximum": 1.2645759582519531
+       },
+       "ecart_ml": {
+        "n": 3,
+        "mediane_signee": -0.7570262616500827,
+        "moyenne_signee": -0.41134690142425967,
+        "mediane_absolue": 1.6947469765889096,
+        "pire": -2.171761419211606
+       },
+       "ecart_pct": {
+        "n": 3,
+        "mediane_signee": -1.3353147314680391,
+        "moyenne_signee": -0.48607196181593754,
+        "mediane_absolue": 3.179127838185055,
+        "pire": -3.3020289921648285
+       },
+       "hd95_plafonds": 0,
+       "exclus": []
+      },
+      "7": {
+       "dice": {
+        "n": 3,
+        "mediane": 0.8961717486381531,
+        "moyenne": 0.8932867248853048,
+        "minimum": 0.882614254951477
+       },
+       "nsd_2mm": {
+        "n": 3,
+        "mediane": 0.8664312362670898,
+        "moyenne": 0.8671725591023763,
+        "minimum": 0.860116183757782
+       },
+       "hd95_mm": {
+        "n": 3,
+        "mediane": 14.509044647216797,
+        "moyenne": 12.995022137959799,
+        "maximum": 15.614511489868164
+       },
+       "ecart_ml": {
+        "n": 3,
+        "mediane_signee": -3.3176627637078866,
+        "moyenne_signee": 2.1341464517618363,
+        "mediane_absolue": 6.278156376654394,
+        "pire": 15.99825849564779
+       },
+       "ecart_pct": {
+        "n": 3,
+        "mediane_signee": -3.8106579751815906,
+        "moyenne_signee": 2.4212856484684324,
+        "mediane_absolue": 10.614261556145317,
+        "pire": 21.688776476732205
+       },
+       "hd95_plafonds": 0,
+       "exclus": []
+      }
+     }
+    },
+    "estimation_fausses_alertes": {
+     "erreur_probable": {
+      "cas": [
+       "1010"
+      ],
+      "x": 1,
+      "sur": 5,
+      "texte": "1 sur 5"
+     },
+     "hors_domaine": {
+      "cas": [],
+      "x": 0,
+      "sur": 5,
+      "texte": "0 sur 5",
+      "alertes_fausses": 0
+     },
+     "vraies_alertes": {
+      "erreur_probable": 1,
+      "hors_domaine": 0
+     },
+     "alertes_non_classables": [],
+     "definition_non_classable": "Une alerte est non classable quand la grandeur que la règle de classement du § 7.3 doit comparer n'est pas définie pour ce cas : (i) la vérité de la structure en cause est vide (cas dégénérés D2 ou D3, § 6), donc Dice et écart de volume sont non définis ; (ii) la mesure de densité exigée par R6 ou R7 ne peut pas être faite sur la vérité (structure absente ou trop petite pour le module figé, ou vérité que le module figé déclare non mesurable, par ex. pour sa géométrie). Une alerte non classable n'est ni vraie ni fausse : elle est rapportée à part, avec sa raison, et n'entre ni dans l'estimation des fausses alertes ni dans le compte des vraies alertes. Règle à plusieurs conditions reliées par « ou » (R3, R4, R5, R8) : l'alerte est vraie dès qu'UNE condition définie est vraie ; non classable seulement si aucune condition définie n'est vraie et qu'au moins une n'est pas définie ; fausse si toutes sont définies et fausses."
+    }
+   }
+  },
+  "b": {
+   "N0": {
+    "modele": "N0",
+    "etiquettes": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "statut_alertes": "informatives",
+    "cas": [
+     "1004",
+     "1010",
+     "1011",
+     "1013",
+     "1014"
+    ],
+    "par_cas": {
+     "1004": {
+      "1": {
+       "n_pred": 1186975,
+       "n_ref": 1096766,
+       "vol_pred_ml": 76.1146035401265,
+       "vol_ref_ml": 70.32996420842088,
+       "dice": 0.9215458035469055,
+       "hd95_mm": 1.313172459602356,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9877680540084839,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 5.78463933170562,
+       "ecart_pct": 8.224999680879979
+      },
+      "2": {
+       "n_pred": 561884,
+       "n_ref": 442110,
+       "vol_pred_ml": 36.030731814520465,
+       "vol_ref_ml": 28.350241050675308,
+       "dice": 0.844598650932312,
+       "hd95_mm": 9.527143478393555,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7234169840812683,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 7.680490763845157,
+       "ecart_pct": 27.09144782972562
+      },
+      "3": {
+       "n_pred": 1339623,
+       "n_ref": 1367889,
+       "vol_pred_ml": 85.90313489183417,
+       "vol_ref_ml": 87.7156881331958,
+       "dice": 0.9808739423751831,
+       "hd95_mm": 0.9505913257598877,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9951164722442627,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.812553241361627,
+       "ecart_pct": -2.066395738250693
+      },
+      "4": {
+       "n_pred": 516981,
+       "n_ref": 512639,
+       "vol_pred_ml": 33.15133330759126,
+       "vol_ref_ml": 32.87290317336667,
+       "dice": 0.9078786373138428,
+       "hd95_mm": 3.0185437202453613,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8696666955947876,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.2784301342245854,
+       "ecart_pct": 0.8469897920368864
+      },
+      "5": {
+       "n_pred": 1433551,
+       "n_ref": 1643541,
+       "vol_pred_ml": 91.92625457111723,
+       "vol_ref_ml": 105.39183354067526,
+       "dice": 0.9215337038040161,
+       "hd95_mm": 6.507015705108643,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.908349335193634,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -13.465578969558038,
+       "ecart_pct": -12.77668156742058
+      },
+      "6": {
+       "n_pred": 600155,
+       "n_ref": 591080,
+       "vol_pred_ml": 38.484854261989184,
+       "vol_ref_ml": 37.902921173991,
+       "dice": 0.9821924567222595,
+       "hd95_mm": 0.7162393927574158,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9942620992660522,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.5819330879981877,
+       "ecart_pct": 1.5353251674900203
+      },
+      "7": {
+       "n_pred": 231629,
+       "n_ref": 453836,
+       "vol_pred_ml": 14.853176775750086,
+       "vol_ref_ml": 29.102169137712963,
+       "dice": 0.46199002861976624,
+       "hd95_mm": 31.659503936767578,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.4685702323913574,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -14.248992361962877,
+       "ecart_pct": -48.961959826897825
+      }
+     },
+     "1010": {
+      "1": {
+       "n_pred": 686184,
+       "n_ref": 615865,
+       "vol_pred_ml": 109.74369959928691,
+       "vol_ref_ml": 98.49734699980593,
+       "dice": 0.9089765548706055,
+       "hd95_mm": 2.117762565612793,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9462369680404663,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 11.246352599480986,
+       "ecart_pct": 11.4179243827787
+      },
+      "2": {
+       "n_pred": 467670,
+       "n_ref": 480528,
+       "vol_pred_ml": 74.79602554358381,
+       "vol_ref_ml": 76.8524484410102,
+       "dice": 0.9623791575431824,
+       "hd95_mm": 2.177340507507324,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9515730738639832,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.056422897426387,
+       "ecart_pct": -2.6758066127259954
+      },
+      "3": {
+       "n_pred": 610240,
+       "n_ref": 626125,
+       "vol_pred_ml": 97.59772195718472,
+       "vol_ref_ml": 100.13826307754701,
+       "dice": 0.963851273059845,
+       "hd95_mm": 1.599666714668274,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9742648601531982,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.540541120362292,
+       "ecart_pct": -2.5370333399880307
+      },
+      "4": {
+       "n_pred": 396970,
+       "n_ref": 343429,
+       "vol_pred_ml": 63.48873834121595,
+       "vol_ref_ml": 54.92574733553027,
+       "dice": 0.8790530562400818,
+       "hd95_mm": 10.452827453613281,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7977851033210754,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 8.562991005685682,
+       "ecart_pct": 15.590121975721338
+      },
+      "5": {
+       "n_pred": 741165,
+       "n_ref": 862108,
+       "vol_pred_ml": 118.53699461588361,
+       "vol_ref_ml": 137.87981266561454,
+       "dice": 0.9109665155410767,
+       "hd95_mm": 3.0151283740997314,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7637403607368469,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -19.342818049730923,
+       "ecart_pct": -14.028752778074214
+      },
+      "6": {
+       "n_pred": 402876,
+       "n_ref": 391705,
+       "vol_pred_ml": 64.43330465263298,
+       "vol_ref_ml": 62.6466893013225,
+       "dice": 0.9834164381027222,
+       "hd95_mm": 0.625,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9940425753593445,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.7866153513104805,
+       "ecart_pct": 2.851891091510185
+      },
+      "7": {
+       "n_pred": 351320,
+       "n_ref": 329556,
+       "vol_pred_ml": 56.18778132865452,
+       "vol_ref_ml": 52.706992097079784,
+       "dice": 0.9413285255432129,
+       "hd95_mm": 2.529294967651367,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9319072961807251,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 3.4807892315747395,
+       "ecart_pct": 6.604036946679777
+      }
+     },
+     "1011": {
+      "1": {
+       "n_pred": 1078888,
+       "n_ref": 1095500,
+       "vol_pred_ml": 101.86450456701013,
+       "vol_ref_ml": 103.4329464718855,
+       "dice": 0.9073541760444641,
+       "hd95_mm": 1.8778597116470337,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9558178186416626,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.568441904875371,
+       "ecart_pct": -1.5163852122318637
+      },
+      "2": {
+       "n_pred": 1153063,
+       "n_ref": 1035241,
+       "vol_pred_ml": 108.86782615948124,
+       "vol_ref_ml": 97.74352071063552,
+       "dice": 0.9420382380485535,
+       "hd95_mm": 4.050137519836426,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8759394288063049,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 11.124305448845718,
+       "ecart_pct": 11.381118019862031
+      },
+      "3": {
+       "n_pred": 1211883,
+       "n_ref": 1188796,
+       "vol_pred_ml": 114.42138700975629,
+       "vol_ref_ml": 112.24160021359341,
+       "dice": 0.9700788855552673,
+       "hd95_mm": 1.2645759582519531,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9865561723709106,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 2.1797867961628725,
+       "ecart_pct": 1.9420489301781014
+      },
+      "4": {
+       "n_pred": 824138,
+       "n_ref": 697075,
+       "vol_pred_ml": 77.81197776307327,
+       "vol_ref_ml": 65.81517221532596,
+       "dice": 0.8874155282974243,
+       "hd95_mm": 5.456496715545654,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7294238805770874,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 11.996805547747314,
+       "ecart_pct": 18.228024244163105
+      },
+      "5": {
+       "n_pred": 1347429,
+       "n_ref": 1422804,
+       "vol_pred_ml": 127.2191251772398,
+       "vol_ref_ml": 134.3357462090229,
+       "dice": 0.8938555121421814,
+       "hd95_mm": 11.88067626953125,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8231315016746521,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -7.116621031783083,
+       "ecart_pct": -5.29763762261
+      },
+      "6": {
+       "n_pred": 676151,
+       "n_ref": 696602,
+       "vol_pred_ml": 63.83960765852291,
+       "vol_ref_ml": 65.77051335299716,
+       "dice": 0.9650344848632812,
+       "hd95_mm": 1.1660159826278687,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9733496904373169,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.930905694474248,
+       "ecart_pct": -2.9358227510113495
+      },
+      "7": {
+       "n_pred": 955478,
+       "n_ref": 781252,
+       "vol_pred_ml": 90.21260139576833,
+       "vol_ref_ml": 73.76284463446234,
+       "dice": 0.8777783513069153,
+       "hd95_mm": 9.518918991088867,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8759647607803345,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 16.44975676130599,
+       "ecart_pct": 22.30087090977046
+      }
+     },
+     "1013": {
+      "1": {
+       "n_pred": 1452839,
+       "n_ref": 1514586,
+       "vol_pred_ml": 175.35670869729637,
+       "vol_ref_ml": 182.80953085579566,
+       "dice": 0.9496651291847229,
+       "hd95_mm": 1.875,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9613274931907654,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -7.452822158499288,
+       "ecart_pct": -4.07682363365302
+      },
+      "2": {
+       "n_pred": 825826,
+       "n_ref": 744018,
+       "vol_pred_ml": 99.6766533089031,
+       "vol_ref_ml": 89.8024816869213,
+       "dice": 0.8916923999786377,
+       "hd95_mm": 12.268957138061523,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.808146059513092,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 9.874171621981802,
+       "ecart_pct": 10.995432906193129
+      },
+      "3": {
+       "n_pred": 505152,
+       "n_ref": 492182,
+       "vol_pred_ml": 60.97151309391932,
+       "vol_ref_ml": 59.406042651699686,
+       "dice": 0.9267868399620056,
+       "hd95_mm": 2.4548261165618896,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9133878350257874,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.5654704422196346,
+       "ecart_pct": 2.6352040505341496
+      },
+      "4": {
+       "n_pred": 722778,
+       "n_ref": 610019,
+       "vol_pred_ml": 87.23882770135883,
+       "vol_ref_ml": 73.62889080126293,
+       "dice": 0.8739305138587952,
+       "hd95_mm": 10.417909622192383,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7692524790763855,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 13.609936900095903,
+       "ecart_pct": 18.484506220298048
+      },
+      "5": {
+       "n_pred": 833834,
+       "n_ref": 909724,
+       "vol_pred_ml": 100.64321362511704,
+       "vol_ref_ml": 109.8030865518748,
+       "dice": 0.8937138915061951,
+       "hd95_mm": 5.131699562072754,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7960187792778015,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -9.159872926757757,
+       "ecart_pct": -8.34209056812835
+      },
+      "6": {
+       "n_pred": 461152,
+       "n_ref": 469702,
+       "vol_pred_ml": 55.66074212571084,
+       "vol_ref_ml": 56.6927214843059,
+       "dice": 0.9780975580215454,
+       "hd95_mm": 1.0784715414047241,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9884056448936462,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.0319793585950592,
+       "ecart_pct": -1.820303085786311
+      },
+      "7": {
+       "n_pred": 686048,
+       "n_ref": 721319,
+       "vol_pred_ml": 82.80554093630663,
+       "vol_ref_ml": 87.06272736402666,
+       "dice": 0.8766909837722778,
+       "hd95_mm": 18.15542221069336,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8211204409599304,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -4.257186427720029,
+       "ecart_pct": -4.889792172395292
+      }
+     },
+     "1014": {
+      "1": {
+       "n_pred": 3127959,
+       "n_ref": 3161080,
+       "vol_pred_ml": 111.3418970016188,
+       "vol_ref_ml": 112.52086225359002,
+       "dice": 0.9308487176895142,
+       "hd95_mm": 1.9493688344955444,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9635685682296753,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.1789652519712206,
+       "ecart_pct": -1.047774811140505
+      },
+      "2": {
+       "n_pred": 1780813,
+       "n_ref": 1819419,
+       "vol_pred_ml": 63.38928918989788,
+       "vol_ref_ml": 64.76349686833755,
+       "dice": 0.931577742099762,
+       "hd95_mm": 5.669317245483398,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8417657613754272,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.3742076784396744,
+       "ecart_pct": -2.121886162560681
+      },
+      "3": {
+       "n_pred": 2347846,
+       "n_ref": 2401057,
+       "vol_pred_ml": 83.57322698528424,
+       "vol_ref_ml": 85.46730989409255,
+       "dice": 0.9620823860168457,
+       "hd95_mm": 2.01324725151062,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9584858417510986,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.8940829088083149,
+       "ecart_pct": -2.2161489710573337
+      },
+      "4": {
+       "n_pred": 1419844,
+       "n_ref": 1358313,
+       "vol_pred_ml": 50.54034416895057,
+       "vol_ref_ml": 48.350105017987715,
+       "dice": 0.8580112457275391,
+       "hd95_mm": 10.367438316345215,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7021799087524414,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 2.190239150962853,
+       "ecart_pct": 4.529957380957119
+      },
+      "5": {
+       "n_pred": 2873075,
+       "n_ref": 2628796,
+       "vol_pred_ml": 102.26912204665277,
+       "vol_ref_ml": 93.57383951332723,
+       "dice": 0.894790530204773,
+       "hd95_mm": 8.462587356567383,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7927270531654358,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 8.695282533325539,
+       "ecart_pct": 9.292428929441456
+      },
+      "6": {
+       "n_pred": 1542059,
+       "n_ref": 1497612,
+       "vol_pred_ml": 54.890672911128085,
+       "vol_ref_ml": 53.308550736243134,
+       "dice": 0.9809824824333191,
+       "hd95_mm": 0.9839730858802795,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9868980050086975,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.582122174884951,
+       "ecart_pct": 2.9678581635296757
+      },
+      "7": {
+       "n_pred": 1496282,
+       "n_ref": 1661670,
+       "vol_pred_ml": 53.26120845234103,
+       "vol_ref_ml": 59.14831044482358,
+       "dice": 0.8951573967933655,
+       "hd95_mm": 15.612186431884766,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8603183031082153,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -5.887101992482549,
+       "ecart_pct": -9.953119452117443
+      }
+     }
+    },
+    "dice_moyen_par_cas": {
+     "1004": {
+      "valeur": 0.8600876033306122,
+      "n": 7
+     },
+     "1010": {
+      "valeur": 0.9357102172715324,
+      "n": 7
+     },
+     "1011": {
+      "valeur": 0.9205078823225838,
+      "n": 7
+     },
+     "1013": {
+      "valeur": 0.9129396166120257,
+      "n": 7
+     },
+     "1014": {
+      "valeur": 0.9219215001378741,
+      "n": 7
+     }
+    },
+    "agregats": {
+     "1": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9215458035469055,
+       "moyenne": 0.9236780762672424,
+       "minimum": 0.9073541760444641
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9613274931907654,
+       "moyenne": 0.9629437804222107,
+       "minimum": 0.9462369680404663
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.8778597116470337,
+       "moyenne": 1.8266327142715455,
+       "maximum": 2.117762565612793
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -1.1789652519712206,
+       "moyenne_signee": 1.3661525231681453,
+       "mediane_absolue": 5.78463933170562,
+       "pire": 11.246352599480986
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -1.047774811140505,
+       "moyenne_signee": 2.600388081326658,
+       "mediane_absolue": 4.07682363365302,
+       "pire": 11.4179243827787
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "2": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.931577742099762,
+       "moyenne": 0.9144572377204895,
+       "minimum": 0.844598650932312
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8417657613754272,
+       "moyenne": 0.8401682615280152,
+       "minimum": 0.7234169840812683
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 5.669317245483398,
+       "moyenne": 6.738579177856446,
+       "maximum": 12.268957138061523
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 7.680490763845157,
+       "moyenne_signee": 5.049667451761323,
+       "mediane_absolue": 7.680490763845157,
+       "pire": 11.124305448845718
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 10.995432906193129,
+       "moyenne_signee": 8.93406119609882,
+       "mediane_absolue": 10.995432906193129,
+       "pire": 27.09144782972562
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "3": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.963851273059845,
+       "moyenne": 0.9607346653938293,
+       "minimum": 0.9267868399620056
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9742648601531982,
+       "moyenne": 0.9655622363090515,
+       "minimum": 0.9133878350257874
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.599666714668274,
+       "moyenne": 1.6565814733505249,
+       "maximum": 2.4548261165618896
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -1.812553241361627,
+       "moyenne_signee": -0.5003840064299453,
+       "mediane_absolue": 1.8940829088083149,
+       "pire": -2.540541120362292
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -2.066395738250693,
+       "moyenne_signee": -0.4484650137167613,
+       "mediane_absolue": 2.2161489710573337,
+       "pire": 2.6352040505341496
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "4": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8790530562400818,
+       "moyenne": 0.8812577962875366,
+       "minimum": 0.8580112457275391
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.7692524790763855,
+       "moyenne": 0.7736616134643555,
+       "minimum": 0.7021799087524414
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 10.367438316345215,
+       "moyenne": 7.942643165588379,
+       "maximum": 10.452827453613281
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 8.562991005685682,
+       "moyenne_signee": 7.327680547743268,
+       "mediane_absolue": 8.562991005685682,
+       "pire": 13.609936900095903
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 15.590121975721338,
+       "moyenne_signee": 11.5359199226353,
+       "mediane_absolue": 15.590121975721338,
+       "pire": 18.484506220298048
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "5": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.894790530204773,
+       "moyenne": 0.9029720306396485,
+       "minimum": 0.8937138915061951
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.7960187792778015,
+       "moyenne": 0.8167934060096741,
+       "minimum": 0.7637403607368469
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 6.507015705108643,
+       "moyenne": 6.999421453475952,
+       "maximum": 11.88067626953125
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -9.159872926757757,
+       "moyenne_signee": -8.077921688900853,
+       "mediane_absolue": 9.159872926757757,
+       "pire": -19.342818049730923
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -8.34209056812835,
+       "moyenne_signee": -6.230546721358338,
+       "mediane_absolue": 9.292428929441456,
+       "pire": -14.028752778074214
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "6": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9809824824333191,
+       "moyenne": 0.9779446840286254,
+       "minimum": 0.9650344848632812
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9884056448936462,
+       "moyenne": 0.9873916029930114,
+       "minimum": 0.9733496904373169
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 0.9839730858802795,
+       "moyenne": 0.9139400005340577,
+       "maximum": 1.1660159826278687
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 0.5819330879981877,
+       "moyenne_signee": 0.1975571122248624,
+       "mediane_absolue": 1.582122174884951,
+       "pire": -1.930905694474248
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 1.5353251674900203,
+       "moyenne_signee": 0.5197897171464441,
+       "mediane_absolue": 2.851891091510185,
+       "pire": 2.9678581635296757
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "7": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8777783513069153,
+       "moyenne": 0.8105890572071075,
+       "minimum": 0.46199002861976624
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8603183031082153,
+       "moyenne": 0.7915762066841125,
+       "minimum": 0.4685702323913574
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 15.612186431884766,
+       "moyenne": 15.495065307617187,
+       "maximum": 31.659503936767578
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -4.257186427720029,
+       "moyenne_signee": -0.8925469578569448,
+       "mediane_absolue": 5.887101992482549,
+       "pire": 16.44975676130599
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -4.889792172395292,
+       "moyenne_signee": -6.979992718992065,
+       "mediane_absolue": 9.953119452117443,
+       "pire": -48.961959826897825
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     }
+    },
+    "controle": {
+     "1004": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "volume de la structure hors de la plage observée",
+        "mesure": {
+         "volume_ml": 14.853
+        },
+        "objet": "7 AP",
+        "regle": "R2",
+        "seuil": {
+         "bas": 18.292,
+         "haut": 154.085
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "rapport de volumes AP / aorte hors de la plage observée",
+        "mesure": {
+         "rapport": 0.3859
+        },
+        "objet": "AP_sur_aorte",
+        "regle": "R3",
+        "seuil": {
+         "bas": 0.4705,
+         "haut": 2.7905
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 5,
+         "part_plus_gros": 0.8466
+        },
+        "objet": "7 AP",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1010": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 182,
+         "hu_AP": 379,
+         "hu_VD": 197
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1011": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     },
+     "1013": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 6,
+         "part_plus_gros": 0.9831
+        },
+        "objet": "7 AP",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1014": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     }
+    },
+    "alertes": [
+     {
+      "comparaison": "b",
+      "modele": "N0",
+      "statut_alertes": "informatives",
+      "cas": "1004",
+      "regle": "R2",
+      "categorie": "erreur_probable",
+      "objet": "7 AP",
+      "mesure": {
+       "volume_ml": 14.853
+      },
+      "seuil": {
+       "bas": 18.292,
+       "haut": 154.085
+      },
+      "classement": "vraie",
+      "justification": "Dice 0.46199002861976624 ; écart de volume -48.961959826897825 % (vraie si Dice < 0,85 ou |écart| > 30 %)",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "N0",
+      "statut_alertes": "informatives",
+      "cas": "1004",
+      "regle": "R3",
+      "categorie": "erreur_probable",
+      "objet": "AP_sur_aorte",
+      "mesure": {
+       "rapport": 0.3859
+      },
+      "seuil": {
+       "bas": 0.4705,
+       "haut": 2.7905
+      },
+      "classement": "vraie",
+      "justification": "Dice AP 0.46199002861976624 ; Dice aorte 0.9821924567222595 (vraie si l'un < 0,85)",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "N0",
+      "statut_alertes": "informatives",
+      "cas": "1004",
+      "regle": "R8",
+      "categorie": "erreur_probable",
+      "objet": "7 AP",
+      "mesure": {
+       "morceaux_gros": 2,
+       "morceaux_total": 5,
+       "part_plus_gros": 0.8466
+      },
+      "seuil": {
+       "morceaux_gros_max": 1
+      },
+      "classement": "vraie",
+      "justification": "0 morceau(x) égaré(s) de plus de 0,5 mL ; Dice 0.46199002861976624",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "N0",
+      "statut_alertes": "informatives",
+      "cas": "1010",
+      "regle": "R5",
+      "categorie": "erreur_probable",
+      "objet": "AP_moins_VD",
+      "mesure": {
+       "ecart_hu": 182,
+       "hu_AP": 379,
+       "hu_VD": 197
+      },
+      "seuil": {
+       "ecart_hu_max": 176
+      },
+      "classement": "fausse",
+      "justification": "Dice AP 0.9413285255432129 ; Dice VD 0.9109665155410767 (vraie si l'un < 0,85)",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "N0",
+      "statut_alertes": "informatives",
+      "cas": "1013",
+      "regle": "R8",
+      "categorie": "erreur_probable",
+      "objet": "7 AP",
+      "mesure": {
+       "morceaux_gros": 2,
+       "morceaux_total": 6,
+       "part_plus_gros": 0.9831
+      },
+      "seuil": {
+       "morceaux_gros_max": 1
+      },
+      "classement": "vraie",
+      "justification": "1 morceau(x) égaré(s) de plus de 0,5 mL ; Dice 0.8766909837722778",
+      "raison_non_classable": null
+     }
+    ],
+    "echecs_silencieux": [],
+    "cas_en_alerte": [
+     "1004",
+     "1010",
+     "1013"
+    ]
+   },
+   "S0": {
+    "modele": "S0",
+    "etiquettes": [
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "statut_alertes": "informatives",
+    "cas": [
+     "1004",
+     "1010",
+     "1011",
+     "1013",
+     "1014"
+    ],
+    "par_cas": {
+     "1004": {
+      "1": {
+       "n_pred": 1099011,
+       "n_ref": 1096766,
+       "vol_pred_ml": 70.4739245150386,
+       "vol_ref_ml": 70.32996420842088,
+       "dice": 0.9218103885650635,
+       "hd95_mm": 1.3206801414489746,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9849029183387756,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.1439603066177284,
+       "ecart_pct": 0.20469270564549993
+      },
+      "2": {
+       "n_pred": 594120,
+       "n_ref": 442110,
+       "vol_pred_ml": 38.09786074286312,
+       "vol_ref_ml": 28.350241050675308,
+       "dice": 0.8317092061042786,
+       "hd95_mm": 9.982357025146484,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.6773449778556824,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 9.747619692187811,
+       "ecart_pct": 34.38284589807966
+      },
+      "3": {
+       "n_pred": 1326565,
+       "n_ref": 1367889,
+       "vol_pred_ml": 85.0657924936986,
+       "vol_ref_ml": 87.7156881331958,
+       "dice": 0.9758518934249878,
+       "hd95_mm": 1.313172459602356,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9829196929931641,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.6498956394972026,
+       "ecart_pct": -3.0210053593529933
+      },
+      "4": {
+       "n_pred": 519992,
+       "n_ref": 512639,
+       "vol_pred_ml": 33.34441325557611,
+       "vol_ref_ml": 32.87290317336667,
+       "dice": 0.8643862009048462,
+       "hd95_mm": 4.720980167388916,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7061813473701477,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.47151008220943424,
+       "ecart_pct": 1.4343426855935482
+      },
+      "5": {
+       "n_pred": 1454360,
+       "n_ref": 1643541,
+       "vol_pred_ml": 93.26062874501852,
+       "vol_ref_ml": 105.39183354067526,
+       "dice": 0.928868293762207,
+       "hd95_mm": 3.2850606441497803,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8825831413269043,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -12.131204795656743,
+       "ecart_pct": -11.510573815925488
+      },
+      "6": {
+       "n_pred": 612550,
+       "n_ref": 591080,
+       "vol_pred_ml": 39.279681879150345,
+       "vol_ref_ml": 37.902921173991,
+       "dice": 0.9756304025650024,
+       "hd95_mm": 4.061870098114014,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9502474665641785,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.3767607051593487,
+       "ecart_pct": 3.632334032618263
+      },
+      "7": {
+       "n_pred": 352239,
+       "n_ref": 453836,
+       "vol_pred_ml": 22.58727592103508,
+       "vol_ref_ml": 29.102169137712963,
+       "dice": 0.749895453453064,
+       "hd95_mm": 12.253641128540039,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.6952137351036072,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -6.5148932166778835,
+       "ecart_pct": -22.386280506614725
+      }
+     },
+     "1010": {
+      "1": {
+       "n_pred": 694810,
+       "n_ref": 615865,
+       "vol_pred_ml": 111.12328459798033,
+       "vol_ref_ml": 98.49734699980593,
+       "dice": 0.8995670080184937,
+       "hd95_mm": 2.262270212173462,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9327718019485474,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 12.625937598174403,
+       "ecart_pct": 12.818556014711016
+      },
+      "2": {
+       "n_pred": 458805,
+       "n_ref": 480528,
+       "vol_pred_ml": 73.37821647641279,
+       "vol_ref_ml": 76.8524484410102,
+       "dice": 0.9558889269828796,
+       "hd95_mm": 2.7949118614196777,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9161374568939209,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -3.474231964597408,
+       "ecart_pct": -4.520652282489258
+      },
+      "3": {
+       "n_pred": 616359,
+       "n_ref": 626125,
+       "vol_pred_ml": 98.57635407021569,
+       "vol_ref_ml": 100.13826307754701,
+       "dice": 0.9558577537536621,
+       "hd95_mm": 2.347017765045166,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9415047764778137,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.561909007331323,
+       "ecart_pct": -1.5597524455979246
+      },
+      "4": {
+       "n_pred": 417721,
+       "n_ref": 343429,
+       "vol_pred_ml": 66.80751509844842,
+       "vol_ref_ml": 54.92574733553027,
+       "dice": 0.8744478821754456,
+       "hd95_mm": 8.2457857131958,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7629607915878296,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 11.881767762918152,
+       "ecart_pct": 21.63241892792981
+      },
+      "5": {
+       "n_pred": 732128,
+       "n_ref": 862108,
+       "vol_pred_ml": 117.091677014076,
+       "vol_ref_ml": 137.87981266561454,
+       "dice": 0.909853994846344,
+       "hd95_mm": 3.199333429336548,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7576133608818054,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -20.78813565153854,
+       "ecart_pct": -15.076997313561652
+      },
+      "6": {
+       "n_pred": 401030,
+       "n_ref": 391705,
+       "vol_pred_ml": 64.13806770531232,
+       "vol_ref_ml": 62.6466893013225,
+       "dice": 0.9815083146095276,
+       "hd95_mm": 0.625,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9967557191848755,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.4913784039898204,
+       "ecart_pct": 2.3806180671678954
+      },
+      "7": {
+       "n_pred": 377368,
+       "n_ref": 329556,
+       "vol_pred_ml": 60.35372499268957,
+       "vol_ref_ml": 52.706992097079784,
+       "dice": 0.9166954159736633,
+       "hd95_mm": 54.62602233886719,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8598124384880066,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 7.646732895609787,
+       "ecart_pct": 14.508004709366544
+      }
+     },
+     "1011": {
+      "1": {
+       "n_pred": 1058015,
+       "n_ref": 1095500,
+       "vol_pred_ml": 99.89375523637784,
+       "vol_ref_ml": 103.4329464718855,
+       "dice": 0.9175984263420105,
+       "hd95_mm": 1.5344321727752686,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9772579669952393,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -3.5391912355076585,
+       "ecart_pct": -3.421725239616624
+      },
+      "2": {
+       "n_pred": 1105749,
+       "n_ref": 1035241,
+       "vol_pred_ml": 104.40061809980914,
+       "vol_ref_ml": 97.74352071063552,
+       "dice": 0.9556560516357422,
+       "hd95_mm": 2.7577412128448486,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9268311858177185,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 6.6570973891736145,
+       "ecart_pct": 6.810781257697475
+      },
+      "3": {
+       "n_pred": 1192752,
+       "n_ref": 1188796,
+       "vol_pred_ml": 112.61511069852521,
+       "vol_ref_ml": 112.24160021359341,
+       "dice": 0.9668996930122375,
+       "hd95_mm": 1.7094131708145142,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9672824144363403,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.37351048493179917,
+       "ecart_pct": 0.33277366343763504
+      },
+      "4": {
+       "n_pred": 840063,
+       "n_ref": 697075,
+       "vol_pred_ml": 79.31555573894254,
+       "vol_ref_ml": 65.81517221532596,
+       "dice": 0.8908842206001282,
+       "hd95_mm": 5.318875312805176,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7597935199737549,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 13.500383523616577,
+       "ecart_pct": 20.51257038338772
+      },
+      "5": {
+       "n_pred": 1384313,
+       "n_ref": 1422804,
+       "vol_pred_ml": 130.70157227689202,
+       "vol_ref_ml": 134.3357462090229,
+       "dice": 0.8985874056816101,
+       "hd95_mm": 13.203195571899414,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8379011750221252,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -3.6341739321308637,
+       "ecart_pct": -2.7052918040714085
+      },
+      "6": {
+       "n_pred": 680521,
+       "n_ref": 696602,
+       "vol_pred_ml": 64.25220645001734,
+       "vol_ref_ml": 65.77051335299716,
+       "dice": 0.9627171754837036,
+       "hd95_mm": 1.7094131708145142,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9597790241241455,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.5183069029798162,
+       "ecart_pct": -2.308491793018105
+      },
+      "7": {
+       "n_pred": 938399,
+       "n_ref": 781252,
+       "vol_pred_ml": 88.60006712576073,
+       "vol_ref_ml": 73.76284463446234,
+       "dice": 0.8686425089836121,
+       "hd95_mm": 15.225282669067383,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.845645010471344,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 14.837222491298391,
+       "ecart_pct": 20.11476450620286
+      }
+     },
+     "1013": {
+      "1": {
+       "n_pred": 1367083,
+       "n_ref": 1514586,
+       "vol_pred_ml": 165.00601608025804,
+       "vol_ref_ml": 182.80953085579566,
+       "dice": 0.9228062033653259,
+       "hd95_mm": 3.3283588886260986,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8730735182762146,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -17.80351477553762,
+       "ecart_pct": -9.738832921999807
+      },
+      "2": {
+       "n_pred": 819900,
+       "n_ref": 744018,
+       "vol_pred_ml": 98.96138901895756,
+       "vol_ref_ml": 89.8024816869213,
+       "dice": 0.8993092775344849,
+       "hd95_mm": 10.354620933532715,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7698530554771423,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 9.158907332036264,
+       "ecart_pct": 10.198946799674195
+      },
+      "3": {
+       "n_pred": 549987,
+       "n_ref": 492182,
+       "vol_pred_ml": 66.38306801118358,
+       "vol_ref_ml": 59.406042651699686,
+       "dice": 0.9041163325309753,
+       "hd95_mm": 3.9572949409484863,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8114395141601562,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 6.977025359483896,
+       "ecart_pct": 11.74463917819019
+      },
+      "4": {
+       "n_pred": 724946,
+       "n_ref": 610019,
+       "vol_pred_ml": 87.50050387088329,
+       "vol_ref_ml": 73.62889080126293,
+       "dice": 0.883486807346344,
+       "hd95_mm": 9.555630683898926,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7679727077484131,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 13.871613069620366,
+       "ecart_pct": 18.839904986565998
+      },
+      "5": {
+       "n_pred": 921808,
+       "n_ref": 909724,
+       "vol_pred_ml": 111.26161737868915,
+       "vol_ref_ml": 109.8030865518748,
+       "dice": 0.8828543424606323,
+       "hd95_mm": 6.404629230499268,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7072789072990417,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.4585308268143535,
+       "ecart_pct": 1.3283149614608445
+      },
+      "6": {
+       "n_pred": 458176,
+       "n_ref": 469702,
+       "vol_pred_ml": 55.301540889315646,
+       "vol_ref_ml": 56.6927214843059,
+       "dice": 0.9760205745697021,
+       "hd95_mm": 1.1645684242248535,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9810167551040649,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.391180594990253,
+       "ecart_pct": -2.453896300207373
+      },
+      "7": {
+       "n_pred": 696665,
+       "n_ref": 721319,
+       "vol_pred_ml": 84.08700583106729,
+       "vol_ref_ml": 87.06272736402666,
+       "dice": 0.8947717547416687,
+       "hd95_mm": 22.118694305419922,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8662069439888,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.975721532959369,
+       "ecart_pct": -3.417905254124745
+      }
+     },
+     "1014": {
+      "1": {
+       "n_pred": 2485614,
+       "n_ref": 3161080,
+       "vol_pred_ml": 88.47717568349896,
+       "vol_ref_ml": 112.52086225359002,
+       "dice": 0.832896888256073,
+       "hd95_mm": 4.950639247894287,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8181818127632141,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -24.04368657009107,
+       "ecart_pct": -21.36820327229935
+      },
+      "2": {
+       "n_pred": 1679658,
+       "n_ref": 1819419,
+       "vol_pred_ml": 59.78860593567404,
+       "vol_ref_ml": 64.76349686833755,
+       "dice": 0.9100931286811829,
+       "hd95_mm": 8.440499305725098,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8100988864898682,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -4.974890932663513,
+       "ecart_pct": -7.681628036202758
+      },
+      "3": {
+       "n_pred": 2149428,
+       "n_ref": 2401057,
+       "vol_pred_ml": 76.51039894972904,
+       "vol_ref_ml": 85.46730989409255,
+       "dice": 0.9210609197616577,
+       "hd95_mm": 5.939371585845947,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7932803630828857,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -8.956910944363514,
+       "ecart_pct": -10.479926132532471
+      },
+      "4": {
+       "n_pred": 1385075,
+       "n_ref": 1358313,
+       "vol_pred_ml": 49.302717199783366,
+       "vol_ref_ml": 48.350105017987715,
+       "dice": 0.7550816535949707,
+       "hd95_mm": 56.25290298461914,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.47635847330093384,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.9526121817956508,
+       "ecart_pct": 1.9702380820915486
+      },
+      "5": {
+       "n_pred": 2738865,
+       "n_ref": 2628796,
+       "vol_pred_ml": 97.49182285680173,
+       "vol_ref_ml": 93.57383951332723,
+       "dice": 0.8698351383209229,
+       "hd95_mm": 6.0475921630859375,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7018100023269653,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 3.9179833434745035,
+       "ecart_pct": 4.187049888998608
+      },
+      "6": {
+       "n_pred": 1538703,
+       "n_ref": 1497612,
+       "vol_pred_ml": 54.771213734605176,
+       "vol_ref_ml": 53.308550736243134,
+       "dice": 0.973434567451477,
+       "hd95_mm": 3.248893976211548,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.935396671295166,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.4626629983620418,
+       "ecart_pct": 2.7437680787814296
+      },
+      "7": {
+       "n_pred": 1173664,
+       "n_ref": 1661670,
+       "vol_pred_ml": 41.77739420577697,
+       "vol_ref_ml": 59.14831044482358,
+       "dice": 0.7958928346633911,
+       "hd95_mm": 62.36784362792969,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.694740355014801,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -17.370916239046608,
+       "ecart_pct": -29.368406482634942
+      }
+     }
+    },
+    "dice_moyen_par_cas": {
+     "1004": {
+      "valeur": 0.8925931198256356,
+      "n": 7
+     },
+     "1010": {
+      "valeur": 0.9276884709085736,
+      "n": 7
+     },
+     "1011": {
+      "valeur": 0.9229979259627206,
+      "n": 7
+     },
+     "1013": {
+      "valeur": 0.9090521846498761,
+      "n": 7
+     },
+     "1014": {
+      "valeur": 0.8654707329613822,
+      "n": 7
+     }
+    },
+    "agregats": {
+     "1": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9175984263420105,
+       "moyenne": 0.8989357829093934,
+       "minimum": 0.832896888256073
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9327718019485474,
+       "moyenne": 0.9172376036643982,
+       "minimum": 0.8181818127632141
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 2.262270212173462,
+       "moyenne": 2.679276132583618,
+       "maximum": 4.950639247894287
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -3.5391912355076585,
+       "moyenne_signee": -6.523298935268843,
+       "mediane_absolue": 12.625937598174403,
+       "pire": -24.04368657009107
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -3.421725239616624,
+       "moyenne_signee": -4.301102542711853,
+       "mediane_absolue": 9.738832921999807,
+       "pire": -21.36820327229935
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "2": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9100931286811829,
+       "moyenne": 0.9105313181877136,
+       "minimum": 0.8317092061042786
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8100988864898682,
+       "moyenne": 0.8200531125068664,
+       "minimum": 0.6773449778556824
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 8.440499305725098,
+       "moyenne": 6.866026067733765,
+       "maximum": 10.354620933532715
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 6.6570973891736145,
+       "moyenne_signee": 3.4229003032273537,
+       "mediane_absolue": 6.6570973891736145,
+       "pire": 9.747619692187811
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 6.810781257697475,
+       "moyenne_signee": 7.8380587273518625,
+       "mediane_absolue": 7.681628036202758,
+       "pire": 34.38284589807966
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "3": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9558577537536621,
+       "moyenne": 0.9447573184967041,
+       "minimum": 0.9041163325309753
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9415047764778137,
+       "moyenne": 0.899285352230072,
+       "minimum": 0.7932803630828857
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 2.347017765045166,
+       "moyenne": 3.053253984451294,
+       "maximum": 5.939371585845947
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -1.561909007331323,
+       "moyenne_signee": -1.1636359493552688,
+       "mediane_absolue": 2.6498956394972026,
+       "pire": -8.956910944363514
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -1.5597524455979246,
+       "moyenne_signee": -0.5966542191711126,
+       "mediane_absolue": 3.0210053593529933,
+       "pire": 11.74463917819019
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "4": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8744478821754456,
+       "moyenne": 0.853657352924347,
+       "minimum": 0.7550816535949707
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.7597935199737549,
+       "moyenne": 0.6946533679962158,
+       "minimum": 0.47635847330093384
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 8.2457857131958,
+       "moyenne": 16.81883497238159,
+       "maximum": 56.25290298461914
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 11.881767762918152,
+       "moyenne_signee": 8.135577324032036,
+       "mediane_absolue": 11.881767762918152,
+       "pire": 13.871613069620366
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 18.839904986565998,
+       "moyenne_signee": 12.877895013113724,
+       "mediane_absolue": 18.839904986565998,
+       "pire": 21.63241892792981
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "5": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8985874056816101,
+       "moyenne": 0.8979998350143432,
+       "minimum": 0.8698351383209229
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.7576133608818054,
+       "moyenne": 0.7774373173713685,
+       "minimum": 0.7018100023269653
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 6.0475921630859375,
+       "moyenne": 6.42796220779419,
+       "maximum": 13.203195571899414
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -3.6341739321308637,
+       "moyenne_signee": -6.235400041807457,
+       "mediane_absolue": 3.9179833434745035,
+       "pire": -20.78813565153854
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -2.7052918040714085,
+       "moyenne_signee": -4.75549961661982,
+       "mediane_absolue": 4.187049888998608,
+       "pire": -15.076997313561652
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "6": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9756304025650024,
+       "moyenne": 0.9738622069358825,
+       "minimum": 0.9627171754837036
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9597790241241455,
+       "moyenne": 0.9646391272544861,
+       "minimum": 0.935396671295166
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.7094131708145142,
+       "moyenne": 2.161949133872986,
+       "maximum": 4.061870098114014
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 1.3767607051593487,
+       "moyenne_signee": 0.2842629219082283,
+       "mediane_absolue": 1.4626629983620418,
+       "pire": -1.5183069029798162
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 2.3806180671678954,
+       "moyenne_signee": 0.798866417068422,
+       "mediane_absolue": 2.453896300207373,
+       "pire": 3.632334032618263
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "7": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8686425089836121,
+       "moyenne": 0.8451795935630798,
+       "minimum": 0.749895453453064
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.845645010471344,
+       "moyenne": 0.7923236966133118,
+       "minimum": 0.694740355014801
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 22.118694305419922,
+       "moyenne": 33.31829681396484,
+       "maximum": 62.36784362792969
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -2.975721532959369,
+       "moyenne_signee": -0.8755151203551363,
+       "mediane_absolue": 7.646732895609787,
+       "pire": -17.370916239046608
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -3.417905254124745,
+       "moyenne_signee": -4.109964605561002,
+       "mediane_absolue": 20.11476450620286,
+       "pire": -29.368406482634942
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     }
+    },
+    "controle": {
+     "1004": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 267,
+         "hu_AP": 520,
+         "hu_VD": 253
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 24,
+         "part_plus_gros": 0.9213
+        },
+        "objet": "7 AP",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1010": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 179,
+         "hu_AP": 376,
+         "hu_VD": 197
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 32,
+         "part_plus_gros": 0.9751
+        },
+        "objet": "7 AP",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1011": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 56,
+         "part_plus_gros": 0.9856
+        },
+        "objet": "7 AP",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1013": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     },
+     "1014": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 3,
+         "morceaux_total": 78,
+         "part_plus_gros": 0.8413
+        },
+        "objet": "4 OD",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 46,
+         "part_plus_gros": 0.9724
+        },
+        "objet": "7 AP",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     }
+    },
+    "alertes": [
+     {
+      "comparaison": "b",
+      "modele": "S0",
+      "statut_alertes": "informatives",
+      "cas": "1004",
+      "regle": "R5",
+      "categorie": "erreur_probable",
+      "objet": "AP_moins_VD",
+      "mesure": {
+       "ecart_hu": 267,
+       "hu_AP": 520,
+       "hu_VD": 253
+      },
+      "seuil": {
+       "ecart_hu_max": 176
+      },
+      "classement": "vraie",
+      "justification": "Dice AP 0.749895453453064 ; Dice VD 0.928868293762207 (vraie si l'un < 0,85)",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "S0",
+      "statut_alertes": "informatives",
+      "cas": "1004",
+      "regle": "R8",
+      "categorie": "erreur_probable",
+      "objet": "7 AP",
+      "mesure": {
+       "morceaux_gros": 2,
+       "morceaux_total": 24,
+       "part_plus_gros": 0.9213
+      },
+      "seuil": {
+       "morceaux_gros_max": 1
+      },
+      "classement": "vraie",
+      "justification": "0 morceau(x) égaré(s) de plus de 0,5 mL ; Dice 0.749895453453064",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "S0",
+      "statut_alertes": "informatives",
+      "cas": "1010",
+      "regle": "R5",
+      "categorie": "erreur_probable",
+      "objet": "AP_moins_VD",
+      "mesure": {
+       "ecart_hu": 179,
+       "hu_AP": 376,
+       "hu_VD": 197
+      },
+      "seuil": {
+       "ecart_hu_max": 176
+      },
+      "classement": "fausse",
+      "justification": "Dice AP 0.9166954159736633 ; Dice VD 0.909853994846344 (vraie si l'un < 0,85)",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "S0",
+      "statut_alertes": "informatives",
+      "cas": "1010",
+      "regle": "R8",
+      "categorie": "erreur_probable",
+      "objet": "7 AP",
+      "mesure": {
+       "morceaux_gros": 2,
+       "morceaux_total": 32,
+       "part_plus_gros": 0.9751
+      },
+      "seuil": {
+       "morceaux_gros_max": 1
+      },
+      "classement": "vraie",
+      "justification": "1 morceau(x) égaré(s) de plus de 0,5 mL ; Dice 0.9166954159736633",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "S0",
+      "statut_alertes": "informatives",
+      "cas": "1011",
+      "regle": "R8",
+      "categorie": "erreur_probable",
+      "objet": "7 AP",
+      "mesure": {
+       "morceaux_gros": 2,
+       "morceaux_total": 56,
+       "part_plus_gros": 0.9856
+      },
+      "seuil": {
+       "morceaux_gros_max": 1
+      },
+      "classement": "vraie",
+      "justification": "1 morceau(x) égaré(s) de plus de 0,5 mL ; Dice 0.8686425089836121",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "S0",
+      "statut_alertes": "informatives",
+      "cas": "1014",
+      "regle": "R8",
+      "categorie": "erreur_probable",
+      "objet": "4 OD",
+      "mesure": {
+       "morceaux_gros": 3,
+       "morceaux_total": 78,
+       "part_plus_gros": 0.8413
+      },
+      "seuil": {
+       "morceaux_gros_max": 1
+      },
+      "classement": "vraie",
+      "justification": "2 morceau(x) égaré(s) de plus de 0,5 mL ; Dice 0.7550816535949707",
+      "raison_non_classable": null
+     },
+     {
+      "comparaison": "b",
+      "modele": "S0",
+      "statut_alertes": "informatives",
+      "cas": "1014",
+      "regle": "R8",
+      "categorie": "erreur_probable",
+      "objet": "7 AP",
+      "mesure": {
+       "morceaux_gros": 2,
+       "morceaux_total": 46,
+       "part_plus_gros": 0.9724
+      },
+      "seuil": {
+       "morceaux_gros_max": 1
+      },
+      "classement": "vraie",
+      "justification": "1 morceau(x) égaré(s) de plus de 0,5 mL ; Dice 0.7958928346633911",
+      "raison_non_classable": null
+     }
+    ],
+    "echecs_silencieux": [],
+    "cas_en_alerte": [
+     "1004",
+     "1010",
+     "1011",
+     "1014"
+    ]
+   }
+  },
+  "c": {
+   "T": {
+    "modele": "T",
+    "etiquettes": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "statut_alertes": "à part, informatives",
+    "cas": [
+     "1004",
+     "1010",
+     "1011",
+     "1013",
+     "1014"
+    ],
+    "par_cas": {
+     "1004": {
+      "1": {
+       "n_pred": 1160690,
+       "n_ref": 1096766,
+       "vol_pred_ml": 74.42908164282265,
+       "vol_ref_ml": 70.32996420842088,
+       "dice": 0.916094958782196,
+       "hd95_mm": 1.4255599975585938,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9856225848197937,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 4.0991174344017764,
+       "ecart_pct": 5.828408247520441
+      },
+      "2": {
+       "n_pred": 542759,
+       "n_ref": 442110,
+       "vol_pred_ml": 34.80434390179702,
+       "vol_ref_ml": 28.350241050675308,
+       "dice": 0.8572754263877869,
+       "hd95_mm": 6.7509307861328125,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7274783253669739,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 6.454102851121711,
+       "ecart_pct": 22.76560132093823
+      },
+      "3": {
+       "n_pred": 1302500,
+       "n_ref": 1367889,
+       "vol_pred_ml": 83.52262778155796,
+       "vol_ref_ml": 87.7156881331958,
+       "dice": 0.969706654548645,
+       "hd95_mm": 1.7191914319992065,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9705092310905457,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -4.19306035163784,
+       "ecart_pct": -4.7802855348643
+      },
+      "4": {
+       "n_pred": 543902,
+       "n_ref": 512639,
+       "vol_pred_ml": 34.877638614698604,
+       "vol_ref_ml": 32.87290317336667,
+       "dice": 0.9023066759109497,
+       "hd95_mm": 3.356516122817993,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8289136290550232,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 2.004735441331931,
+       "ecart_pct": 6.098443544092417
+      },
+      "5": {
+       "n_pred": 1460181,
+       "n_ref": 1643541,
+       "vol_pred_ml": 93.63389954449373,
+       "vol_ref_ml": 105.39183354067526,
+       "dice": 0.9282525777816772,
+       "hd95_mm": 4.9518585205078125,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9027795195579529,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -11.757933996181535,
+       "ecart_pct": -11.156399505701398
+      }
+     },
+     "1010": {
+      "1": {
+       "n_pred": 672705,
+       "n_ref": 615865,
+       "vol_pred_ml": 107.58795809715514,
+       "vol_ref_ml": 98.49734699980593,
+       "dice": 0.9185065627098083,
+       "hd95_mm": 1.7174278497695923,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9758533239364624,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 9.09061109734921,
+       "ecart_pct": 9.229295381292982
+      },
+      "2": {
+       "n_pred": 454678,
+       "n_ref": 480528,
+       "vol_pred_ml": 72.7181715784754,
+       "vol_ref_ml": 76.8524484410102,
+       "dice": 0.9582936763763428,
+       "hd95_mm": 2.378401517868042,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9457179307937622,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -4.13427686253479,
+       "ecart_pct": -5.379499217527398
+      },
+      "3": {
+       "n_pred": 611708,
+       "n_ref": 626125,
+       "vol_pred_ml": 97.83250410164125,
+       "vol_ref_ml": 100.13826307754701,
+       "dice": 0.9674842953681946,
+       "hd95_mm": 1.440238356590271,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9775816798210144,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.3057589759057606,
+       "ecart_pct": -2.3025753643441793
+      },
+      "4": {
+       "n_pred": 396958,
+       "n_ref": 343429,
+       "vol_pred_ml": 63.486819141125025,
+       "vol_ref_ml": 54.92574733553027,
+       "dice": 0.8838837146759033,
+       "hd95_mm": 6.929487705230713,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7950368523597717,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 8.561071805594757,
+       "ecart_pct": 15.586627803709076
+      },
+      "5": {
+       "n_pred": 779463,
+       "n_ref": 862108,
+       "vol_pred_ml": 124.6621217060715,
+       "vol_ref_ml": 137.87981266561454,
+       "dice": 0.936147153377533,
+       "hd95_mm": 2.1461780071258545,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9387795925140381,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -13.217690959543035,
+       "ecart_pct": -9.58638592844517
+      }
+     },
+     "1011": {
+      "1": {
+       "n_pred": 1110064,
+       "n_ref": 1095500,
+       "vol_pred_ml": 104.8080240003351,
+       "vol_ref_ml": 103.4329464718855,
+       "dice": 0.9314778447151184,
+       "hd95_mm": 1.4013768434524536,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9802765846252441,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.3750775284495944,
+       "ecart_pct": 1.3294386125056965
+      },
+      "2": {
+       "n_pred": 1029633,
+       "n_ref": 1035241,
+       "vol_pred_ml": 97.21403466425092,
+       "vol_ref_ml": 97.74352071063552,
+       "dice": 0.9640694856643677,
+       "hd95_mm": 2.032392740249634,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9541044235229492,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -0.529486046384605,
+       "ecart_pct": -0.5417096115783676
+      },
+      "3": {
+       "n_pred": 1169133,
+       "n_ref": 1188796,
+       "vol_pred_ml": 110.38509448426737,
+       "vol_ref_ml": 112.24160021359341,
+       "dice": 0.9760709404945374,
+       "hd95_mm": 1.2645759582519531,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9844972491264343,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.8565057293260452,
+       "ecart_pct": -1.6540264267376388
+      },
+      "4": {
+       "n_pred": 806447,
+       "n_ref": 697075,
+       "vol_pred_ml": 76.14166077901656,
+       "vol_ref_ml": 65.81517221532596,
+       "dice": 0.9042022824287415,
+       "hd95_mm": 4.192312717437744,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.772391140460968,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 10.326488563690603,
+       "ecart_pct": 15.690133773266856
+      },
+      "5": {
+       "n_pred": 1385416,
+       "n_ref": 1422804,
+       "vol_pred_ml": 130.8057133448596,
+       "vol_ref_ml": 134.3357462090229,
+       "dice": 0.9138807058334351,
+       "hd95_mm": 10.29031753540039,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8728890419006348,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -3.5300328641632746,
+       "ecart_pct": -2.6277688283136764
+      }
+     },
+     "1013": {
+      "1": {
+       "n_pred": 1292196,
+       "n_ref": 1514586,
+       "vol_pred_ml": 155.9672045917074,
+       "vol_ref_ml": 182.80953085579566,
+       "dice": 0.894507646560669,
+       "hd95_mm": 4.544682025909424,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8005919456481934,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -26.842326264088257,
+       "ecart_pct": -14.683220365169088
+      },
+      "2": {
+       "n_pred": 770516,
+       "n_ref": 744018,
+       "vol_pred_ml": 93.00077280318466,
+       "vol_ref_ml": 89.8024816869213,
+       "dice": 0.9021666049957275,
+       "hd95_mm": 8.835681915283203,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8202630281448364,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 3.1982911162633627,
+       "ecart_pct": 3.5614729751161844
+      },
+      "3": {
+       "n_pred": 598657,
+       "n_ref": 492182,
+       "vol_pred_ml": 72.25750489806327,
+       "vol_ref_ml": 59.406042651699686,
+       "dice": 0.863179624080658,
+       "hd95_mm": 7.063631057739258,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7154839038848877,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 12.851462246363589,
+       "ecart_pct": 21.633257616085107
+      },
+      "4": {
+       "n_pred": 688616,
+       "n_ref": 610019,
+       "vol_pred_ml": 83.1154968419057,
+       "vol_ref_ml": 73.62889080126293,
+       "dice": 0.8777262568473816,
+       "hd95_mm": 9.260086059570312,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7543869614601135,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 9.48660604064277,
+       "ecart_pct": 12.884352782454314
+      },
+      "5": {
+       "n_pred": 922959,
+       "n_ref": 909724,
+       "vol_pred_ml": 111.40054231924388,
+       "vol_ref_ml": 109.8030865518748,
+       "dice": 0.886949896812439,
+       "hd95_mm": 4.377015113830566,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7066076397895813,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.597455767369084,
+       "ecart_pct": 1.4548368516165437
+      }
+     },
+     "1014": {
+      "1": {
+       "n_pred": 2875180,
+       "n_ref": 3161080,
+       "vol_pred_ml": 102.34405099974596,
+       "vol_ref_ml": 112.52086225359002,
+       "dice": 0.9085075855255127,
+       "hd95_mm": 2.8549299240112305,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9068213701248169,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -10.176811253844065,
+       "ecart_pct": -9.044377238159113
+      },
+      "2": {
+       "n_pred": 1756175,
+       "n_ref": 1819419,
+       "vol_pred_ml": 62.51228227953688,
+       "vol_ref_ml": 64.76349686833755,
+       "dice": 0.9429404139518738,
+       "hd95_mm": 3.8384554386138916,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8984491229057312,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.2512145888006714,
+       "ecart_pct": -3.476054718566741
+      },
+      "3": {
+       "n_pred": 2268195,
+       "n_ref": 2401057,
+       "vol_pred_ml": 80.7379937107829,
+       "vol_ref_ml": 85.46730989409255,
+       "dice": 0.9585059881210327,
+       "hd95_mm": 2.122645616531372,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9577063918113708,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -4.729316183309649,
+       "ecart_pct": -5.533479630012945
+      },
+      "4": {
+       "n_pred": 1400199,
+       "n_ref": 1358313,
+       "vol_pred_ml": 49.84106659958447,
+       "vol_ref_ml": 48.350105017987715,
+       "dice": 0.8629000186920166,
+       "hd95_mm": 11.377775192260742,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7380574941635132,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.490961581596757,
+       "ecart_pct": 3.083678062420079
+      },
+      "5": {
+       "n_pred": 2831854,
+       "n_ref": 2628796,
+       "vol_pred_ml": 100.80183160700707,
+       "vol_ref_ml": 93.57383951332723,
+       "dice": 0.8766307830810547,
+       "hd95_mm": 6.005856513977051,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.6892935037612915,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 7.227992093679845,
+       "ecart_pct": 7.724372678595069
+      }
+     }
+    },
+    "dice_moyen_par_cas": {
+     "1004": {
+      "valeur": 0.914727258682251,
+      "n": 5
+     },
+     "1010": {
+      "valeur": 0.9328630805015564,
+      "n": 5
+     },
+     "1011": {
+      "valeur": 0.93794025182724,
+      "n": 5
+     },
+     "1013": {
+      "valeur": 0.884906005859375,
+      "n": 5
+     },
+     "1014": {
+      "valeur": 0.9098969578742981,
+      "n": 5
+     }
+    },
+    "agregats": {
+     "1": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.916094958782196,
+       "moyenne": 0.9138189196586609,
+       "minimum": 0.894507646560669
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9758533239364624,
+       "moyenne": 0.9298331618309021,
+       "minimum": 0.8005919456481934
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.7174278497695923,
+       "moyenne": 2.388795328140259,
+       "maximum": 4.544682025909424
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 1.3750775284495944,
+       "moyenne_signee": -4.490866291546348,
+       "mediane_absolue": 9.09061109734921,
+       "pire": -26.842326264088257
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 1.3294386125056965,
+       "moyenne_signee": -1.4680910724018164,
+       "mediane_absolue": 9.044377238159113,
+       "pire": -14.683220365169088
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "2": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9429404139518738,
+       "moyenne": 0.9249491214752197,
+       "minimum": 0.8572754263877869
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8984491229057312,
+       "moyenne": 0.8692025661468505,
+       "minimum": 0.7274783253669739
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 3.8384554386138916,
+       "moyenne": 4.767172479629517,
+       "maximum": 8.835681915283203
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -0.529486046384605,
+       "moyenne_signee": 0.5474832939330014,
+       "mediane_absolue": 3.1982911162633627,
+       "pire": 6.454102851121711
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -0.5417096115783676,
+       "moyenne_signee": 3.3859621496763816,
+       "mediane_absolue": 3.5614729751161844,
+       "pire": 22.76560132093823
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "3": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9674842953681946,
+       "moyenne": 0.9469895005226135,
+       "minimum": 0.863179624080658
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9705092310905457,
+       "moyenne": 0.9211556911468506,
+       "minimum": 0.7154839038848877
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.7191914319992065,
+       "moyenne": 2.722056484222412,
+       "maximum": 7.063631057739258
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -2.3057589759057606,
+       "moyenne_signee": -0.04663579876314117,
+       "mediane_absolue": 4.19306035163784,
+       "pire": 12.851462246363589
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -2.3025753643441793,
+       "moyenne_signee": 1.472578132025209,
+       "mediane_absolue": 4.7802855348643,
+       "pire": 21.633257616085107
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "4": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8838837146759033,
+       "moyenne": 0.8862037897109986,
+       "minimum": 0.8629000186920166
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.772391140460968,
+       "moyenne": 0.777757215499878,
+       "minimum": 0.7380574941635132
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 6.929487705230713,
+       "moyenne": 7.023235559463501,
+       "maximum": 11.377775192260742
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 8.561071805594757,
+       "moyenne_signee": 6.3739726865713635,
+       "mediane_absolue": 8.561071805594757,
+       "pire": 10.326488563690603
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 12.884352782454314,
+       "moyenne_signee": 10.668647193188548,
+       "mediane_absolue": 12.884352782454314,
+       "pire": 15.690133773266856
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "5": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9138807058334351,
+       "moyenne": 0.9083722233772278,
+       "minimum": 0.8766307830810547
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8728890419006348,
+       "moyenne": 0.8220698595046997,
+       "minimum": 0.6892935037612915
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 4.9518585205078125,
+       "moyenne": 5.554245138168335,
+       "maximum": 10.29031753540039
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -3.5300328641632746,
+       "moyenne_signee": -3.936041991767783,
+       "mediane_absolue": 7.227992093679845,
+       "pire": -13.217690959543035
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -2.6277688283136764,
+       "moyenne_signee": -2.838268946449726,
+       "mediane_absolue": 7.724372678595069,
+       "pire": -11.156399505701398
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     }
+    },
+    "controle": {
+     "1004": {
+      "statut": "OK",
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R7",
+       "R8"
+      ],
+      "non_evaluees": [],
+      "ignorees_restriction_c": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "rapport de volumes AP / aorte hors de la plage observée",
+        "mesure": {
+         "rapport": 0.4004
+        },
+        "objet": "AP_sur_aorte",
+        "regle": "R3",
+        "seuil": {
+         "bas": 0.4705,
+         "haut": 2.7905
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 287,
+         "hu_AP": 540,
+         "hu_VD": 253
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 2,
+         "part_plus_gros": 0.5506
+        },
+        "objet": "6 aorte",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ]
+     },
+     "1010": {
+      "statut": "OK",
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R7",
+       "R8"
+      ],
+      "non_evaluees": [],
+      "ignorees_restriction_c": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "rapport de volumes AP / aorte hors de la plage observée",
+        "mesure": {
+         "rapport": 0.4325
+        },
+        "objet": "AP_sur_aorte",
+        "regle": "R3",
+        "seuil": {
+         "bas": 0.4705,
+         "haut": 2.7905
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 181,
+         "hu_AP": 378,
+         "hu_VD": 197
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 2,
+         "part_plus_gros": 0.53
+        },
+        "objet": "6 aorte",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ]
+     },
+     "1011": {
+      "statut": "OK",
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R7",
+       "R8"
+      ],
+      "non_evaluees": [],
+      "ignorees_restriction_c": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 2,
+         "part_plus_gros": 0.5102
+        },
+        "objet": "6 aorte",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ]
+     },
+     "1013": {
+      "statut": "OK",
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R7",
+       "R8"
+      ],
+      "non_evaluees": [],
+      "ignorees_restriction_c": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 2,
+         "part_plus_gros": 0.5321
+        },
+        "objet": "6 aorte",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ]
+     },
+     "1014": {
+      "statut": "OK",
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R7",
+       "R8"
+      ],
+      "non_evaluees": [],
+      "ignorees_restriction_c": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "rapport de volumes AP / aorte hors de la plage observée",
+        "mesure": {
+         "rapport": 0.4488
+        },
+        "objet": "AP_sur_aorte",
+        "regle": "R3",
+        "seuil": {
+         "bas": 0.4705,
+         "haut": 2.7905
+        }
+       },
+       {
+        "categorie": "erreur_probable",
+        "libelle": "masque éclaté : trop de morceaux de plus de 0,5 mL",
+        "mesure": {
+         "morceaux_gros": 2,
+         "morceaux_total": 2,
+         "part_plus_gros": 0.5045
+        },
+        "objet": "6 aorte",
+        "regle": "R8",
+        "seuil": {
+         "morceaux_gros_max": 1
+        }
+       }
+      ]
+     }
+    },
+    "alertes": [],
+    "echecs_silencieux": [],
+    "cas_en_alerte": []
+   },
+   "A": {
+    "modele": "A",
+    "etiquettes": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "statut_alertes": "officielles (rappel de (a))",
+    "cas": [
+     "1004",
+     "1010",
+     "1011",
+     "1013",
+     "1014"
+    ],
+    "par_cas": {
+     "1004": {
+      "1": {
+       "n_pred": 1183970,
+       "n_ref": 1096766,
+       "vol_pred_ml": 75.92190834129073,
+       "vol_ref_ml": 70.32996420842088,
+       "dice": 0.9215323328971863,
+       "hd95_mm": 1.313172459602356,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9893198013305664,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 5.591944132869855,
+       "ecart_pct": 7.9510123399157235
+      },
+      "2": {
+       "n_pred": 552706,
+       "n_ref": 442110,
+       "vol_pred_ml": 35.44219386612957,
+       "vol_ref_ml": 28.350241050675308,
+       "dice": 0.8569846153259277,
+       "hd95_mm": 8.393928527832031,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7399840354919434,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 7.091952815454263,
+       "ecart_pct": 25.015493881613153
+      },
+      "3": {
+       "n_pred": 1324659,
+       "n_ref": 1367889,
+       "vol_pred_ml": 84.94357051400443,
+       "vol_ref_ml": 87.7156881331958,
+       "dice": 0.9786328673362732,
+       "hd95_mm": 1.146308422088623,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.992608368396759,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.772117619191363,
+       "ecart_pct": -3.1603441507315284
+      },
+      "4": {
+       "n_pred": 521990,
+       "n_ref": 512639,
+       "vol_pred_ml": 33.47253472222298,
+       "vol_ref_ml": 32.87290317336667,
+       "dice": 0.9058513045310974,
+       "hd95_mm": 3.26352596282959,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8485075831413269,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.5996315488563084,
+       "ecart_pct": 1.8240906368809082
+      },
+      "5": {
+       "n_pred": 1439836,
+       "n_ref": 1643541,
+       "vol_pred_ml": 92.3292793047887,
+       "vol_ref_ml": 105.39183354067526,
+       "dice": 0.9243962168693542,
+       "hd95_mm": 5.962934494018555,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9109722971916199,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -13.062554235886566,
+       "ecart_pct": -12.39427553069865
+      }
+     },
+     "1010": {
+      "1": {
+       "n_pred": 685439,
+       "n_ref": 615865,
+       "vol_pred_ml": 109.62454926030863,
+       "vol_ref_ml": 98.49734699980593,
+       "dice": 0.9109923839569092,
+       "hd95_mm": 2.0234360694885254,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9495766758918762,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 11.127202260502699,
+       "ecart_pct": 11.296956313477788
+      },
+      "2": {
+       "n_pred": 465080,
+       "n_ref": 480528,
+       "vol_pred_ml": 74.38179819062577,
+       "vol_ref_ml": 76.8524484410102,
+       "dice": 0.9619567394256592,
+       "hd95_mm": 2.347017765045166,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9475288391113281,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.4706502503844234,
+       "ecart_pct": -3.2147970565711073
+      },
+      "3": {
+       "n_pred": 610079,
+       "n_ref": 626125,
+       "vol_pred_ml": 97.57197268929815,
+       "vol_ref_ml": 100.13826307754701,
+       "dice": 0.9642567038536072,
+       "hd95_mm": 1.599666714668274,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9742228388786316,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -2.5662903882488592,
+       "ecart_pct": -2.5627470553004557
+      },
+      "4": {
+       "n_pred": 400255,
+       "n_ref": 343429,
+       "vol_pred_ml": 64.01411936610673,
+       "vol_ref_ml": 54.92574733553027,
+       "dice": 0.8813151717185974,
+       "hd95_mm": 8.413816452026367,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.801084578037262,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 9.088372030576458,
+       "ecart_pct": 16.546651564078743
+      },
+      "5": {
+       "n_pred": 745648,
+       "n_ref": 862108,
+       "vol_pred_ml": 119.2539757831851,
+       "vol_ref_ml": 137.87981266561454,
+       "dice": 0.915107786655426,
+       "hd95_mm": 2.6540255546569824,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8004276752471924,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -18.62583688242944,
+       "ecart_pct": -13.508748323875903
+      }
+     },
+     "1011": {
+      "1": {
+       "n_pred": 1085042,
+       "n_ref": 1095500,
+       "vol_pred_ml": 102.44554185828169,
+       "vol_ref_ml": 103.4329464718855,
+       "dice": 0.9200363755226135,
+       "hd95_mm": 1.5344321727752686,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9699793457984924,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -0.9874046136038146,
+       "ecart_pct": -0.9546325878594252
+      },
+      "2": {
+       "n_pred": 1144043,
+       "n_ref": 1035241,
+       "vol_pred_ml": 108.01619204065294,
+       "vol_ref_ml": 97.74352071063552,
+       "dice": 0.944981038570404,
+       "hd95_mm": 3.5321238040924072,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8913207054138184,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 10.272671330017417,
+       "ecart_pct": 10.509823316503109
+      },
+      "3": {
+       "n_pred": 1205711,
+       "n_ref": 1188796,
+       "vol_pred_ml": 113.83865022689506,
+       "vol_ref_ml": 112.24160021359341,
+       "dice": 0.9728549718856812,
+       "hd95_mm": 1.2645759582519531,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9879783987998962,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 1.59705001330164,
+       "ecart_pct": 1.4228681792334459
+      },
+      "4": {
+       "n_pred": 805004,
+       "n_ref": 697075,
+       "vol_pred_ml": 76.00541820324392,
+       "vol_ref_ml": 65.81517221532596,
+       "dice": 0.8940808176994324,
+       "hd95_mm": 5.013306140899658,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.743783712387085,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 10.190245987917962,
+       "ecart_pct": 15.483125919018752
+      },
+      "5": {
+       "n_pred": 1379413,
+       "n_ref": 1422804,
+       "vol_pred_ml": 130.2389328997015,
+       "vol_ref_ml": 134.3357462090229,
+       "dice": 0.9024218916893005,
+       "hd95_mm": 11.089310646057129,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8481964468955994,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -4.096813309321391,
+       "ecart_pct": -3.0496821768845184
+      }
+     },
+     "1013": {
+      "1": {
+       "n_pred": 1432357,
+       "n_ref": 1514586,
+       "vol_pred_ml": 172.8845448115953,
+       "vol_ref_ml": 182.80953085579566,
+       "dice": 0.9498242735862732,
+       "hd95_mm": 1.875,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9576219916343689,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -9.924986044200352,
+       "ecart_pct": -5.429140372352582
+      },
+      "2": {
+       "n_pred": 815667,
+       "n_ref": 744018,
+       "vol_pred_ml": 98.45046871194788,
+       "vol_ref_ml": 89.8024816869213,
+       "dice": 0.8999009132385254,
+       "hd95_mm": 10.984919548034668,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8114446401596069,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 8.64798702502658,
+       "ecart_pct": 9.63000895139634
+      },
+      "3": {
+       "n_pred": 524307,
+       "n_ref": 492182,
+       "vol_pred_ml": 63.28350895519281,
+       "vol_ref_ml": 59.406042651699686,
+       "dice": 0.9268413186073303,
+       "hd95_mm": 2.9217662811279297,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9022995829582214,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 3.8774663034931223,
+       "ecart_pct": 6.5270570642567165
+      },
+      "4": {
+       "n_pred": 705612,
+       "n_ref": 610019,
+       "vol_pred_ml": 85.16690282771641,
+       "vol_ref_ml": 73.62889080126293,
+       "dice": 0.8798576593399048,
+       "hd95_mm": 9.732211112976074,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7824298143386841,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 11.538012026453487,
+       "ecart_pct": 15.670495509156279
+      },
+      "5": {
+       "n_pred": 833184,
+       "n_ref": 909724,
+       "vol_pred_ml": 100.56475905399577,
+       "vol_ref_ml": 109.8030865518748,
+       "dice": 0.8959439992904663,
+       "hd95_mm": 5.012286186218262,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7910708785057068,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -9.238327497879027,
+       "ecart_pct": -8.413540810179793
+      }
+     },
+     "1014": {
+      "1": {
+       "n_pred": 3166118,
+       "n_ref": 3161080,
+       "vol_pred_ml": 112.70019340118311,
+       "vol_ref_ml": 112.52086225359002,
+       "dice": 0.9349645972251892,
+       "hd95_mm": 1.9067007303237915,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9663996696472168,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 0.1793311475930892,
+       "ecart_pct": 0.15937590949927827
+      },
+      "2": {
+       "n_pred": 1788582,
+       "n_ref": 1819419,
+       "vol_pred_ml": 63.66583220015012,
+       "vol_ref_ml": 64.76349686833755,
+       "dice": 0.9282763600349426,
+       "hd95_mm": 6.321657180786133,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.8419942855834961,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -1.0976646681874342,
+       "ecart_pct": -1.6948817177351572
+      },
+      "3": {
+       "n_pred": 2314640,
+       "n_ref": 2401057,
+       "vol_pred_ml": 82.39123609862756,
+       "vol_ref_ml": 85.46730989409255,
+       "dice": 0.9623553156852722,
+       "hd95_mm": 1.96875,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.9599097371101379,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": -3.0760737954649926,
+       "ecart_pct": -3.599123219482083
+      },
+      "4": {
+       "n_pred": 1448987,
+       "n_ref": 1358313,
+       "vol_pred_ml": 51.57770971764164,
+       "vol_ref_ml": 48.350105017987715,
+       "dice": 0.8635386228561401,
+       "hd95_mm": 11.35226058959961,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7272942066192627,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 3.2276046996539236,
+       "ecart_pct": 6.675486430594424
+      },
+      "5": {
+       "n_pred": 2781334,
+       "n_ref": 2628796,
+       "vol_pred_ml": 99.00353673277061,
+       "vol_ref_ml": 93.57383951332723,
+       "dice": 0.8930661678314209,
+       "hd95_mm": 8.177751541137695,
+       "hd95_plafond": false,
+       "nsd_2mm": 0.7848092317581177,
+       "cas_degenere": null,
+       "anomalie": null,
+       "ecart_ml": 5.4296972194433835,
+       "ecart_pct": 5.802580344766188
+      }
+     }
+    },
+    "dice_moyen_par_cas": {
+     "1004": {
+      "valeur": 0.9174794673919677,
+      "n": 5
+     },
+     "1010": {
+      "valeur": 0.9267257571220398,
+      "n": 5
+     },
+     "1011": {
+      "valeur": 0.9268750190734864,
+      "n": 5
+     },
+     "1013": {
+      "valeur": 0.9104736328125,
+      "n": 5
+     },
+     "1014": {
+      "valeur": 0.916440212726593,
+      "n": 5
+     }
+    },
+    "agregats": {
+     "1": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9215323328971863,
+       "moyenne": 0.9274699926376343,
+       "minimum": 0.9109923839569092
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9663996696472168,
+       "moyenne": 0.9665794968605042,
+       "minimum": 0.9495766758918762
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.875,
+       "moyenne": 1.7305482864379882,
+       "maximum": 2.0234360694885254
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 0.1793311475930892,
+       "moyenne_signee": 1.1972173766322953,
+       "mediane_absolue": 5.591944132869855,
+       "pire": 11.127202260502699
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 0.15937590949927827,
+       "moyenne_signee": 2.6047143205361563,
+       "mediane_absolue": 5.429140372352582,
+       "pire": 11.296956313477788
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "2": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9282763600349426,
+       "moyenne": 0.9184199333190918,
+       "minimum": 0.8569846153259277
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8419942855834961,
+       "moyenne": 0.8464545011520386,
+       "minimum": 0.7399840354919434
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 6.321657180786133,
+       "moyenne": 6.315929365158081,
+       "maximum": 10.984919548034668
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 7.091952815454263,
+       "moyenne_signee": 4.48885925038528,
+       "mediane_absolue": 7.091952815454263,
+       "pire": 10.272671330017417
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 9.63000895139634,
+       "moyenne_signee": 8.049129475041267,
+       "mediane_absolue": 9.63000895139634,
+       "pire": 25.015493881613153
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "3": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9642567038536072,
+       "moyenne": 0.9609882354736328,
+       "minimum": 0.9268413186073303
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.9742228388786316,
+       "moyenne": 0.9634037852287293,
+       "minimum": 0.9022995829582214
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 1.599666714668274,
+       "moyenne": 1.780213475227356,
+       "maximum": 2.9217662811279297
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -2.5662903882488592,
+       "moyenne_signee": -0.5879930972220905,
+       "mediane_absolue": 2.772117619191363,
+       "pire": 3.8774663034931223
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -2.5627470553004557,
+       "moyenne_signee": -0.2744578364047809,
+       "mediane_absolue": 3.1603441507315284,
+       "pire": 6.5270570642567165
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "4": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.8813151717185974,
+       "moyenne": 0.8849287152290344,
+       "minimum": 0.8635386228561401
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.7824298143386841,
+       "moyenne": 0.7806199789047241,
+       "minimum": 0.7272942066192627
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 8.413816452026367,
+       "moyenne": 7.55502405166626,
+       "maximum": 11.35226058959961
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": 9.088372030576458,
+       "moyenne_signee": 6.928773258691628,
+       "mediane_absolue": 9.088372030576458,
+       "pire": 11.538012026453487
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": 15.483125919018752,
+       "moyenne_signee": 11.239970011945822,
+       "mediane_absolue": 15.483125919018752,
+       "pire": 16.546651564078743
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     },
+     "5": {
+      "dice": {
+       "n": 5,
+       "mediane": 0.9024218916893005,
+       "moyenne": 0.9061872124671936,
+       "minimum": 0.8930661678314209
+      },
+      "nsd_2mm": {
+       "n": 5,
+       "mediane": 0.8004276752471924,
+       "moyenne": 0.8270953059196472,
+       "minimum": 0.7848092317581177
+      },
+      "hd95_mm": {
+       "n": 5,
+       "mediane": 5.962934494018555,
+       "moyenne": 6.579261684417725,
+       "maximum": 11.089310646057129
+      },
+      "ecart_ml": {
+       "n": 5,
+       "mediane_signee": -9.238327497879027,
+       "moyenne_signee": -7.918766941214608,
+       "mediane_absolue": 9.238327497879027,
+       "pire": -18.62583688242944
+      },
+      "ecart_pct": {
+       "n": 5,
+       "mediane_signee": -8.413540810179793,
+       "moyenne_signee": -6.3127332993745355,
+       "mediane_absolue": 8.413540810179793,
+       "pire": -13.508748323875903
+      },
+      "hd95_plafonds": 0,
+      "exclus": []
+     }
+    },
+    "controle": {
+     "1004": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 284,
+         "hu_AP": 536,
+         "hu_VD": 252
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1010": {
+      "non_evaluees": [],
+      "regles_declenchees": [
+       {
+        "categorie": "erreur_probable",
+        "libelle": "densité de l'AP prédite éloignée de celle du VD prédit",
+        "mesure": {
+         "ecart_hu": 182,
+         "hu_AP": 379,
+         "hu_VD": 197
+        },
+        "objet": "AP_moins_VD",
+        "regle": "R5",
+        "seuil": {
+         "ecart_hu_max": 176
+        }
+       }
+      ],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "ALERTE"
+     },
+     "1011": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     },
+     "1013": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     },
+     "1014": {
+      "non_evaluees": [],
+      "regles_declenchees": [],
+      "regles_verifiees": [
+       "R0",
+       "R1",
+       "R2",
+       "R3",
+       "R4",
+       "R5",
+       "R6",
+       "R7",
+       "R8"
+      ],
+      "statut": "OK"
+     }
+    }
+   }
+  }
+ },
+ "verdict": {
+  "C1": {
+   "rempli": true,
+   "structures": [
+    {
+     "etiquette": 1,
+     "structure": "myocarde VG",
+     "mediane": 0.9215323328971863,
+     "n": 5,
+     "seuil": 0.85,
+     "rempli": true
+    },
+    {
+     "etiquette": 2,
+     "structure": "OG",
+     "mediane": 0.9282763600349426,
+     "n": 5,
+     "seuil": 0.85,
+     "rempli": true
+    },
+    {
+     "etiquette": 3,
+     "structure": "cavité VG",
+     "mediane": 0.9642567038536072,
+     "n": 5,
+     "seuil": 0.85,
+     "rempli": true
+    },
+    {
+     "etiquette": 4,
+     "structure": "OD",
+     "mediane": 0.8813151717185974,
+     "n": 5,
+     "seuil": 0.85,
+     "rempli": true
+    },
+    {
+     "etiquette": 5,
+     "structure": "VD",
+     "mediane": 0.9024218916893005,
+     "n": 5,
+     "seuil": 0.85,
+     "rempli": true
+    },
+    {
+     "etiquette": 6,
+     "structure": "aorte",
+     "mediane": 0.9819454550743103,
+     "n": 5,
+     "seuil": 0.85,
+     "rempli": true
+    },
+    {
+     "etiquette": 7,
+     "structure": "AP",
+     "mediane": 0.8961717486381531,
+     "n": 5,
+     "seuil": 0.8,
+     "rempli": true
+    }
+   ]
+  },
+  "C2": {
+   "rempli": true,
+   "echecs_silencieux": []
+  },
+  "verdict": "acceptable",
+  "raisons": []
+ },
+ "p6": {
+  "1": {
+   "mediane_N0": 0.9215458035469055,
+   "mediane_S0": 0.9175984263420105,
+   "n_N0": 5,
+   "n_S0": 5,
+   "cas_compares": 5,
+   "cas_N0_mieux": 3,
+   "cas_S0_mieux": 2,
+   "regle_appliquee": true,
+   "raison": "",
+   "conclusion": "pas de différence démontrée"
+  },
+  "2": {
+   "mediane_N0": 0.931577742099762,
+   "mediane_S0": 0.9100931286811829,
+   "n_N0": 5,
+   "n_S0": 5,
+   "cas_compares": 5,
+   "cas_N0_mieux": 3,
+   "cas_S0_mieux": 2,
+   "regle_appliquee": true,
+   "raison": "",
+   "conclusion": "pas de différence démontrée"
+  },
+  "3": {
+   "mediane_N0": 0.963851273059845,
+   "mediane_S0": 0.9558577537536621,
+   "n_N0": 5,
+   "n_S0": 5,
+   "cas_compares": 5,
+   "cas_N0_mieux": 5,
+   "cas_S0_mieux": 0,
+   "regle_appliquee": true,
+   "raison": "",
+   "conclusion": "pas de différence démontrée"
+  },
+  "4": {
+   "mediane_N0": 0.8790530562400818,
+   "mediane_S0": 0.8744478821754456,
+   "n_N0": 5,
+   "n_S0": 5,
+   "cas_compares": 5,
+   "cas_N0_mieux": 3,
+   "cas_S0_mieux": 2,
+   "regle_appliquee": true,
+   "raison": "",
+   "conclusion": "pas de différence démontrée"
+  },
+  "5": {
+   "mediane_N0": 0.894790530204773,
+   "mediane_S0": 0.8985874056816101,
+   "n_N0": 5,
+   "n_S0": 5,
+   "cas_compares": 5,
+   "cas_N0_mieux": 3,
+   "cas_S0_mieux": 2,
+   "regle_appliquee": true,
+   "raison": "",
+   "conclusion": "pas de différence démontrée"
+  },
+  "6": {
+   "mediane_N0": 0.9809824824333191,
+   "mediane_S0": 0.9756304025650024,
+   "n_N0": 5,
+   "n_S0": 5,
+   "cas_compares": 5,
+   "cas_N0_mieux": 5,
+   "cas_S0_mieux": 0,
+   "regle_appliquee": true,
+   "raison": "",
+   "conclusion": "pas de différence démontrée"
+  },
+  "7": {
+   "mediane_N0": 0.8777783513069153,
+   "mediane_S0": 0.8686425089836121,
+   "n_N0": 5,
+   "n_S0": 5,
+   "cas_compares": 5,
+   "cas_N0_mieux": 3,
+   "cas_S0_mieux": 2,
+   "regle_appliquee": true,
+   "raison": "",
+   "conclusion": "pas de différence démontrée"
+  }
+ },
+ "anomalies": []
+}

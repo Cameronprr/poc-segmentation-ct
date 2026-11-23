@@ -1,0 +1,87 @@
+{
+ "phase": "C",
+ "script": "06d",
+ "commit": "1ab48283c215bc2e2c52d89915813b0cc0a305eb+modifié",
+ "session": "20261123_215037",
+ "heure_utc": "2026-11-23T21:56:37+00:00",
+ "heure_paris": "2026-11-23T22:56:37+01:00",
+ "versions": {
+  "python": "3.13.16",
+  "torch": "2.14.1+cu130",
+  "numpy": "2.4.6",
+  "nibabel": "5.4.2",
+  "scipy": "1.16.3",
+  "monai": "1.6.1",
+  "nnunetv2": "absent",
+  "totalsegmentator": "absent"
+ },
+ "protocole_sha256": "ade98f69f6587035fc17f5ab96bc208bbdcfab50812e5fa3317f8b4958dab5d3",
+ "seuils_sha256": "c1b247070765d193a46e90b538cc655787dbb65f8fdd13f113a39efd3ef90672",
+ "split_sha256": "25881b214823758ddb708b6b46616c2422671c872035683852b1f045f4c4a05c",
+ "tentative": 1,
+ "registre": {
+  "objet": "registre d'ouverture du lot de test (protocole § 10.1 R-O1, § 11)",
+  "tentatives": [
+   {
+    "numero": 1,
+    "heure_utc": "2026-11-23T21:52:32+00:00",
+    "heure_paris": "2026-11-23T22:52:32+01:00",
+    "commit": "1ab48283c215bc2e2c52d89915813b0cc0a305eb",
+    "session": "20261123_215037",
+    "cause_relance": null,
+    "copie_affichage": "/content/drive/MyDrive/poc_ct/etape6/phaseC/sortie_06d_20261123_215037.txt",
+    "statut": "commencée : lecture de labelsTs autorisée"
+   }
+  ]
+ },
+ "manifeste_sha256": "75a8ce43c4f3eb4539aa9ef254c24c262d09afa2251698690da20adc0fe5e65d",
+ "manifeste": "/content/drive/MyDrive/poc_ct/etape6/phaseB/manifeste_etape6.json",
+ "empreintes_labelsTs": {
+  "1004": "13058fc93ee5b9c97ab81db50d399b0c1c8803b4974f778cd469d93d5a75295c",
+  "1010": "bedf1aaf6a7b3f9aa0da1aa3234485a525890e8a527dada8536cf09efb661ad2",
+  "1011": "48006281c14caa238114f642fb44d7f5885ddde9b6078c9ffca760db1388296d",
+  "1013": "a1ced0b23f4a2ca2cd3a9089f0bb80385d87a464c57f27d74ea6fcfcf2e2f2e2",
+  "1014": "b0637720a2924a89f02428e11bf80bdbde0f6bf528fee0e69e254b3029cdebeb"
+ },
+ "verifications_demarrage": {
+  "protocole_sha256": "ade98f69f6587035fc17f5ab96bc208bbdcfab50812e5fa3317f8b4958dab5d3",
+  "seuils_sha256": "c1b247070765d193a46e90b538cc655787dbb65f8fdd13f113a39efd3ef90672",
+  "split_sha256": "25881b214823758ddb708b6b46616c2422671c872035683852b1f045f4c4a05c",
+  "cas_test": [
+   "1004",
+   "1010",
+   "1011",
+   "1013",
+   "1014"
+  ],
+  "quatre_valeurs": {
+   "tolerance_affine_mm": 0.01,
+   "etiquettes_autorisees": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "morceau_min_ml": 0.5,
+   "connexite": 26
+  }
+ },
+ "versions_verifiees": {
+  "python": "3.13.16",
+  "torch": "2.14.1+cu130",
+  "numpy": "2.4.6",
+  "nibabel": "5.4.2",
+  "scipy": "1.16.3",
+  "monai": "1.6.1",
+  "nnunetv2": "absent",
+  "totalsegmentator": "absent"
+ },
+ "totalseg_corriges_en_phase_B": [],
+ "anomalies": [],
+ "duree_s": 359.4550931453705,
+ "definition_hd95": "HD95 symétrique de MONAI 1.6.1 : 95e percentile des distances bord de P → bord de V, idem V → P, et le plus grand des deux ; en mm avec l'espacement de l'image. Non directement comparable aux HD95 calculées par d'autres logiciels (percentile de l'union des distances)."
+}
