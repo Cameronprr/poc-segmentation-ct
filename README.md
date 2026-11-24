@@ -103,7 +103,7 @@ R6 et R7 signalent un examen inhabituel (« hors domaine ») ; les autres, une e
 ## Pour aller plus loin
 
 - [Rapport technique de validation](docs/rapport_validation_v1.md) : méthodes, résultats détaillés, déviations, limites, références.
-- [Journal des décisions](docs/journal_decisions.md) : D16 à D48 (D1 à D15 dans la fiche de cadrage, non publiée).
+- [Journal des décisions](docs/journal_decisions.md) : D16 à D49 (D1 à D15 dans la fiche de cadrage, non publiée).
 - [Historique des étapes](docs/historique_etapes.md) : feuille de route détaillée et stratégie face aux cas difficiles.
 - Exécution : `notebooks/colab_runner.ipynb`, à ouvrir dans Google Colab.
 

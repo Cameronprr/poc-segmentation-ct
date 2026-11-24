@@ -1,6 +1,6 @@
 # Historique des étapes du POC
 
-> Ancien README du dépôt, déplacé ici tel quel le 2026-11-24 (feuille de route détaillée, stratégie face aux cas difficiles, organisation), à une exception près : la phrase d'introduction a été raccourcie. Les renvois au « README » dans les documents, les scripts et le journal antérieurs au 2026-11-24 (dont le protocole figé) désignent ce fichier (version du README au commit f166e04). Les chemins relatifs qu'il contient sont écrits depuis la racine du dépôt.
+> Ancien README du dépôt, déplacé ici le 2026-11-24, puis tenu à jour (CLAUDE.md, règle 7) ; repris tel quel (feuille de route détaillée, stratégie face aux cas difficiles, organisation), à une exception près : la phrase d'introduction a été raccourcie. Les renvois au « README » dans les documents, les scripts et le journal antérieurs au 2026-11-24 (dont le protocole figé) désignent ce fichier (version du README au commit f166e04). Les chemins relatifs qu'il contient sont écrits depuis la racine du dépôt.
 
 # POC segmentation CT cardiaque (projet personnel)
 
